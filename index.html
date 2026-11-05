@@ -6,7 +6,7 @@
 <title>Hub Fiscal & Previdenciário</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=Inter:wght@200;300;400;500;600;700;800;900&family=Caveat:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
@@ -856,346 +856,510 @@ details.how[open] > ol > li:nth-child(n+6){animation-delay:.25s}
 .dl-it.destaque{background:var(--accent-soft)}
 .dl-it.destaque:hover{background:color-mix(in srgb,var(--accent-soft) 70%,var(--surface-2))}
 
-.chuva-cifrao{position:fixed;top:-10vh;z-index:80;pointer-events:none;font-family:var(--display);font-weight:800;color:var(--accent);text-shadow:0 0 14px var(--glow);animation:caiCifrao linear forwards}
-@keyframes caiCifrao{0%{transform:translateY(0) rotate(0deg) scale(.8);opacity:0}10%{opacity:1}100%{transform:translateY(120vh) rotate(360deg) scale(1.5);opacity:0}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
-<style id="pastel">
+<style id="swiss">
 /* ===================================================================
-   Paleta da calculadora do iPhone: preto, cinzas do sistema e laranja.
-   Os cartões ficam cinza e ganham a cor do módulo quando o mouse passa.
-   Fica por último para valer sobre o tema anterior em todos os módulos.
+   Hub Fiscal & Previdenciário — estilo suíço (tipografia internacional)
+   com vidro arredondado estilo iOS e efeito bolha. Só tons de cinza.
+   Fica por último para valer sobre todo o CSS anterior.
    =================================================================== */
 :root{
-  --moeda-img:url("data:image/webp;base64,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");
-  --moeda-sm:url("data:image/webp;base64,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");
-  --ios-preto:#000000; --ios-grafite:#1C1C1E; --ios-tecla:#333333; --ios-cinza:#A5A5A5; --ios-laranja:#FF9F0A;
-  --bg:#F2F2F7; --surface:#FFFFFF; --surface-2:#E5E5EA;
-  --ink:#1C1C1E; --muted:#8E8E93; --line:#D1D1D6;
-  --accent:#FF9F0A; --accent-2:#FF9F0A; --accent-ink:#FFFFFF; --accent-soft:#FFF1DC;
-  --glow:rgba(255,159,10,.28);
-  --warn:#1C1C1E; --warn-soft:#FFEBCC; --err:#000000; --err-soft:#FFD9A3;
-  --display:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
-  --body:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --font:"Inter","Helvetica Neue",Arial,sans-serif;
+  --display:var(--font); --body:var(--font);
   --ease:cubic-bezier(.22,1,.36,1);
-  --r-lg:24px; --r-md:16px;
-  /* cor de cada módulo, que aparece no mouse (terrosas, sem cair no pastel) */
-  --c-rubricas:#1C1C1E; --c-xml:#FF9F0A; --c-darf:#A5A5A5; --c-perdcomp:#333333; --c-base:#FF9F0A;
-  --c-esocial:#A5A5A5; --c-dctfweb:#333333; --c-diagnostico:#FF9F0A;
-  /* só o Rubricas usa várias cores (a análise dele tem riscos coloridos) */
-  --r1:#5F6F3E; --r2:#C3962A; --r3:#CF6E2B; --r4:#2F6B73; --r5:#3F7D55; --r6:#7A4B7E; --r7:#44598A;
-  --g1:#E5E5EA; --g2:#D1D1D6; --g3:#EBEBF0;
+  color-scheme:light;
+
+  --bg:#e6e6e6; --ink:#000000; --muted:#4a4a4a;
+  --blob1:#ffffff; --blob2:#cfcfcf; --blob3:#bababa;
+
+  /* vidro */
+  --glass:rgba(255,255,255,.55); --glass-line:rgba(255,255,255,.85);
+  --glass-strong:rgba(255,255,255,.82);
+  --glass-gray:rgba(0,0,0,.08);
+  --glass-shadow:0 14px 34px rgba(0,0,0,.10), inset 0 1.5px 0 rgba(255,255,255,.95), inset 0 -3px 8px rgba(0,0,0,.05);
+  --rule:rgba(0,0,0,.10);
+  --field:rgba(255,255,255,.82);
+  --field-shadow:inset 0 2px 5px rgba(0,0,0,.07), inset 0 1px 0 rgba(255,255,255,.9);
+  --bubble:rgba(255,255,255,.85);
+  --hover:rgba(0,0,0,.05); --sel:rgba(0,0,0,.09);
+
+  /* bolha preta (aba ativa, botão principal, contador final) */
+  --solid:#000000; --solid-ink:#ffffff;
+  --solid-bg:linear-gradient(180deg,rgba(255,255,255,.30),rgba(255,255,255,0) 62%),#000000;
+  --solid-shadow:0 10px 22px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.35);
+
+  /* células opacas (colunas fixas das tabelas) */
+  --cell:#efefef; --cell-h:#e7e7e7; --cell-hover:#e6e6e6; --cell-sel:#dcdcdc;
+
+  /* compatibilidade com o CSS dos módulos (sem cor de destaque) */
+  --surface:var(--glass); --surface-2:rgba(0,0,0,.05); --line:var(--rule);
+  --accent:#000000; --accent-2:#000000; --accent-ink:#ffffff; --accent-soft:rgba(0,0,0,.08);
+  --glow:rgba(0,0,0,.16);
+  --warn:#000000; --warn-soft:rgba(0,0,0,.10); --err:#000000; --err-soft:rgba(0,0,0,.14);
+  --danger:#000000; --danger-ink:#ffffff; --deep:#000000; --deep-soft:rgba(0,0,0,.16);
+  --g1:var(--glass); --g2:var(--glass-gray);
+  /* escala de cinza para o risco (do mais leve ao mais alto) */
+  --k1:#d4d4d4; --k2:#a8a8a8; --k3:#777777; --k4:#000000; --k5:#bcbcbc;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#000000; --surface:#1C1C1E; --surface-2:#2C2C2E; --ink:#FFFFFF; --muted:#8E8E93; --line:#38383A;
-    --accent:#FF9F0A; --accent-2:#FF9F0A; --accent-ink:#FFFFFF; --accent-soft:#3A2A10; --glow:rgba(255,159,10,.25);
-    --warn:#FFFFFF; --warn-soft:#3A2A10; --err:#FF9F0A; --err-soft:#3A2A10;
-    --g1:#1C1C1E; --g2:#2C2C2E; --g3:#242426; --c-rubricas:#333333;
+    color-scheme:dark;
+    --bg:#0e0e0e; --ink:#f2f2f2; --muted:#b8b8b8;
+    --blob1:#3a3a3a; --blob2:#232323; --blob3:#444444;
+    --glass:rgba(255,255,255,.07); --glass-line:rgba(255,255,255,.15); --glass-strong:rgba(34,34,34,.88);
+    --glass-gray:rgba(255,255,255,.14);
+    --glass-shadow:0 14px 34px rgba(0,0,0,.45), inset 0 1.5px 0 rgba(255,255,255,.16), inset 0 -3px 8px rgba(0,0,0,.28);
+    --rule:rgba(255,255,255,.12); --field:rgba(255,255,255,.09);
+    --field-shadow:inset 0 2px 5px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
+    --bubble:rgba(255,255,255,.20); --hover:rgba(255,255,255,.06); --sel:rgba(255,255,255,.12);
+    --solid:#f2f2f2; --solid-ink:#0e0e0e;
+    --solid-bg:linear-gradient(180deg,rgba(255,255,255,.65),rgba(255,255,255,0) 62%),#f2f2f2;
+    --solid-shadow:0 10px 22px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.8);
+    --cell:#1a1a1a; --cell-h:#222222; --cell-hover:#242424; --cell-sel:#2c2c2c;
+    --surface-2:rgba(255,255,255,.07);
+    --accent:#f2f2f2; --accent-2:#f2f2f2; --accent-ink:#0e0e0e; --accent-soft:rgba(255,255,255,.12); --glow:rgba(0,0,0,.5);
+    --warn:#f2f2f2; --warn-soft:rgba(255,255,255,.14); --err:#f2f2f2; --err-soft:rgba(255,255,255,.18);
+    --danger:#f2f2f2; --danger-ink:#0e0e0e; --deep:#f2f2f2; --deep-soft:rgba(255,255,255,.2);
+    --k1:#4a4a4a; --k2:#757575; --k3:#a3a3a3; --k4:#f2f2f2; --k5:#5e5e5e;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#000000; --surface:#1C1C1E; --surface-2:#2C2C2E; --ink:#FFFFFF; --muted:#8E8E93; --line:#38383A;
-  --accent:#FF9F0A; --accent-2:#FF9F0A; --accent-ink:#FFFFFF; --accent-soft:#3A2A10; --glow:rgba(255,159,10,.25);
-  --warn:#FFFFFF; --warn-soft:#3A2A10; --err:#FF9F0A; --err-soft:#3A2A10;
-  --g1:#1C1C1E; --g2:#2C2C2E; --g3:#242426; --c-rubricas:#333333;
+  color-scheme:dark;
+  --bg:#0e0e0e; --ink:#f2f2f2; --muted:#b8b8b8;
+  --blob1:#3a3a3a; --blob2:#232323; --blob3:#444444;
+  --glass:rgba(255,255,255,.07); --glass-line:rgba(255,255,255,.15); --glass-strong:rgba(34,34,34,.88);
+  --glass-gray:rgba(255,255,255,.14);
+  --glass-shadow:0 14px 34px rgba(0,0,0,.45), inset 0 1.5px 0 rgba(255,255,255,.16), inset 0 -3px 8px rgba(0,0,0,.28);
+  --rule:rgba(255,255,255,.12); --field:rgba(255,255,255,.09);
+  --field-shadow:inset 0 2px 5px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
+  --bubble:rgba(255,255,255,.20); --hover:rgba(255,255,255,.06); --sel:rgba(255,255,255,.12);
+  --solid:#f2f2f2; --solid-ink:#0e0e0e;
+  --solid-bg:linear-gradient(180deg,rgba(255,255,255,.65),rgba(255,255,255,0) 62%),#f2f2f2;
+  --solid-shadow:0 10px 22px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.8);
+  --cell:#1a1a1a; --cell-h:#222222; --cell-hover:#242424; --cell-sel:#2c2c2c;
+  --surface-2:rgba(255,255,255,.07);
+  --accent:#f2f2f2; --accent-2:#f2f2f2; --accent-ink:#0e0e0e; --accent-soft:rgba(255,255,255,.12); --glow:rgba(0,0,0,.5);
+  --warn:#f2f2f2; --warn-soft:rgba(255,255,255,.14); --err:#f2f2f2; --err-soft:rgba(255,255,255,.18);
+  --danger:#f2f2f2; --danger-ink:#0e0e0e; --deep:#f2f2f2; --deep-soft:rgba(255,255,255,.2);
+  --k1:#4a4a4a; --k2:#757575; --k3:#a3a3a3; --k4:#f2f2f2; --k5:#5e5e5e;
 }
-/* Dentro dos módulos: mesmo clima do menu (blocos cinza e grafite, sem laranja sobre branco) */
-body[data-mod]:not([data-mod="home"]){--accent:#1C1C1E;--accent-2:#1C1C1E;--accent-ink:#FFFFFF;--accent-soft:#E5E5EA;--glow:rgba(0,0,0,.16)}
-:root[data-theme="dark"] body[data-mod]:not([data-mod="home"]){--accent:#E5E5EA;--accent-2:#E5E5EA;--accent-ink:#000000;--accent-soft:#2C2C2E;--glow:rgba(0,0,0,.4)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) body[data-mod]:not([data-mod="home"]){--accent:#E5E5EA;--accent-2:#E5E5EA;--accent-ink:#000000;--accent-soft:#2C2C2E;--glow:rgba(0,0,0,.4)}}
 
-body{background:var(--bg);letter-spacing:-.005em}
-.aurora{display:none}
-.wrap{max-width:1240px}
+/* ---------- Base ---------- */
+html{scroll-padding-top:90px}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.5;letter-spacing:0;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 
-/* Tipografia */
-h1{font-family:var(--display);font-weight:600;letter-spacing:-.05em;line-height:.95;background:none;-webkit-text-fill-color:currentColor;color:var(--ink);animation:none}
-.lede{color:var(--muted);font-size:1.05rem;line-height:1.5}
-h2.sec{font-weight:600;letter-spacing:-.02em}
+/* três manchas radiais fixas */
+.aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;display:block;
+  background:
+    radial-gradient(52vmax 46vmax at 8% 6%, var(--blob1), transparent 62%),
+    radial-gradient(50vmax 44vmax at 96% 38%, var(--blob2), transparent 64%),
+    radial-gradient(64vmax 50vmax at 34% 104%, var(--blob3), transparent 66%)}
+.aurora::before,.aurora::after{display:none;animation:none}
 
-/* Topo */
-.topnav{margin-bottom:clamp(20px,4vw,40px)}
-.brand{background:none;-webkit-text-fill-color:currentColor;color:var(--ink);font-weight:600;font-size:1rem;letter-spacing:-.02em;gap:10px}
+/* grade: 12 colunas, gap 24px, máximo 1320px, tudo à esquerda */
+.wrap,.wrap.wide{max-width:1320px;margin:0 auto;padding:clamp(20px,3vw,40px) clamp(16px,3vw,40px) 72px;transition:none}
+main{width:100%}
 
-.ghost-btn,.ghost-btn.back{border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink);font-weight:500}
-.ghost-btn.back:hover{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+/* ---------- Tipografia ---------- */
+h1,.hero-h1{font-family:var(--font);font-weight:800;font-size:clamp(56px,11vw,148px);line-height:.86;letter-spacing:-.055em;margin:0;text-align:left;
+  color:var(--ink);background:none;-webkit-text-fill-color:currentColor;animation:none;overflow-wrap:break-word}
+@media (max-width:430px){h1,.hero-h1{font-size:clamp(40px,12.4vw,56px)}}
+.lede{color:var(--muted);font-size:15px;line-height:1.55;max-width:46ch;margin:0}
+h2.sec{font-family:var(--font);font-weight:700;font-size:24px;letter-spacing:-.03em;line-height:1.1}
+h3,h4{font-family:var(--font)}
+small{font-size:13px}
+.hint,.resumo,.dica,.note,.sub{color:var(--muted)}
+.sec-head{margin-bottom:18px;gap:12px 24px}
 
-/* ===== Abertura: texto grande que entra em movimento + calculadora de verdade ===== */
-.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);gap:clamp(24px,4vw,56px);align-items:start;margin-bottom:clamp(28px,5vw,56px)}
-.hero-txt{padding-top:0}
-#viewHome > .hero{margin-top:0}
-#viewHome .topnav,.topnav{margin-bottom:clamp(16px,3vw,28px)}
-.hero-kicker{margin:0 0 18px;font-size:.9rem;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
-.hero-h1{font-size:clamp(3rem,7.4vw,6.8rem);line-height:.9;letter-spacing:-.055em;margin:0}
-.hero-h1 .w{display:inline-block;animation:sobe 1s var(--ease) calc(var(--i,0) * 90ms + 80ms) backwards}
-.hero-h1 .w.cor{color:var(--muted)}
-@keyframes sobe{from{opacity:0;transform:translateY(.45em) rotate(2deg);filter:blur(6px)}}
-.hero .lede{margin-top:26px;font-size:1.18rem;max-width:42ch;animation:sobe 1s var(--ease) .45s backwards}
-.hero-meta{display:flex;gap:34px;margin-top:34px;padding-top:16px;border-top:1px solid var(--line);font-size:.84rem;letter-spacing:0;text-transform:none;color:var(--muted);animation:sobe 1s var(--ease) .65s backwards}
-.hero-meta b{display:block;font-size:1.4rem;letter-spacing:-.03em;text-transform:none;color:var(--ink);font-weight:600}
+/* ---------- Superfícies de vidro ---------- */
+.stub,.mod,.kpi,.count,.painel,.tablebox,.rtbox,.acao,.rodar,.files,.panel-empty,.tabs,.seg,.steps li,.ghost-btn,.theme-toggle,.chip-arq,.tbtn,.pop,.fpop,.fmt-opt,.oealerta,.bulk,.xml-aviso-txt{
+  background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);
+  -webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4)}
+.pop,.fpop,#xmlFmt{background:var(--glass-strong)}
 
-/* A cena: moedas à esquerda, máquina e a fita saindo por cima */
-.maq-cena{position:relative;height:520px;display:flex;align-items:flex-end;justify-content:center;gap:22px;animation:sobe 1.1s var(--ease) .25s backwards}
-/* A maquininha de cartão: corpo preto, tela cinza, teclas em relevo, o "entra" laranja; segura por uma mão de manga laranja */
-.maq{position:relative;width:236px;z-index:2;flex:none;margin:0 70px 44px 36px;transform:rotate(-7deg);transform-origin:50% 100%;transition:transform .55s cubic-bezier(.3,1.4,.5,1)}
-/* No mouse: a mão ergue a máquina, ajeita a pegada, a tela acende */
-.maq:hover{transform:rotate(-3deg) translateY(-12px) scale(1.025)}
-.maq:hover .maq-mao{animation:pegada 1.6s ease-in-out infinite}
-.maq:hover .maq-mao.frente{animation-name:pegada-dedos}
-@keyframes pegada{50%{transform:translate(2px,-3px) rotate(-.8deg)}}
-@keyframes pegada-dedos{50%{transform:translate(3px,-3px) rotate(-.8deg)}}
-.maq .maq-tela{transition:box-shadow .4s}
-.maq:hover .maq-tela{box-shadow:inset 0 0 0 3px #111112,inset 0 7px 14px rgba(0,0,0,.55),inset 0 0 22px rgba(255,159,10,.16),0 1px 0 rgba(255,255,255,.1)}
-.maq:hover .maq-rotulo b{animation:pisca 1.2s ease-in-out infinite}
-@keyframes pisca{50%{opacity:.35}}
-@media (prefers-reduced-motion: reduce){.maq,.maq:hover{transition:none;transform:rotate(-7deg)}.maq:hover .maq-mao,.maq:hover .maq-rotulo b{animation:none}}
-.maq-corpo{position:relative;border-radius:30px 30px 40px 40px;padding:30px 16px 24px;
-  background:radial-gradient(120% 60% at 20% 0%,#3A3A3C 0,rgba(58,58,60,0) 55%),linear-gradient(165deg,#1C1C1E 0%,#0A0A0B 55%,#000000 100%);
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.16),inset 2px 0 0 rgba(255,255,255,.05),inset -3px -8px 14px rgba(0,0,0,.7),0 0 0 1px #000000,
-    6px 10px 0 -2px #1C1C1E,0 44px 60px -28px rgba(0,0,0,.6)}
-.maq-corpo::before{content:"";position:absolute;left:24px;right:24px;top:-15px;height:40px;z-index:-1;border-radius:20px 20px 10px 10px;
-  background:linear-gradient(180deg,#48484A,#1C1C1E 70%);box-shadow:inset 0 2px 0 rgba(255,255,255,.18),0 -1px 0 #000000}
-.maq-corpo::after{content:"";position:absolute;left:50%;bottom:7px;width:132px;height:5px;margin-left:-66px;border-radius:3px;background:#000000;box-shadow:inset 0 1px 2px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.08)}
-.maq-boca{position:absolute;left:50%;top:-12px;width:164px;height:7px;transform:translateX(-50%);border-radius:4px;background:#000000;box-shadow:inset 0 1px 2px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.12)}
-.maq-tela{margin:4px 2px 12px;padding:9px 13px 7px;border-radius:14px;background:linear-gradient(180deg,#3A3A3C,#2C2C2E);
-  box-shadow:inset 0 0 0 3px #111112,inset 0 7px 14px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.1)}
-.maq-rotulo{display:flex;justify-content:space-between;font:500 .72rem/1 "Inter","Helvetica Neue",system-ui,sans-serif;letter-spacing:0;color:#8E8E93}
-.maq-rotulo b{color:var(--ios-laranja);font-weight:700}
-.maq-visor{display:block;height:2.9rem;margin:4px 0 0;padding:0;background:none;color:#FFFFFF;text-align:right;
-  font:300 2.5rem/1.15 "Inter","Helvetica Neue",system-ui,sans-serif;letter-spacing:-.04em;font-variant-numeric:tabular-nums;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.maq-visor.pulsa{animation:pulsa .3s var(--ease)}
-@keyframes pulsa{40%{opacity:.55}}
-.maq-soft{display:flex;justify-content:center;gap:9px;margin:0 0 14px}
-.maq-soft i{width:36px;height:9px;border-radius:5px;background:linear-gradient(180deg,#8E8E93,#636366);box-shadow:0 2px 0 #2C2C2E,inset 0 1px 0 rgba(255,255,255,.3)}
-.maq-teclas{display:grid;grid-template-columns:repeat(3,44px) 46px;grid-auto-rows:38px;gap:11px 10px;justify-content:center}
-.maq-teclas button{border:0;border-radius:11px;cursor:pointer;color:#FFFFFF;font:500 1.15rem/1 "Inter","Helvetica Neue",system-ui,sans-serif;
-  background:linear-gradient(180deg,#48484A,#2C2C2E);box-shadow:0 4px 0 #0A0A0B,0 5px 6px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.2);
-  transition:transform .08s,box-shadow .08s,filter .12s}
-.maq-teclas button:hover{filter:brightness(1.15)}
-.maq-teclas button:active,.maq-teclas button.aperta{transform:translateY(3px);box-shadow:0 1px 0 #0A0A0B,0 1px 2px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.2)}
-.maq-teclas button.fn{background:linear-gradient(180deg,#C7C7CC,#8E8E93);color:#000000;font-size:1rem;font-weight:700;box-shadow:0 4px 0 #48484A,0 5px 6px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.5)}
-.maq-teclas button.fn.corrige{background:linear-gradient(180deg,#8E8E93,#636366);color:#FFFFFF;box-shadow:0 4px 0 #2C2C2E,0 5px 6px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.35)}
-.maq-teclas button.op{grid-row:span 2;background:linear-gradient(180deg,#FFB340,var(--ios-laranja) 60%,#F08A00);font-size:1.5rem;font-weight:700;
-  box-shadow:0 4px 0 #A35A00,0 5px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.45)}
-.maq-teclas button.fn:active,.maq-teclas button.fn.aperta,.maq-teclas button.op:active,.maq-teclas button.op.aperta{transform:translateY(3px);box-shadow:0 1px 0 #2C2C2E,inset 0 1px 0 rgba(255,255,255,.3)}
-.maq-teclas button:focus-visible{outline:2px solid var(--ios-laranja);outline-offset:3px}
-/* A mão: palma e manga atrás, dedos e polegar por cima */
-.maq-mao{position:absolute;left:-80px;top:0;width:460px;height:460px;overflow:visible;pointer-events:none}
-.maq-mao.tras{z-index:-2}
-.maq-mao.frente{z-index:3}
+/* cartões grandes: bolha */
+.stub,.mod,.kpi,.count,.painel{position:relative;isolation:isolate;overflow:hidden}
+.stub::before,.mod::before,.kpi::before,.count::before,.painel::before{
+  content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;opacity:1;transform:none;height:auto;display:block;padding:0;
+  background:radial-gradient(120% 85% at 14% -12%, var(--bubble), transparent 55%);
+  -webkit-mask:none;mask:none;transition:none;animation:none}
+.stub::after,.mod::after,.kpi::after,.count::after,.painel::after{
+  content:"";position:absolute;inset:auto;left:8%;top:8px;width:28%;height:8px;padding:0;border-radius:999px;pointer-events:none;display:block;
+  background:linear-gradient(90deg,#fff,transparent);opacity:.55;z-index:0;
+  -webkit-mask:none;mask:none;animation:none;transform:none}
+.stub.busy::after,.stub.over::after{animation:none;opacity:.55}
 
-/* A fita sai pela boca, sobe bastante e enrola na ponta; balança de leve */
-.fita{position:absolute;left:50%;bottom:calc(100% + 8px);width:156px;margin-left:-78px;z-index:-1;max-height:96px;min-height:84px;overflow:hidden;
-  display:flex;flex-direction:column;justify-content:flex-end;transform-origin:50% 100%;animation:balanca 6s ease-in-out infinite}
-@keyframes balanca{50%{transform:rotate(-1.4deg) translateX(-3px)}}
-.fita-curva{position:absolute;left:0;right:0;top:0;height:30px;z-index:2;border-radius:0 0 50% 50% / 0 0 100% 100%;
-  background:linear-gradient(180deg,#D1D1D6 0%,#FFFFFF 55%,#E5E5EA 100%);box-shadow:0 6px 10px -6px rgba(0,0,0,.35)}
-.fita ol{flex:none;list-style:none;margin:0;padding:34px 14px 14px;min-height:84px;background:#FFFFFF;color:#333333;font:500 .78rem/1.55 ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
-  display:flex;flex-direction:column;justify-content:flex-end;box-shadow:0 0 0 1px rgba(0,0,0,.05);
-  background-image:repeating-linear-gradient(transparent 0 19px,rgba(0,0,0,.035) 19px 20px)}
-.fita li{display:flex;justify-content:space-between;gap:10px;min-height:1.55em}
-.fita li.vazio{min-height:22px}
-.fita li b{font-weight:700;color:#A5A5A5}
-.fita li.tot{font-weight:800;border-top:1px solid #D1D1D6;margin:3px 0 6px;padding-top:2px;color:#000000}
-.fita li.tot b{color:var(--ios-laranja)}
-@keyframes imprime{from{opacity:0;transform:translateY(12px)}}
-.maq-boca{overflow:hidden}
-.maq-boca .cabeca{position:absolute;top:2px;left:6px;width:24px;height:6px;border-radius:3px;background:var(--ios-cinza);opacity:.55}
-.maq-boca.imprimindo .cabeca{background:var(--ios-laranja);opacity:1;animation:varre .2s linear infinite alternate}
-@keyframes varre{to{left:calc(100% - 30px)}}
+/* ---------- Topo ---------- */
+.topnav{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 24px;margin-bottom:clamp(36px,6vw,72px);min-height:44px}
+.brandwrap{display:inline-flex;align-items:center}
+.brand{font-family:var(--font);font-weight:800;font-size:15px;letter-spacing:-.03em;color:var(--ink);background:none;-webkit-text-fill-color:currentColor;text-decoration:none;white-space:nowrap}
+.brand:hover{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:2px}
 
-/* Moedas de verdade: borda serrilhada, face com aro e R$ em relevo */
-.moedas-area{position:relative;width:140px;height:300px;margin-left:-44px;flex:none;align-self:flex-end;z-index:3;--moeda-chao:rgba(0,0,0,.38);--moeda-luz:transparent}
-:root[data-theme="dark"] .moedas-area{--moeda-chao:rgba(0,0,0,.9);--moeda-luz:rgba(255,255,255,.2)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .moedas-area{--moeda-chao:rgba(0,0,0,.9);--moeda-luz:rgba(255,255,255,.2)}}
-/* O chão: no escuro, um halo claro de luz para a sombra aparecer; depois a sombra da pilha e a da moeda em pé */
-.moedas-area::before{content:"";position:absolute;left:-28px;right:-18px;bottom:-26px;height:60px;border-radius:50%;pointer-events:none;
-  background:radial-gradient(ellipse at 52% 50%,var(--moeda-luz),transparent 70%)}
-.moedas-area::after{content:"";position:absolute;left:-22px;width:84px;bottom:-7px;height:16px;border-radius:50%;pointer-events:none;
-  background:radial-gradient(ellipse at 60% 45%,var(--moeda-chao),transparent 70%);filter:blur(1px)}
-.moedas{position:absolute;left:44px;bottom:0;width:96px;height:300px;border:0;background:none;cursor:pointer;padding:0}
-.moeda{position:absolute;left:10px;bottom:calc(var(--n) * 11px);width:76px;height:34px;filter:drop-shadow(0 3px 2px rgba(0,0,0,.35))}
-.moedas::before{content:"";position:absolute;left:0;right:0;bottom:-10px;height:24px;border-radius:50%;background:radial-gradient(ellipse at 50% 45%,var(--moeda-chao),transparent 68%);filter:blur(1px);pointer-events:none}
-/* Lateral serrilhada com cantos arredondados (sem degrau) e a face recortada com borda macia */
-.moeda::before{content:"";position:absolute;left:.5px;right:.5px;bottom:0;height:23px;border-radius:0 0 50% 50% / 0 0 13px 13px;
-  background:linear-gradient(90deg,rgba(0,0,0,.2),transparent 25%,transparent 75%,rgba(0,0,0,.2)),
-    repeating-linear-gradient(90deg,#A6A6AB 0 2px,#98989D 2px 4px)}
-.moeda::after{content:"";position:absolute;left:0;right:0;top:0;height:26px;border-radius:50%;background:var(--moeda-sm) center/106% 106% no-repeat,#B4B4B9;
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),inset 0 -1px 1px rgba(0,0,0,.22),0 1px 1px rgba(0,0,0,.25)}
-@keyframes surge{from{opacity:0;transform:scale(.85)}}
-/* A moeda em pé, escorada na pilha */
-.moeda-pe{position:absolute;left:-14px;bottom:3px;width:72px;height:72px;border:0;border-radius:50%;cursor:pointer;padding:0;z-index:1;background:var(--moeda-img) center/104% 104% no-repeat,#B4B4B9;
-  box-shadow:inset 0 0 0 1.5px #9A9A9F,inset -3px -4px 6px rgba(0,0,0,.18);filter:drop-shadow(3px 5px 3px rgba(0,0,0,.38));transform:rotate(11deg);transform-origin:50% 100%;backface-visibility:hidden}
-.moeda-pe.gira{animation:gira 1s cubic-bezier(.2,.8,.2,1)}
-@keyframes gira{from{transform:rotate(11deg)}to{transform:rotate(11deg) rotateY(1080deg)}}
-.moedas:focus-visible,.moeda-pe:focus-visible{outline:2px solid var(--ios-laranja);outline-offset:4px;border-radius:12px}
+.tabs{display:inline-flex;align-items:center;gap:2px;padding:5px;border-radius:999px;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs a,.seg button,.steps li{white-space:nowrap}
+.tabs a{display:inline-flex;align-items:center;padding:9px 16px;border-radius:999px;font-weight:600;font-size:14px;letter-spacing:-.01em;color:var(--muted);text-decoration:none;
+  transition:color .2s,transform .2s var(--ease)}
+.tabs a:hover{color:var(--ink);transform:translateY(-1px)}
+.tabs a[aria-selected="true"]{background:var(--solid-bg);color:var(--solid-ink);box-shadow:var(--solid-shadow)}
+.tabs a:focus-visible{outline-offset:0}
+.nav-right{display:flex;align-items:center;gap:10px}
+@media (max-width:1179px){.topnav .tabs{order:3;flex-basis:100%}}
 
-/* À direita da máquina, um lugar para as notas à mão: primeiro o convite, depois da chuva a nota da carga.
-   Mesmo traço (letra de mão, cinza) e a mesma seta desenhada apontando para a máquina. */
-.dica-lado{position:relative;flex:none;align-self:flex-start;width:190px;height:300px;margin:14px 0 0 -55px;color:var(--muted);z-index:4;pointer-events:none}
-.dica-lado svg{display:block;width:96px;height:52px;margin:18px 0 0 -30px;overflow:visible;transform:scaleX(-1) rotate(-8deg)}
-.dica-lado path{stroke-dasharray:1;stroke-dashoffset:1}
-@keyframes traca{to{stroke-dashoffset:0}}
-@keyframes balanceio-esq{50%{transform:scaleX(-1) rotate(-8deg) translateX(5px)}}
-.dica-brinque{position:absolute;left:0;top:118px;text-align:left;transition:opacity .5s var(--ease);animation:sobe 1s var(--ease) 1.2s backwards}
-.dica-brinque span{display:block;font:500 1.32rem/1.1 "Caveat","Segoe Script","Bradley Hand","Comic Sans MS",cursive;letter-spacing:0;transform:rotate(-4deg);transform-origin:0 100%;white-space:nowrap}
-.dica-brinque path{animation:traca .9s var(--ease) 1.6s forwards}
-.dica-brinque .ponta{animation-delay:2.35s;animation-duration:.4s}
-.dica-brinque svg{animation:balanceio-esq 2.6s ease-in-out 2.8s infinite}
-/* no convite, o começo da seta sai logo abaixo do "s" de "seu" */
-.dica-brinque svg{margin:0 0 0 -28px}
-.maq-cena.jogou .dica-brinque{opacity:0}
-@media (max-width:1060px){.dica-lado{display:none}}
-.rub-maq .dica-lado{display:none}
+/* alternador sol/lua em cápsula */
+.theme-toggle{display:inline-flex;align-items:center;gap:2px;padding:4px;border-radius:999px;cursor:pointer;color:var(--muted);font:inherit;
+  transition:transform .2s var(--ease)}
+.theme-toggle .ic{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;transition:color .2s}
+.theme-toggle .ic svg{width:18px;height:18px}
+.theme-toggle[data-modo="claro"] .ic.sol,.theme-toggle[data-modo="escuro"] .ic.lua{background:var(--solid-bg);color:var(--solid-ink);box-shadow:var(--solid-shadow)}
+.theme-toggle:hover{transform:translateY(-1px)}
 
-/* O rolo: a fita escapa e toma a tela; um clique rasga tudo */
-.rolo{position:fixed;inset:0;z-index:90;overflow:hidden;cursor:pointer;background:color-mix(in srgb,var(--bg) 35%,transparent);animation:escurece .5s ease both}
-@keyframes escurece{from{background:transparent}}
-.tira{position:absolute;top:var(--y,-30px);left:var(--x);width:var(--w,150px);height:var(--h,125vh);overflow:hidden;background:#FFFFFF;transform-origin:50% 0;transform:translateX(-50%) rotate(var(--r));
-  clip-path:inset(0 0 100% 0);animation:desenrola 1.7s var(--ease) var(--d) forwards}
-.tira ol{list-style:none;margin:0;height:100%;padding:16px 14px;background:#FFFFFF;color:#333333;font:500 .72rem/1.7 ui-monospace,Menlo,Consolas,monospace;
-  box-shadow:0 18px 40px -20px rgba(0,0,0,.35);background-image:repeating-linear-gradient(transparent 0 21px,rgba(0,0,0,.035) 21px 22px)}
-.tira li{display:flex;justify-content:space-between;gap:8px;white-space:nowrap}
-.tira li span:first-child{min-width:0;overflow:hidden;text-overflow:clip}
-.tira li span:last-child,.tira li b{flex:none}
-.tira li.tot{font-weight:800;border-top:1px solid #D1D1D6;color:#000000}
-.tira li b{color:#A5A5A5}
-@keyframes desenrola{to{clip-path:inset(0 0 0 0)}}
-/* No tremor do zoom as tiras despencam de uma vez, tortas, quicando no lugar */
-.rolo.despenca{animation-duration:.25s}
-.rolo.despenca .tira{clip-path:none;animation:despenca .62s cubic-bezier(.25,1.35,.4,1) var(--d) backwards}
-.rolo.despenca.rasga .tira{animation:rasga .9s cubic-bezier(.5,0,.75,0) forwards}
-@keyframes despenca{from{transform:translateX(-50%) translateY(-150vh) rotate(calc(var(--r) * -3))}}
-/* A nota da carga: só depois que as notas somem */
-.dica-carga{position:absolute;left:0;top:0;width:190px;text-align:left;visibility:hidden}
-.maq-cena.carga .dica-carga{visibility:visible;animation:sobe .9s var(--ease) backwards}
-.dica-carga p{margin:0;font:500 1.22rem/1.12 "Caveat","Segoe Script","Bradley Hand","Comic Sans MS",cursive;letter-spacing:0;transform:rotate(-3deg);transform-origin:0 100%}
-.dica-carga small{display:block;margin-top:3px;font-size:1.02rem}
-.maq-cena.carga .dica-carga path{animation:traca .9s var(--ease) .5s forwards}
-.maq-cena.carga .dica-carga .ponta{animation-delay:1.25s;animation-duration:.4s}
-.maq-cena.carga .dica-carga svg{animation:balanceio-esq 2.6s ease-in-out 1.8s infinite}
-/* Sem espaço para o texto longo ao lado da máquina, ela não entra */
-@media (max-width:1280px){.dica-carga{display:none}}
-.rolo.rasga{background:transparent;transition:background .6s}
-.rolo.rasga .tira{animation:rasga .9s cubic-bezier(.5,0,.75,0) forwards;clip-path:none}
-@keyframes rasga{to{transform:translateX(-50%) translateY(115vh) rotate(calc(var(--r) * -4))}}
+/* ---------- Botões ---------- */
+.btn,.tbtn,.mini,.ghost-btn,.pick,.retoma-btn{font-family:var(--font);font-weight:600;border-radius:999px;letter-spacing:-.005em;
+  transition:transform .2s var(--ease),box-shadow .2s,color .2s}
+.btn{font-size:14px;padding:11px 20px;background:var(--glass);border:1px solid var(--glass-line);color:var(--ink);box-shadow:var(--glass-shadow);
+  -webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4)}
+.btn:hover,.tbtn:hover,.mini:hover,.pick:hover,.ghost-btn:hover{transform:translateY(-1px);border-color:var(--glass-line)}
+.btn:active,.tbtn:active{transform:none}
+.btn.primary,.tbtn.primary,.pick,.btn-vai,.drop .pick{background:var(--solid-bg);color:var(--solid-ink);border:0;box-shadow:var(--solid-shadow);
+  -webkit-backdrop-filter:none;backdrop-filter:none;text-shadow:none}
+.btn.primary:hover,.tbtn.primary:hover,.pick:hover,.btn-vai:hover{transform:translateY(-1px);box-shadow:var(--solid-shadow);filter:none;border-color:transparent}
+.btn-vai{padding:11px 22px;font:600 14px var(--font);background-size:auto}
+.btn-vai::before,.drop .pick::after{display:none;animation:none}
+.btn:disabled{opacity:.45}
+.pick-row .pick.sec,.pick.sec{background:var(--glass);color:var(--ink);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow)}
+.pick-row .pick.sec:hover{color:var(--ink);box-shadow:var(--glass-shadow)}
+.btn.ghost{background:transparent;border-color:transparent;box-shadow:none;color:var(--muted);-webkit-backdrop-filter:none;backdrop-filter:none}
+.btn.ghost:hover{color:var(--ink)}
+.btn.danger{color:var(--ink);border-color:var(--ink)}
+.btn.danger:hover{background:var(--solid);color:var(--solid-ink)}
+.tbtn{font-size:13px;padding:8px 14px;color:var(--ink)}
+.tbtn[aria-expanded="true"],#rubSec.foco #rubFoco{background:var(--solid-bg);color:var(--solid-ink);border-color:transparent}
+.mini{font-size:13px;padding:6px 12px;background:var(--glass);border:1px solid var(--glass-line);color:var(--ink)}
+.ghost-btn{font-size:14px;padding:9px 16px;color:var(--ink)}
+.perigo:hover,.perigo.armado{color:var(--ink)!important;border-color:var(--ink)!important}
+.acao-x{border-color:var(--rule);color:var(--muted)}
+#viewXml #xmlExportarTudo{background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);font-size:13px;color:var(--ink)}
 
-/* Chuva de moedas ao baixar a planilha de oportunidades */
+/* ---------- Campos ---------- */
+.field label,.fp-num label,.campo label{display:block;font-size:13px;font-weight:600;color:var(--ink);text-transform:none;letter-spacing:0;font-family:var(--font);margin-bottom:6px}
+.field input,.search,.inp,select.inp,.rt .ponto,.painel .oe-in,.fpop .inp{
+  font-family:var(--font);font-size:14px;color:var(--ink);background:var(--field);border:1px solid var(--glass-line);border-radius:22px;box-shadow:var(--field-shadow)}
+.field input{height:46px;padding:0 18px}
+.search{padding:10px 18px;border-radius:999px}
+.inp{padding:9px 14px}
+.field input:focus,.search:focus,.inp:focus,.rt .ponto:focus{outline:3px solid var(--ink);outline-offset:2px;border-color:var(--glass-line);background:var(--field)}
+.field input.bad{border-color:var(--ink);border-style:dashed}
+::placeholder{color:var(--muted);opacity:.8}
+input[type=checkbox],input[type=range]{accent-color:var(--ink)}
 
+/* ---------- Início ---------- */
+#viewHome{display:block}
+.hero{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:24px;align-items:start;margin:0 0 clamp(48px,7vw,96px)}
+.hero-h1{grid-column:1/-1;margin-bottom:clamp(8px,2vw,24px)}
+.hero-txt{grid-column:1/5;padding:0}
+.hero-kicker{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:0;text-transform:none;margin:0 0 14px}
+.hero .lede{font-size:17px;line-height:1.5;max-width:34ch;color:var(--ink);margin:0;animation:none}
+.counters{grid-column:6/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.count{border-radius:34px;padding:clamp(16px,2.2vw,28px);min-height:clamp(150px,18vw,250px);display:flex;flex-direction:column;justify-content:space-between;gap:16px;color:var(--ink)}
+.count b{font-weight:800;font-size:clamp(56px,5.4vw,112px);line-height:.85;letter-spacing:-.06em;font-variant-numeric:tabular-nums;display:block}
+.count span{font-size:13px;font-weight:600;line-height:1.3;color:var(--muted)}
+.count.c2{background:var(--glass-gray)}
+.count.c3{background:var(--solid);color:var(--solid-ink);border-color:transparent;box-shadow:var(--solid-shadow);-webkit-backdrop-filter:none;backdrop-filter:none}
+.count.c3 span{color:var(--solid-ink);opacity:.8}
+.count.c3::before{background:radial-gradient(120% 85% at 14% -12%, rgba(255,255,255,.30), transparent 55%)}
+
+.home-cols{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:24px;margin:0;align-items:stretch}
+.home-side{grid-column:1/5;position:static}
+.mods{grid-column:6/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin:0;background:none;border:0}
+.mod,#viewHome .mod{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:8px;min-height:240px;padding:28px;border-radius:34px;
+  color:var(--ink);text-decoration:none;transform:none;cursor:pointer;
+  background:var(--glass);border:1px solid var(--glass-line);transition:transform .2s var(--ease)}
+.mod > *{position:relative}
+.mod:hover,.mod:focus-visible,#viewHome .mod:hover,#viewHome .mod:focus-visible{transform:translateY(-1px);background:var(--glass);box-shadow:var(--glass-shadow);border-color:var(--glass-line);outline:none}
+.mod:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.mod .grupo{display:inline-flex;align-items:center;gap:8px;margin:0 0 6px;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:0;text-transform:none}
+.mod .grupo::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ink);box-shadow:none;opacity:.55}
+.mod[data-grupo="analise"] .grupo::before{opacity:.3}
+.mod[data-grupo="retificacao"] .grupo::before{opacity:1}
+.mod .sigla,#viewHome .mod .sigla{font-family:var(--font);font-weight:800;font-size:clamp(34px,3.6vw,52px);letter-spacing:-.055em;line-height:.95;margin:0 0 auto;color:var(--ink);background:none;-webkit-text-fill-color:currentColor;padding:0}
+.mod h2,#viewHome .mod h2{font-family:var(--font);font-weight:700;font-size:18px;letter-spacing:-.02em;margin:22px 0 0;color:var(--ink)}
+.mod p,#viewHome .mod p{font-size:14px;line-height:1.5;color:var(--muted);margin:0;max-width:46ch}
+.mod .abrir,#viewHome .mod .abrir{display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-size:14px;font-weight:700;color:var(--ink)}
+.mod:hover .abrir span{transform:translateX(3px)}
+.mod .passos{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;justify-content:flex-start!important}
+.mod .passos span,.mod.hero-card .passos span,.mod.hero-xml .passos span{font-size:12px;font-weight:600;color:var(--muted);background:transparent;border:1px solid var(--rule);border-radius:999px;padding:3px 10px}
+.mod .qtd,#viewHome .mod .qtd{position:absolute;top:24px;right:24px;height:auto;max-width:calc(100% - 48px);padding:3px 12px;font-size:12px;font-weight:700;color:var(--ink);background:var(--glass-gray);border-radius:999px}
+.mod .novo,.mod.hero-xml .novo{position:static;display:inline-block;margin-bottom:12px;font-size:12px;font-weight:700;letter-spacing:0;text-transform:none;padding:4px 12px;border-radius:999px;background:var(--solid-bg);color:var(--solid-ink);box-shadow:var(--solid-shadow)}
+.mod.hero-xml,#viewHome .mod.hero-xml{height:100%;min-height:100%;justify-content:flex-end;padding:28px}
+.mod.hero-xml .sigla,#viewHome .mod.hero-xml .sigla{font-size:clamp(72px,9vw,128px);padding:0;margin:0 0 auto}
+.mod.hero-xml h2{margin-top:22px}
+/* Rubricas: cartão principal, bolha preta */
+.mod.hero-card,#viewHome .mod.hero-card{grid-column:1/-1;display:flex;min-height:0;background:var(--solid);color:var(--solid-ink);border-color:transparent;box-shadow:var(--solid-shadow);
+  -webkit-backdrop-filter:none;backdrop-filter:none;padding:28px;gap:8px}
+.mod.hero-card .sigla,#viewHome .mod.hero-card .sigla{color:var(--solid-ink);font-size:clamp(48px,6vw,88px);grid-row:auto;margin:0 0 12px}
+.mod.hero-card h2,#viewHome .mod.hero-card h2,.mod.hero-card .abrir,#viewHome .mod.hero-card .abrir{color:var(--solid-ink);margin-top:0}
+.mod.hero-card p,#viewHome .mod.hero-card p{color:var(--solid-ink);opacity:.78}
+.mod.hero-card .passos span,#viewHome .mod.hero-card .passos span{color:var(--solid-ink);border-color:color-mix(in srgb,var(--solid-ink) 30%,transparent)}
+.mod.hero-card::before,#viewHome .mod.hero-card::before{background:radial-gradient(120% 85% at 14% -12%, rgba(255,255,255,.30), transparent 55%);opacity:1;display:block;height:auto;transform:none}
+.mod.hero-card:hover,#viewHome .mod.hero-card:hover{background:var(--solid);box-shadow:var(--solid-shadow)}
+.mods.escolheu .mod:not(.escolhido){opacity:1;transform:none}
+.mods.escolheu .mod.escolhido{transform:none}
+
+@media (max-width:1100px){
+  .hero-txt,.counters,.home-side,.mods{grid-column:1/-1}
+  .mod.hero-xml,#viewHome .mod.hero-xml{min-height:240px}
+}
+@media (max-width:860px){
+  .hero,.home-cols{grid-template-columns:1fr}
+  .mods{grid-template-columns:1fr}
+  .counters{gap:12px}
+  .count{border-radius:26px;padding:14px;min-height:130px}
+  .count b{font-size:clamp(36px,11.5vw,64px)}
+  .count span{font-size:12px}
+}
+
+/* ---------- Páginas dos módulos: texto de apoio nas colunas 1–4, formulário nas 6–12 ---------- */
+#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado){display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px;row-gap:24px;grid-auto-flow:row dense;align-items:start}
+#viewMod[hidden],#viewEso[hidden],#viewXml[hidden],#viewDctf[hidden],#viewDiag[hidden],#viewRub[hidden]{display:none}
+:is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > *{grid-column:1/-1;margin-top:0;margin-bottom:0;max-width:none}
+:is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > .mod-head{display:contents}
+:is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) .mod-head h1{grid-column:1/-1;margin:0 0 clamp(16px,3vw,40px)}
+:is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) .mod-head .lede{grid-column:1/5;max-width:none;max-height:none;opacity:1}
+#viewRub:not(.carregado) .mod-head .mh-txt{display:contents}
+#viewRub:not(.carregado) .mod-head .arq-chips{display:none}
+:is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > details.how{grid-column:1/5;margin:0}
+:is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag) > :is(.stub,.field.campo,.modo,.opcoes,.rodar),
+#viewRub:not(.carregado) > .rub-arq{grid-column:6/-1}
+#viewDiag > .field.campo{max-width:none}
+#viewRub:not(.carregado) .steps{margin:0 0 16px}
+#viewRub .stub,#viewRub .mod-head,#viewRub details.how{max-width:none}
+#viewRub.carregado .mod-head{margin:0 0 20px}
+#viewRub.carregado .mod-head h1{font-size:clamp(40px,5vw,64px);margin:0}
+#viewRub.carregado details.how{margin:16px 0 0}
+
+@media (max-width:860px){
+  #viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado){grid-template-columns:1fr}
+  :is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > *,
+  :is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) .mod-head h1,
+  :is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) .mod-head .lede,
+  :is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag) > :is(.stub,.field.campo,.modo,.opcoes,.rodar),
+  #viewRub:not(.carregado) > .rub-arq,
+  :is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > details.how{grid-column:1/-1}
+}
+
+:is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag) > section{margin-top:24px}
+/* envio de arquivos */
+.stub{border-radius:34px}
+.drop{cursor:pointer;padding:32px clamp(20px,3vw,36px) 28px}
+.drop::before{display:none}
+.drop .big{font-family:var(--font);font-weight:800;font-size:clamp(22px,2.4vw,30px);letter-spacing:-.04em;line-height:1.05;margin:0 0 8px;color:var(--ink)}
+.drop p{color:var(--muted);font-size:14px}
+.drop .pick{margin-top:20px;display:inline-block;padding:11px 22px;font-size:14px}
+.drop:hover .pick{transform:translateY(-1px);box-shadow:var(--solid-shadow)}
+.drop:focus-visible{box-shadow:inset 0 0 0 3px var(--ink);outline:none}
+.stub.over .drop,.chip-arq.over{background:var(--hover)}
+.slots .drop + .drop{border-left:1px solid var(--rule)}
+.drop .slot-tag{font-size:12px;font-weight:600;color:var(--ink);background:var(--glass);border:1px solid var(--glass-line);border-radius:999px;padding:3px 12px}
+.drop.feito .slot-tag{background:var(--solid-bg);color:var(--solid-ink);border-color:transparent}
+.drop .slot-file{color:var(--ink)}
+.stub.compacto .drop .big,#rubStub .drop .big{font-size:20px;letter-spacing:-.03em}
+.progress{border-top:1px solid var(--rule);background:transparent;padding:18px clamp(20px,3vw,36px) 22px}
+.prog-pct{font-family:var(--font);font-weight:800;font-size:34px;letter-spacing:-.05em;color:var(--ink);background:none;-webkit-text-fill-color:currentColor}
+.prog-track{height:12px;background:var(--glass-gray);box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}
+.prog-fill{background:var(--solid-bg)}
+.prog-shine{display:none}
+.topbar i{background:var(--solid);box-shadow:none}
+
+/* passos */
+.steps{gap:8px;margin:0 0 20px}
+.steps li{padding:5px 16px 5px 5px;font-size:13px;color:var(--muted);transition:none}
+.steps li::before{background:var(--glass-gray);color:var(--ink);font-weight:700}
+.steps li.on{color:var(--ink);border-color:var(--glass-line)}
+.steps li.on::before{background:var(--solid-bg);color:var(--solid-ink);box-shadow:var(--solid-shadow)}
+.steps li.ok::before{background:var(--solid);color:var(--solid-ink)}
+
+/* abas segmentadas em cápsula de vidro */
+.seg{display:inline-flex;gap:2px;padding:5px;border-radius:999px;margin-top:0}
+.seg button{font-family:var(--font);font-size:13px;font-weight:600;color:var(--muted);padding:8px 16px;border-radius:999px;background:transparent;transition:color .2s,transform .2s var(--ease)}
+.seg button:hover{color:var(--ink);transform:translateY(-1px)}
+.seg button[aria-pressed="true"],.seg button[aria-checked="true"],.seg button[aria-selected="true"],.seg button[data-f="lixo"][aria-pressed="true"]{background:var(--solid-bg)!important;color:var(--solid-ink);box-shadow:var(--solid-shadow)}
+.seg .n{opacity:.7}
+.seg-lbl{color:var(--muted)}
+.rbar .seg{padding:4px}.rbar .seg button{padding:6px 12px;font-size:13px}
+
+/* etiquetas de status em pílula: pendente = vidro com borda, em andamento = cinza, concluído = preto */
+.badge{font-family:var(--font);font-size:12px;font-weight:600;padding:3px 12px;border-radius:999px;background:var(--glass);border:1px solid var(--glass-line);color:var(--ink);box-shadow:none}
+.badge.run,.badge.warn,.badge.deep{background:var(--glass-gray);border-color:transparent;color:var(--ink)}
+.badge.ok{background:var(--solid);color:var(--solid-ink);border-color:transparent}
+.badge.err{background:var(--glass);border:1.5px solid var(--ink);color:var(--ink)}
+.tp{font-size:12px;font-weight:600;padding:2px 10px;border-radius:999px;border:1px solid var(--glass-line)}
+.tp-P{background:var(--glass);color:var(--ink)}
+.tp-D,.tp-W{background:var(--glass-gray);color:var(--ink);border-color:transparent}
+.tp-R{background:var(--solid);color:var(--solid-ink);border-color:transparent}
+.pp{border-radius:999px;font-size:11px}
+.pp.P{background:var(--glass);color:var(--ink);box-shadow:inset 0 0 0 1px var(--glass-line)}
+.pp.D{background:var(--glass-gray);color:var(--ink)}
+.i12{border:1px solid var(--rule);color:var(--ink)}
+.og{border:1px solid var(--rule);color:var(--ink);background:var(--glass-gray);font-size:12px}
+.og.alt,.og.lixo{background:var(--solid);color:var(--solid-ink);border-color:transparent}
+.r-Pacificado{background:var(--k1);box-shadow:inset 0 0 0 1px var(--rule)}.r-Baixo{background:var(--k2)}.r-Médio{background:var(--k3)}.r-Alto{background:var(--k4)}.r-Outros{background:var(--k5)}
+.rt tr.tpD td.chk{box-shadow:inset 3px 0 0 var(--k3)}
+.rt tr.tpP td.chk{box-shadow:inset 3px 0 0 var(--ink)}
+.rt tr.lixo td.chk{box-shadow:inset 3px 0 0 var(--k2)}
+
+/* ---------- Contadores dos módulos: vidro claro, vidro cinza e preto sólido ---------- */
+.kpis{display:grid;gap:24px;margin:0}
+.kpi{border-radius:34px;padding:24px 26px;display:flex;flex-direction:column-reverse;justify-content:space-between;gap:20px;min-height:170px;transition:none}
+.kpi:hover{transform:none;box-shadow:var(--glass-shadow);border-color:var(--glass-line)}
+.kpi small{font-size:13px;font-weight:600;color:var(--muted);display:block}
+.kpi b{font-family:var(--font);font-weight:800;font-size:clamp(40px,5.2vw,72px);line-height:.9;letter-spacing:-.06em;color:var(--ink);background:none;-webkit-text-fill-color:currentColor;margin:0;font-variant-numeric:tabular-nums}
+.kpis.dois .kpi{padding:24px 26px}
+.kpis.dois .kpi b{font-size:clamp(32px,4vw,56px)}
+.kpis .kpi:nth-child(2),.kpis .kpi:nth-child(3){background:var(--glass-gray)}
+.kpis .kpi:last-child,body[data-mod]:not([data-mod="home"]) .kpis .kpi:last-child{background:var(--solid);color:var(--solid-ink);border-color:transparent;box-shadow:var(--solid-shadow);-webkit-backdrop-filter:none;backdrop-filter:none}
+.kpis .kpi:last-child b,.kpis .kpi:last-child small{color:var(--solid-ink)}
+.kpis .kpi:last-child small{opacity:.8}
+.kpis .kpi:last-child::before{background:radial-gradient(120% 85% at 14% -12%, rgba(255,255,255,.30), transparent 55%)}
+@media (max-width:860px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.kpis.dois{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpis:has(.kpi:nth-child(4)){grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi,.kpis.dois .kpi{border-radius:24px;padding:14px;min-height:110px}.kpi b{font-size:clamp(28px,9vw,44px)}.kpi small{font-size:12px}}
+
+/* ---------- Tabelas: vidro, linhas finas, sem zebra ---------- */
+.tablebox,.rtbox{border-radius:30px;overflow:auto;contain:none}
+.tablebox{max-height:620px}
+table{font-size:14px}
+th{background:var(--cell-h);color:var(--muted);font-weight:600;font-size:13px;letter-spacing:0;text-transform:none;border-bottom:1px solid var(--rule);padding:14px 18px}
+td{border-bottom:1px solid var(--rule);padding:12px 18px}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--hover)}
+tbody tr:hover td:first-child{box-shadow:none}
+tfoot td{background:var(--cell-h);border-top:1px solid var(--rule);font-weight:700}
+.empty,.mais,.panel-empty{color:var(--muted)}
+.panel-empty{border-radius:30px;padding:28px 24px;text-align:left}
+body[data-mod]:not([data-mod="home"]) :is(.stub,.kpi,.tablebox,.painel){border:1px solid var(--glass-line);box-shadow:var(--glass-shadow)}
+body[data-mod]:not([data-mod="home"]) .kpis .kpi:nth-child(2),body[data-mod]:not([data-mod="home"]) .kpis .kpi:nth-child(3){background:var(--glass-gray)}
+body[data-mod]:not([data-mod="home"]) th{background:var(--cell-h);color:var(--muted)}
+body[data-mod]:not([data-mod="home"]) td{border-bottom-color:var(--rule)}
+body[data-mod]:not([data-mod="home"]) .stub::after{display:block}
+.files{border-radius:30px;list-style:none}
+.file{border-top:1px solid var(--rule)}
+.file::before{display:none}
+.file:hover{background:var(--hover)}
+.file.novo{animation:none}
+.stat b{font-family:var(--font);font-weight:800;letter-spacing:-.03em}
+
+/* tabela de revisão */
+table.rt{font-size:var(--rf,13px)}
+.rt th{background:var(--cell-h);color:var(--muted);font-size:.95em;font-weight:600;border-bottom:1px solid var(--rule)}
+.rt td{background-color:transparent;border-bottom:1px solid var(--rule)}
+.rt .stk{background-color:var(--cell)}
+.rt th.stk{background-color:var(--cell-h)}
+.rt .stk2{box-shadow:1px 0 0 var(--rule)}
+.rt tr:hover td{background-color:var(--hover)}
+.rt tr:hover td.stk{background-color:var(--cell-hover)}
+.rt tr.sel td{background-color:var(--sel)}
+.rt tr.sel td.stk{background-color:var(--cell-sel)}
+.rt tr.alt .ponto{border-color:var(--ink);background:var(--field)}
+.rt th .arr{color:var(--ink)}
+.rt th .rz::after{background:var(--rule)}
+.rt th .rz:hover::after,.rt th .rz.on::after{background:var(--ink)}
+.rt tr.saindo.ok td,.rt tr.saindo td,.painel tr.pend td{background-color:var(--sel)}
+.rt tr.saindo{animation:none;opacity:.4}
+.painel tr.pend .oe-in{border-color:var(--ink);border-style:dashed}
+.painel.hub{margin:0}
+.painel h3{font-family:var(--font);font-weight:700;font-size:16px;letter-spacing:-.02em}
+.painel p.sub{font-size:13px}
+.painel{border-radius:30px}
+.painel .tablebox{border:0;border-top:1px solid var(--rule);border-radius:0;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.painel th{font-size:12px}
+.hub-log{border-top:1px solid var(--rule);color:var(--muted)}
+.hub-log .log-info,.hub-log .log-sucesso{color:var(--ink)}
+.hub-log .log-erro{color:var(--ink);text-decoration:underline}
+.dl-it{border-top:1px solid var(--rule);font-family:var(--font)}
+.dl-it::before{display:none}
+.dl-it:hover{background:var(--hover)}
+.dl-it .ar{color:var(--ink)}
+.dl-it.destaque{background:var(--glass-gray)}
+.dl-it.destaque:hover{background:var(--sel)}
+
+/* barras de ação */
+.acao,.rodar{border-radius:999px;padding:10px 12px 10px 24px;box-shadow:var(--glass-shadow);border:1px solid var(--glass-line)}
+.acao{margin-top:20px}
+.rodar{margin-top:0}
+.acao .tot b{font-family:var(--font);font-weight:800;letter-spacing:-.03em}
+.opcoes .tbtn{box-shadow:var(--glass-shadow)}
+
+/* detalhes "como funciona" */
+details.how > summary{font-size:13px;font-weight:600;color:var(--ink);padding:6px 16px 6px 6px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);-webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4)}
+details.how > summary:hover{background:var(--glass);transform:translateY(-1px);color:var(--ink)}
+details.how > summary::before,details.how[open] > summary::before{box-shadow:inset 0 0 0 1px var(--ink);color:var(--ink)}
+details.how > ol > li{font-size:14px}
+details.how > ol > li::before{color:var(--solid-ink);background:var(--solid);box-shadow:none}
+details.how > ol > li::after{background:var(--rule)}
+details.how[open] > ol > li{animation:none}
+
+/* chips dos arquivos do Rubricas */
+.arq-chips{transform:none;transition:none}
+.chip-arq{border-radius:999px;padding:8px 18px 8px 10px}
+.chip-arq:hover,.chip-arq:focus-visible{transform:translateY(-1px);border-color:var(--glass-line);box-shadow:var(--glass-shadow)}
+.chip-arq .ico{background:var(--glass-gray);color:var(--ink)}
+.chip-arq.falta{border:1.5px dashed var(--ink)}
+.chip-arq.falta .ico{box-shadow:inset 0 0 0 1px var(--ink)}
+.chip-arq small{font-size:12px}
+.chip-arq b{font-size:13px}
+.chip-arq:hover .tr{color:var(--ink)}
+.rub-arq{transition:none}
+
+/* popovers, filtros e diálogo */
+.pop,.fpop{border-radius:26px;animation:none;box-shadow:0 24px 60px rgba(0,0,0,.28), inset 0 1.5px 0 rgba(255,255,255,.4)}
+.pop h4{font-weight:600;font-size:13px;color:var(--muted)}
+.fchips .chip{background:var(--glass-gray);border:1px solid transparent;color:var(--ink);animation:none}
+.fp-it:hover,.fbtn:hover{background:var(--hover)}
+.fbtn.on{background:var(--solid);color:var(--solid-ink)}
+#xmlFmt{border-radius:34px;border:1px solid var(--glass-line);animation:none;color:var(--ink);-webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4)}
+#xmlFmt[open]{animation:none}
+#xmlFmt::backdrop{background:rgba(0,0,0,.35);backdrop-filter:blur(4px)}
+.fmt-in h3{font-family:var(--font);font-weight:800;letter-spacing:-.04em}
+.fmt-opt{border-radius:26px;color:var(--ink);transition:transform .2s var(--ease)}
+.fmt-opt:hover,.fmt-opt:focus-visible{background:var(--glass);border-color:var(--glass-line);transform:translateY(-1px);box-shadow:var(--glass-shadow)}
+.xml-aviso-fio{background:var(--muted);animation:none}
+.xml-aviso-txt{animation:none;color:var(--ink)}
+.oealerta{border-radius:26px}
+.bulk{border-radius:26px;animation:none}
+.lixo-btn:hover,.tema-x:hover{background:var(--hover);color:var(--ink);transform:none}
+.retoma-btn{background:var(--glass-gray);color:var(--ink)}
+.retoma-btn:hover{background:var(--solid);color:var(--solid-ink);transform:none}
+.ok-btn:hover{background:var(--hover);color:var(--ink);transform:none}
+
+/* balão de informação */
+.tip{background:var(--solid);color:var(--solid-ink);border-radius:18px}
+
+/* aviso temporário: pílula preta no canto inferior esquerdo */
+.toast{left:clamp(16px,3vw,40px);right:auto;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateY(8px);background:var(--solid-bg);color:var(--solid-ink);
+  box-shadow:var(--solid-shadow);padding:12px 22px;border-radius:999px;font-size:14px;font-weight:600;max-width:calc(100vw - 32px);transition:opacity .2s}
+.toast.show{opacity:1;transform:none}
+
+/* rodapé */
+.rodape{text-align:left;font-size:13px;color:var(--muted);font-weight:400;padding-top:72px;opacity:1}
+.rodape b{color:var(--ink);font-weight:700}
+body[data-mod]:not([data-mod="home"]) .rodape{display:block}
+
+/* tela cheia da revisão */
+#rubSec.foco{background:var(--bg)}
+#viewRub.carregado > *{margin-top:20px}
+#viewRub.carregado > .mod-head{margin-top:0}
+
+/* ---------- Movimento só em resposta a ações (hover, aviso). Sem animação de entrada ---------- */
+.page-in,.entra-dir,.entra-esq,.sai-esq,.sai-dir,
+#viewMod.page-in > *,#viewRub.page-in > *,#viewEso.page-in > *,#viewDctf.page-in > *,#viewDiag.page-in > *,#viewXml.page-in > *,#viewHome.page-in > *,
+.nav-right .ghost-btn.back:not([hidden]),.brand i,.mod{animation:none!important}
 @media (prefers-reduced-motion: reduce){
-  .hero-h1 .w,.hero .lede,.hero-meta,.maq-cena,.fita,.fita li,.moeda.cai,.moeda-pe{animation:none}
-  .tira{animation:none;clip-path:none}.rolo.rasga .tira{animation:none;opacity:0}
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .tabs a:hover,.btn:hover,.mod:hover,.seg button:hover,.theme-toggle:hover,.tbtn:hover,.pick:hover{transform:none}
 }
-@media (max-width:900px){.hero{grid-template-columns:1fr}.hero-txt{padding-top:0}.maq-cena{height:520px}}
-@media (max-width:520px){.moedas-area{display:none}}
-
-/* ===== Cartões dos módulos: cinza por padrão, a cor do módulo no mouse ===== */
-#viewHome > h1,#viewHome > .lede{text-align:left}
-.home-cols{gap:14px;margin-top:0;grid-template-columns:minmax(220px,290px) minmax(0,1fr)}
-.mods{gap:14px;background:none;border:0}
-.mod{--cor:#6E6C66;--cor-ink:#FFFFFF}
-.mod,#viewHome .mod{background:var(--base,var(--g1));border:0;border-radius:var(--r-lg);align-items:flex-start;text-align:left;
-  padding:24px 24px 22px;min-height:220px;gap:6px;box-shadow:none;animation:cardIn .8s var(--ease) calc(var(--i,0) * 70ms + 200ms) backwards;
-  transform:none;transition:background .35s var(--ease),color .35s,transform .45s var(--ease)}
-.mod::before{display:none}
-.mod::after{content:"+";position:absolute;top:18px;right:18px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
-  background:var(--cor);color:var(--cor-ink);font:500 1.3rem/1 var(--body);transition:transform .45s var(--ease),background .35s,color .35s}
-/* O contador de arquivos fica ao lado do "+", alinhado ao centro dele, e nunca por cima */
-.mod .qtd,#viewHome .mod .qtd{top:18px;right:58px;height:30px;display:inline-flex;align-items:center;max-width:calc(100% - 150px);padding:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.78rem;line-height:1}
-.mod .sigla,#viewHome .mod .sigla{background:none;-webkit-text-fill-color:currentColor;color:var(--ink);font-weight:600;letter-spacing:-.05em;font-size:clamp(2rem,3.2vw,2.6rem);line-height:1;margin:0 0 auto;transition:color .35s}
-.mod h2,#viewHome .mod h2{font-weight:500;font-size:1.15rem;letter-spacing:-.02em;margin:28px 0 0;transition:color .35s}
-.mod p,#viewHome .mod p{font-size:.86rem;color:var(--muted);margin:0;max-width:46ch;transition:color .35s}
-.mod .abrir,#viewHome .mod .abrir{color:var(--ink);font-size:.82rem;font-weight:600;justify-content:flex-start;margin-top:12px;transition:color .35s}
-.mod .passos{justify-content:flex-start!important}
-.mod .passos span{background:transparent;border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);color:var(--ink);font-size:.72rem;transition:color .35s,border-color .35s}
-.mod:hover,.mod:focus-visible,#viewHome .mod:hover,#viewHome .mod:focus-visible{background:var(--cor);transform:translateY(-4px);outline:none;box-shadow:0 26px 50px -30px var(--cor)}
-.mod:hover::after,.mod:focus-visible::after{background:var(--cor-ink);color:var(--cor);transform:rotate(90deg)}
-.mod:hover :is(.sigla,h2,.abrir),.mod:focus-visible :is(.sigla,h2,.abrir),#viewHome .mod:hover :is(.sigla,h2,.abrir){color:var(--cor-ink)}
-.mod:hover p,.mod:focus-visible p,#viewHome .mod:hover p{color:color-mix(in srgb,var(--cor-ink) 78%,transparent)}
-.mod:hover .passos span{color:var(--cor-ink);border-color:color-mix(in srgb,var(--cor-ink) 40%,transparent)}
-.mods.escolheu .mod.escolhido{background:var(--cor);transform:scale(1.02)}
-
-/* Cada um com sua cor e um cinza diferente de fundo */
-.mod[data-go="xml"]{--cor:var(--c-xml);--base:var(--g2)}
-/* Grupos: a cor no mouse diz o grupo (análise adicional, dados de suporte, retificação) */
-.mod[data-grupo="analise"]{--cor:var(--ios-laranja);--cor-ink:#FFFFFF}
-.mod[data-grupo="suporte"]{--cor:var(--ios-cinza);--cor-ink:#000000}
-.mod[data-grupo="retificacao"]{--cor:var(--ios-tecla);--cor-ink:#FFFFFF}
-.mods .mod:nth-child(2){--base:var(--g2)}.mods .mod:nth-child(3){--base:var(--g1)}.mods .mod:nth-child(4){--base:var(--g1)}
-.mods .mod:nth-child(5){--base:var(--g2)}.mods .mod:nth-child(6){--base:var(--g2)}.mods .mod:nth-child(7){--base:var(--g1)}
-.mod .grupo{display:inline-flex;align-items:center;gap:7px;margin:0 0 14px;font-size:.8rem;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);transition:color .35s}
-.mod .grupo::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--cor);box-shadow:0 0 0 2px color-mix(in srgb,var(--cor) 25%,transparent);transition:background .35s}
-.mod:hover .grupo,.mod:focus-visible .grupo{color:color-mix(in srgb,var(--cor-ink) 80%,transparent)}
-.mod:hover .grupo::before,.mod:focus-visible .grupo::before{background:var(--cor-ink)}
-
-/* Rubricas: cinza bem escuro de cara; no mouse, as cores de todos os módulos (a análise usa várias) */
-#viewHome .mod.hero-card{--cor:var(--ios-preto);--base:var(--ios-grafite);color:#FFFFFF;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);justify-items:start;align-items:end;gap:6px 40px;padding:30px 30px 26px;min-height:280px;overflow:hidden}
-#viewHome .mod.hero-card :is(.sigla,h2,.abrir){color:#F3F2EF}
-#viewHome .mod.hero-card p{color:rgba(243,242,239,.7)}
-#viewHome .mod.hero-card .passos span{background:transparent;color:#F3F2EF;border-color:rgba(243,242,239,.25)}
-#viewHome .mod.hero-card .sigla{grid-row:1/6;align-self:end;font-size:clamp(3rem,7.4vw,6rem);letter-spacing:-.06em}
-#viewHome .mod.hero-card h2{margin:0}
-#viewHome .mod.hero-card::after{background:conic-gradient(var(--r1) 0 14%,var(--r2) 0 28%,var(--r3) 0 43%,var(--r4) 0 57%,var(--r5) 0 71%,var(--r6) 0 86%,var(--r7) 0);color:#fff}
-#viewHome .mod.hero-card::before{display:block;content:"";position:absolute;left:0;right:0;bottom:0;height:6px;opacity:0;transform:scaleX(.2);transform-origin:0 50%;
-  transition:transform .6s var(--ease),opacity .3s;background-image:linear-gradient(90deg,var(--r1) 0 14%,var(--r2) 0 28%,var(--r3) 0 43%,var(--r4) 0 57%,var(--r5) 0 71%,var(--r6) 0 86%,var(--r7) 0)}
-#viewHome .mod.hero-card:hover::before{opacity:1;transform:none}
-:root[data-theme="dark"] #viewHome .mod.hero-card{--base:var(--ios-tecla)}
-@media (max-width:760px){#viewHome .mod.hero-card{grid-template-columns:1fr}#viewHome .mod.hero-card .sigla{grid-row:auto}}
-
-/* XML: cinza com selo musgo; vira musgo no mouse */
-.mod.hero-xml,#viewHome .mod.hero-xml{background:var(--g2);color:var(--ink);justify-content:flex-end;padding:24px 24px 22px;min-height:100%}
-.home-side{top:16px;align-self:stretch}
-.home-side .mod.hero-xml{height:100%;min-height:480px}
-.mod.hero-xml .novo{display:inline-block;position:absolute;top:22px;left:24px;right:auto;font-size:.7rem;font-weight:600;letter-spacing:0;text-transform:uppercase;
-  padding:4px 10px;border-radius:999px;background:var(--c-xml);color:#fff;transition:background .35s,color .35s}
-.mod.hero-xml:hover .novo{background:#000;color:var(--ios-laranja)}
-.mod.hero-xml .sigla,#viewHome .mod.hero-xml .sigla{font-size:clamp(3.6rem,7vw,5.4rem);letter-spacing:-.06em;margin:0 0 auto;padding-top:40px}
-.mod.hero-xml h2,#viewHome .mod.hero-xml h2{margin-top:24px}
-@media (max-width:900px){.home-side .mod.hero-xml{min-height:0}}
-
-/* ===== Páginas dos módulos: mesmas formas suaves, cor do módulo nos destaques ===== */
-.stub{border-radius:var(--r-lg);border:1px solid var(--line)}
-.stub::before{display:none}
-.drop .slot-tag{border-radius:999px}
-.kpi{border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line)}
-.kpi b{background:none;-webkit-text-fill-color:currentColor;color:var(--ink);font-weight:600;letter-spacing:-.04em}
-.tablebox{border-radius:var(--r-md)}
-.painel{border-radius:var(--r-md)}
-.btn,.tbtn,.pick{border-radius:999px}
-.prog-fill{background:var(--accent)}
-.topbar i{background:var(--accent);box-shadow:none}
-.rodape{text-align:left;font-weight:400;letter-spacing:0}
-
-
-/* Blocos dos módulos em cinza, como os cartões do menu */
-body[data-mod]:not([data-mod="home"]) :is(.stub,.kpi,.tablebox,.painel){background:var(--g1);border:0;box-shadow:none}
-body[data-mod]:not([data-mod="home"]) .stub::after{display:none}
-body[data-mod]:not([data-mod="home"]) th{background:var(--g2);color:var(--ink)}
-body[data-mod]:not([data-mod="home"]) td{border-bottom-color:color-mix(in srgb,var(--ink) 8%,transparent)}
-.drop .big{color:var(--ink)}
-.drop .slot-tag{background:var(--surface);color:var(--ink)}
-.kpi small{color:var(--muted)}
-.kpi b{font-size:clamp(1.9rem,3vw,2.6rem)}
-#viewHome .mod.hero-xml:hover,#viewHome .mod.hero-xml:focus-visible{background:var(--cor)}
-#viewHome .mod.hero-xml:hover .passos span{background:transparent;color:#FFFFFF;border-color:rgba(255,255,255,.55)}
-@media (max-width:900px){.home-cols{grid-template-columns:1fr}.mods{grid-template-columns:1fr}}
-
-/* Rubricas: antes dos arquivos, uma calculadora de verdade ocupa a lateral */
-.rub-maq{display:none}
-@media (min-width:1100px){
-  #viewRub:not(.carregado){display:grid;grid-template-columns:minmax(0,880px) minmax(380px,460px);grid-template-rows:auto auto 1fr;column-gap:clamp(32px,4vw,80px);justify-content:center;align-items:start}
-  #viewRub:not(.carregado) > *{grid-column:1}
-  #viewRub:not(.carregado) > .rub-maq{display:block;grid-column:2;grid-row:1 / -1;align-self:start}
-  #viewRub:not(.carregado) .mod-head,#viewRub:not(.carregado) .steps,#viewRub:not(.carregado) .stub,#viewRub:not(.carregado) details.how{margin-left:0;margin-right:0}
-}
-.rub-maq .maq-cena{height:680px;justify-content:flex-start}
-body[data-mod]:not([data-mod="home"]) .drop::before{background:radial-gradient(420px circle at var(--mx) var(--my),rgba(255,255,255,.55),transparent 65%)}
-
-/* Rodapé: letras juntas e o nome em negrito */
-.rodape{letter-spacing:0;font-weight:400;font-size:.78rem;color:var(--muted);text-align:center}
-body[data-mod]:not([data-mod="home"]) .rodape{display:none}
-.rodape b{font-weight:700;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -1203,26 +1367,39 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
 <div class="aurora" aria-hidden="true"></div>
 
 <div class="wrap">
-  <nav class="topnav">
+  <nav class="topnav" aria-label="Principal">
     <div class="brandwrap" id="brandwrap">
-      <a class="brand" href="#" id="brand">Hub Fiscal & Previdenciário</a>
+      <a class="brand" href="#" id="brand">Hub Fiscal &amp; Previdenciário</a>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Módulos" id="navTabs">
+      <a role="tab" href="#" data-go="home" aria-selected="true">Início</a>
+      <a role="tab" href="#rubricas" data-go="rubricas" aria-selected="false">Rubricas</a>
+      <a role="tab" href="#xml" data-go="xml" aria-selected="false">XML</a>
+      <a role="tab" href="#saldo" data-go="saldo" aria-selected="false">Saldo</a>
+      <a role="tab" href="#base" data-go="base" aria-selected="false">Base</a>
+      <a role="tab" href="#darf" data-go="darf" aria-selected="false">DARF</a>
+      <a role="tab" href="#perdcomp" data-go="perdcomp" aria-selected="false">PER/DCOMP</a>
+      <a role="tab" href="#esocial" data-go="esocial" aria-selected="false">eSocial</a>
+      <a role="tab" href="#dctfweb" data-go="dctfweb" aria-selected="false">DCTFWeb</a>
     </div>
     <div class="nav-right">
-      <button class="ghost-btn back" id="backBtn" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H5"/><path d="M11 18l-6-6 6-6"/></svg><span>Voltar ao menu</span></button>
-      <button class="ghost-btn tema-btn" id="themeBtn" type="button" aria-label="Tema escuro" title="Tema escuro"></button>
+      <button class="theme-toggle" id="themeBtn" type="button" role="switch" aria-checked="false" aria-label="Tema escuro" title="Tema escuro" data-modo="claro"><span class="ic sol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></span><span class="ic lua"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z"/></svg></span></button>
     </div>
   </nav>
 
   <!-- Página inicial -->
   <main id="viewHome">
     <section class="hero" id="hero">
+      <h1 class="hero-h1">Hub Fiscal<br>&amp; Previdenciário</h1>
       <div class="hero-txt">
         <p class="hero-kicker">Tributação · Previdência · eSocial</p>
-        <h1 class="hero-h1"><span class="w" style="--i:0">Hub</span> <span class="w" style="--i:1">Fiscal</span> <span class="w cor" style="--i:2">&amp;</span><br><span class="w" style="--i:3">Previdenciário</span></h1>
         <p class="lede">Escolha o módulo. Cada um lê seus arquivos e devolve a planilha pronta para o seu controle de recuperação de crédito.</p>
-        <div class="hero-meta"><span><b>8</b>Módulos</span><span><b>5 anos</b>de rubricas na análise</span><span><b>100%</b>no seu navegador</span></div>
       </div>
-      <div class="maq-cena" data-calc="hero" aria-label="Maquininha de cartão"></div>
+      <div class="counters" role="list">
+        <div class="count c1" role="listitem"><b>8</b><span>Módulos</span></div>
+        <div class="count c2" role="listitem"><b>5</b><span>anos de rubricas na análise</span></div>
+        <div class="count c3" role="listitem"><b>100</b><span>% no seu navegador</span></div>
+      </div>
     </section>
     <div class="home-cols">
     <aside class="home-side">
@@ -1352,8 +1529,6 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
     </div>
 
     </div></div>
-
-    <aside class="rub-maq" aria-label="Maquininha de cartão"><div class="maq-cena" data-calc="rub"></div></aside>
 
     <details class="how">
       <summary>Como o mapeamento funciona</summary>
@@ -1961,12 +2136,10 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
   const root = document.documentElement;
   const themeBtn = document.getElementById("themeBtn");
   const isDark = () => { const t = root.getAttribute("data-theme"); return t ? t === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches; };
-  // O botão mostra o tema para onde vai: a nuvem leva ao escuro, o sol volta ao claro (só as silhuetas)
-  const ICONE_SOL = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.6" fill="currentColor"/><g stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M12 2.2v2.6M12 19.2v2.6M2.2 12h2.6M19.2 12h2.6M5.1 5.1l1.8 1.8M17.1 17.1l1.8 1.8M5.1 18.9l1.8-1.8M17.1 6.9l1.8-1.8"/></g></svg>';
-  const ICONE_NUVEM = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6.8 19.2h10.6a4.3 4.3 0 0 0 .7-8.54 5.9 5.9 0 0 0-11.2-1.2A4.9 4.9 0 0 0 6.8 19.2z"/></svg>';
   const syncThemeBtn = () => {
-    const rotulo = isDark() ? "Tema claro" : "Tema escuro";
-    themeBtn.innerHTML = isDark() ? ICONE_SOL : ICONE_NUVEM; themeBtn.setAttribute("aria-label", rotulo); themeBtn.title = rotulo;
+    const escuro = isDark(), rotulo = escuro ? "Tema claro" : "Tema escuro";
+    themeBtn.dataset.modo = escuro ? "escuro" : "claro";
+    themeBtn.setAttribute("aria-checked", String(escuro)); themeBtn.setAttribute("aria-label", rotulo); themeBtn.title = rotulo;
   };
   try { const s = localStorage.getItem("darf-theme"); if (s) root.setAttribute("data-theme", s); } catch(e){}
   syncThemeBtn();
@@ -2574,7 +2747,6 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
       if (token !== navToken) return;     // uma navegação mais nova tomou o lugar
       vista = v;
       document.body.dataset.mod = v;
-      if (v === "rubricas" && !viewRub.classList.contains("carregado")) iniciarDemoRub();
       busca.value = "";
       viewHome.hidden = v !== "home";
       viewMod.hidden = !MODULOS[v];
@@ -2582,10 +2754,7 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
       new Set(Object.values(VISTAS_HUB).map(x => x.el)).forEach(el => { el.hidden = !(VISTAS_HUB[v] && VISTAS_HUB[v].el === el); });
       $("viewDiag").hidden = true;
       if (v === "dctfweb" || v === "saldo") ajustarModoDctf(v === "saldo");
-      $("backBtn").hidden = v === "home";
-      const alvo = elDaVista(v);
-      alvo.classList.remove("page-in", "entra-dir", "entra-esq", "sai-esq", "sai-dir"); void alvo.offsetWidth;
-      alvo.classList.add("page-in", indo ? "entra-dir" : "entra-esq");
+      document.querySelectorAll("#navTabs [role=tab]").forEach(t => t.setAttribute("aria-selected", String(t.dataset.go === v)));
       if (MODULOS[v]){
         const m = MODULOS[v];
         $("modTitle").textContent = m.titulo;
@@ -2606,301 +2775,19 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
       if (v === "rubricas" && typeof renderRub === "function") renderRub();
     };
 
-    if (!direto && !reduzMov && v !== de && atual && !atual.hidden){
-      atual.classList.add(indo ? "sai-esq" : "sai-dir");
-      setTimeout(() => { atual.classList.remove("sai-esq", "sai-dir"); trocar(); }, 190);
-    } else trocar();
+    trocar();
   }
 
   const daHash = () => (location.hash || "").replace(/^#/, "") || "home";
   window.addEventListener("hashchange", () => { const v = daHash(); if (v !== destino) irPara(v, false); });
   document.querySelectorAll("[data-go]").forEach(a => a.addEventListener("click", e => {
     e.preventDefault();
-    const box = a.closest(".mods");
-    if (!box || reduzMov){ irPara(a.dataset.go, true); return; }
-    if (box.classList.contains("escolheu")) return;
-    box.classList.add("escolheu"); a.classList.add("escolhido");
-    setTimeout(() => { irPara(a.dataset.go, true, true); box.classList.remove("escolheu"); a.classList.remove("escolhido"); }, 240);
+    irPara(a.dataset.go, true, true);
   }));
   $("brand").addEventListener("click", e => { e.preventDefault(); irPara("home", true); });
-  $("backBtn").addEventListener("click", () => irPara("home", true));
-
-  /* ---------- Calculadora de mesa (abertura e Rubricas): contas do iPhone, fita, moedas e o rolo ---------- */
-  var calcHero = null, calcRub = null;
-  const MOLDE_CALC = `
-    <div class="moedas-area">
-      <button class="moedas" type="button" aria-label="Empilhar uma moeda"></button>
-      <button class="moeda-pe" type="button" aria-label="Girar a moeda"></button>
-    </div>
-    
-    <div class="maq">
-      <div class="fita"><span class="fita-curva" aria-hidden="true"></span><ol aria-live="polite"></ol></div>
-      <svg class="maq-mao tras" viewBox="-80 0 460 460" aria-hidden="true">
-          <defs><linearGradient id="manga__ID__" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFB340"/><stop offset=".55" stop-color="#FF9F0A"/><stop offset="1" stop-color="#D97F00"/></linearGradient>
-            <linearGradient id="pele__ID__" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E5E5EA"/><stop offset=".55" stop-color="#C7C7CC"/><stop offset="1" stop-color="#9C9CA1"/></linearGradient>
-            <linearGradient id="punho__ID__" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#AEAEB2"/></linearGradient>
-            <linearGradient id="some__ID__" x1="0" y1="0" x2="1" y2="0"><stop offset=".72" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-            <mask id="mangaSome__ID__" maskUnits="userSpaceOnUse" x="-80" y="0" width="460" height="460"><rect x="-80" width="460" height="460" fill="url(#some__ID__)"/></mask></defs>
-          <ellipse cx="150" cy="262" rx="104" ry="80" fill="url(#pele__ID__)"/>
-          <g transform="rotate(-16 270 250)">
-            <rect x="236" y="214" width="60" height="70" rx="22" fill="url(#pele__ID__)"/>
-            <rect x="282" y="196" width="140" height="108" rx="30" fill="url(#manga__ID__)" mask="url(#mangaSome__ID__)"/>
-            <rect x="272" y="200" width="26" height="100" rx="10" fill="url(#punho__ID__)"/>
-          </g>
-        </svg>
-      <div class="maq-corpo">
-        <div class="maq-boca" aria-hidden="true"><span class="cabeca"></span></div>
-        <div class="maq-tela"><span class="maq-rotulo" aria-hidden="true"><span>Valor</span><b>R$</b></span><output class="maq-visor">0</output></div>
-        <div class="maq-soft" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-        <div class="maq-teclas">
-          <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button><button type="button" data-k="AC" class="fn" aria-label="Cancelar">✕</button>
-          <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button><button type="button" data-k="⌫" class="fn corrige" aria-label="Corrigir">‹</button>
-          <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button><button type="button" data-k="=" class="op igual" aria-label="Entra">✓</button>
-          <button type="button" data-k=",">,</button><button type="button" data-k="0">0</button><button type="button" data-k="00">00</button>
-        </div>
-      </div>
-      <svg class="maq-mao frente" viewBox="-80 0 460 460" aria-hidden="true">
-          <g fill="url(#pele__ID__)" stroke="#8E8E93" stroke-opacity=".4" stroke-width="1">
-            <rect x="-23" y="228" width="37" height="33" rx="16.5" transform="rotate(-6 -4 244)"/>
-            <rect x="-26" y="259" width="39" height="34" rx="17"/>
-            <rect x="-25" y="291" width="38" height="33" rx="16.5" transform="rotate(4 -6 307)"/>
-            <rect x="-20" y="322" width="33" height="29" rx="14.5" transform="rotate(9 -3 336)"/>
-            <rect x="214" y="208" width="66" height="31" rx="15.5" transform="rotate(-38 247 223)"/>
-          </g>
-          <g fill="#fff" opacity=".45"><ellipse cx="-10" cy="233" rx="7" ry="3"/><ellipse cx="-12" cy="266" rx="7" ry="3"/><ellipse cx="-11" cy="300" rx="7" ry="3"/><ellipse cx="-8" cy="332" rx="6" ry="2.5"/><ellipse cx="230" cy="214" rx="8" ry="3" transform="rotate(-38 230 214)"/></g>
-        </svg>
-    </div>
-    <div class="dica-lado" aria-hidden="true">
-      <div class="dica-brinque"><span>Simule o seu holerite</span><svg viewBox="0 0 110 60" fill="none" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 4C14 34 56 54 98 30"/><path class="ponta" pathLength="1" d="M91 41L98 30L85 31"/></svg></div>
-      <div class="dica-carga"><p>sobre cada salário pago,<br>a empresa ainda recolhe:<br>20% INSS patronal<br>+ RAT × FAP (0,5% a 6%)<br>+ 5,8% terceiros<br>= até ~32% a mais<small>e reflete em férias, 13º e DSR</small></p><svg viewBox="0 0 110 60" fill="none" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 4C14 34 56 54 98 30"/><path class="ponta" pathLength="1" d="M91 41L98 30L85 31"/></svg></div>
-    </div>`;
-  const fmtCalc = n => Math.abs(n) >= 1e13 ? n.toExponential(4).replace(".", ",") : n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  // Número digitado do jeito que aparece no visor: 1.250,5
-  function fmtEntrada(t){
-    const neg = t.startsWith("-"), s = neg ? t.slice(1) : t, [i, d] = s.split(",");
-    const int = (i || "0").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    return (neg ? "−" : "") + int + (d !== undefined ? "," + d : "");
-  }
-
-  function criarCalculadora(cena){
-    cena.innerHTML = MOLDE_CALC.replace(/__ID__/g, "-" + (cena.dataset.calc || "x"));  // ids únicos: as duas máquinas convivem na página
-    const visor = cena.querySelector(".maq-visor"), lista = cena.querySelector(".fita ol"), teclas = cena.querySelector(".maq-teclas");
-    const pilha = cena.querySelector(".moedas"), moedaPe = cena.querySelector(".moeda-pe");
-    let entrada = "", acc = null, op = null, posResultado = false, repOp = null, repNum = 0, pend = [], impressas = 0, rolando = false, demoTimer = 0, iguais = 0, nf = 1200;
-    const fita = cena.querySelector(".fita"), maq = cena.querySelector(".maq"), boca = cena.querySelector(".maq-boca");
-    let fila = Promise.resolve();
-
-    const num = () => entrada === "" || entrada === "-" ? 0 : parseFloat(entrada.replace(",", "."));
-    const paraEntrada = v => String(+v.toPrecision(12)).replace(".", ",");
-    const calc = (a, o, b) => o === "+" ? a + b : o === "−" ? a - b : o === "×" ? a * b : o === "÷" ? (b ? a / b : 0) : b;
-    function mostrar(txt){
-      visor.textContent = txt;
-      const n = txt.length; visor.style.fontSize = n > 7 ? Math.max(1.2, 2.5 * 7 / n).toFixed(2) + "rem" : "";
-      visor.classList.remove("pulsa"); void visor.offsetWidth; visor.classList.add("pulsa");
-    }
-    const acende = k => teclas.querySelectorAll("button.op").forEach(b => b.classList.toggle("ativa", b.dataset.k === k && k !== "="));
-    function imprimir(txt, sinal, total){
-      const li = document.createElement("li"); if (total) li.className = "tot";
-      li.innerHTML = `<span>${esc(txt)}</span><b>${esc(sinal)}</b>`;
-      lista.appendChild(li); while (lista.children.length > 18) lista.firstElementChild.remove();
-      impressas++;
-    }
-    // Impressão ao vivo: o papel avança uma linha aos trancos e a cabeça escreve caractere por caractere
-    const espera = ms => new Promise(r => setTimeout(r, ms));
-    function empurrar(px, ms, passos){
-      return lista.animate([{ transform: `translateY(${px}px)` }, { transform: "none" }], { duration: ms, easing: `steps(${passos}, end)` }).finished.catch(() => {});
-    }
-    async function imprimirLinha(txt, sinal, total){
-      const li = document.createElement("li"); if (total) li.className = "tot";
-      const a = document.createElement("span"), b = document.createElement("b"); li.append(a, b);
-      lista.appendChild(li); while (lista.children.length > 18) lista.firstElementChild.remove();
-      impressas++;
-      if (reduzMov){ a.textContent = txt; b.textContent = sinal; return; }
-      const cs = getComputedStyle(li), h = li.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
-      await empurrar(h, 170, 6);
-      boca.classList.add("imprimindo");
-      for (let i = 1; i <= txt.length; i++){ a.textContent = txt.slice(0, i); await espera(17); }
-      b.textContent = sinal; await espera(45);
-      boca.classList.remove("imprimindo");
-    }
-    function imprimirConta(linhas){
-      fila = fila.then(async () => {
-        for (const l of linhas) await imprimirLinha(l[0], l[1], l[2]);
-        if (!reduzMov){
-          // depois do total, a máquina empurra o papel mais um pouco para trás
-          const v = document.createElement("li"); v.className = "vazio"; lista.appendChild(v);
-          await empurrar(v.offsetHeight, 260, 9);
-        }
-      });
-      return fila;
-    }
-    function poeMoeda(cai){
-      if (pilha.children.length >= 12){ pilha.innerHTML = ""; }
-      const m = document.createElement("span"); m.className = "moeda" + (cai ? " cai" : "");
-      m.style.setProperty("--n", pilha.children.length); pilha.appendChild(m);
-    }
-    for (let i = 0; i < 5; i++) poeMoeda(false);
-    pilha.addEventListener("click", () => poeMoeda(true));
-    moedaPe.addEventListener("click", () => { moedaPe.classList.remove("gira"); void moedaPe.offsetWidth; moedaPe.classList.add("gira"); });
-
-    function tecla(k){
-      if (rolando) return;
-      cena.classList.add("jogou");
-      if (/^\d$/.test(k)){
-        if (posResultado){ acc = null; op = null; posResultado = false; }
-        if (entrada.replace(/\D/g, "").length >= 12) return;
-        entrada = entrada === "0" ? k : entrada === "-0" ? "-" + k : entrada + k;
-        acende(null); mostrar(fmtEntrada(entrada)); return;
-      }
-      if (k === "00"){ if (entrada !== "" && entrada !== "0" && entrada !== "-"){ tecla("0"); tecla("0"); } return; }
-      if (k === ","){
-        if (posResultado){ acc = null; op = null; posResultado = false; }
-        if (!entrada.includes(",")) entrada = (entrada === "" ? "0" : entrada === "-" ? "-0" : entrada) + ",";
-        acende(null); mostrar(fmtEntrada(entrada)); return;
-      }
-      if (k === "⌫"){ entrada = entrada.slice(0, -1); mostrar(fmtEntrada(entrada || "0")); return; }
-      if (k === "±"){
-        if (entrada !== ""){ entrada = entrada.startsWith("-") ? entrada.slice(1) : "-" + entrada; mostrar(fmtEntrada(entrada)); }
-        else if (acc !== null){ acc = -acc; mostrar(fmtCalc(acc)); }
-        return;
-      }
-      if (k === "%"){
-        const v = num(), r = (op === "+" || op === "−") && acc !== null ? acc * v / 100 : v / 100;
-        entrada = paraEntrada(r); mostrar(fmtEntrada(entrada)); return;
-      }
-      if (k === "AC"){
-        entrada = ""; acc = null; op = null; pend = []; repOp = null; posResultado = false; acende(null); mostrar("0"); return;
-      }
-      if ("+−×÷".includes(k)){
-        if (entrada === ""){
-          if (acc === null) acc = 0;
-          const ult = pend[pend.length - 1];
-          if (ult && ult.aberta) ult[1] = k; else { const l = [fmtCalc(acc), k]; l.aberta = true; pend.push(l); }
-        } else {
-          const v = num(); acc = acc === null ? v : calc(acc, op, v);
-          pend.forEach(l => { l.aberta = false; }); const l = [fmtCalc(v), k]; l.aberta = true; pend.push(l);
-          entrada = ""; mostrar(fmtCalc(acc));
-        }
-        op = k; posResultado = false; acende(k); return;
-      }
-      if (k === "="){
-        if (op){
-          const v = entrada === "" ? acc : num();
-          pend.push([fmtCalc(v), "="]); acc = calc(acc, op, v); repOp = op; repNum = v; op = null;
-        } else if (repOp && acc !== null && entrada === ""){
-          pend = [[fmtCalc(acc), repOp], [fmtCalc(repNum), "="]]; acc = calc(acc, repOp, repNum);
-        } else { acc = num(); }
-        // Cada "entra" imprime um holerite: o número e o valor da rubrica saem na fita
-        const linhas = pend.map(l => [l[0], l[1], false]).concat([["HOLERITE Nº " + String(++nf).padStart(4, "0"), "", false], [fmtCalc(acc), "R$", true]]); pend = [];
-        entrada = ""; posResultado = true; acende(null); mostrar(fmtCalc(acc)); poeMoeda(true);
-        const impresso = imprimirConta(linhas);
-        // No terceiro "entra", depois de imprimir: chuva de notas
-        if (++iguais >= 3){ iguais = 0; rolando = true; impresso.then(() => setTimeout(chuvaDeNotas, reduzMov ? 0 : 120)); }
-      }
-    }
-    teclas.addEventListener("click", e => { const b = e.target.closest("button[data-k]"); if (!b) return; pararDemo(); tecla(b.dataset.k); });
-    function apertar(k){
-      const b = teclas.querySelector(`button[data-k="${k}"]`); if (b){ b.classList.add("aperta"); setTimeout(() => b.classList.remove("aperta"), 140); }
-      tecla(k);
-    }
-    // Demonstração: a calculadora faz uma conta sozinha (para quando você mexe)
-    function pararDemo(){ clearTimeout(demoTimer); demoTimer = 0; }
-    function demo(seq){
-      if (reduzMov || demoTimer) return;
-      let i = 0;
-      const passo = () => { if (i >= seq.length){ demoTimer = 0; iguais = 0; return; } apertar(seq[i++]); demoTimer = setTimeout(passo, 230); };
-      demoTimer = setTimeout(passo, 700);
-    }
-
-    // O rolo: a fita escapa da máquina e toma a tela; um clique rasga tudo
-    const ROTULOS = ["HOLERITE", "HOLERITE", "INSS 20%", "RAT 3%", "FAP 1,0000", "TERCEIROS 5,8%", "S-1200", "S-5011", "S-1010", "DARF", "DCTFWEB", "IRRF", "FGTS 8%", "CRÉDITO", "13/2024", "PER/DCOMP", "SALDO", "RETENÇÃO"];
-    const linhaFake = i => i % 9 === 8 ? `<li class="tot"><span>${fmtCalc(Math.random() * 900000 + 10000)}</span><b>*</b></li>`
-      : `<li><span>${ROTULOS[Math.floor(Math.random() * ROTULOS.length)]}</span><span>${fmtCalc(Math.random() * 90000)}</span></li>`;
-    function desenrolar(despenca){
-      rolando = true;
-      const minhas = [...lista.querySelectorAll("li")].map(li => li.outerHTML).join("");
-      const ov = document.createElement("div"); ov.className = "rolo" + (despenca ? " despenca" : ""); ov.setAttribute("role", "button"); ov.setAttribute("aria-label", "Rasgar a fita");
-      const base = Math.max(4, Math.min(9, Math.round(innerWidth / 190)));
-      const tira = (x, r, w, y, h, d, ls) => `<div class="tira" style="--x:${x.toFixed(1)}%;--r:${r.toFixed(1)}deg;--w:${w}px;--y:${y.toFixed(0)}px;--h:${h.toFixed(0)}vh;--d:${d.toFixed(2)}s"><ol>${ls}</ol></div>`;
-      const linhas = k => { let ls = ""; for (let j = 0; j < 60; j++) ls += linhaFake(j + k); return ls; };
-      let html = "", minha = "";
-      if (!despenca){
-        for (let i = 0; i < base; i++)
-          html += tira(((i + .5) / base) * 100 + (Math.random() * 6 - 3), Math.random() * 8 - 4, 175 + Math.round(Math.random() * 35), -30, 125, i * .09, (i === Math.floor(base / 2) ? minhas : "") + linhas(i));
-      } else {
-        // 1) a base: tiras lado a lado, sobrepostas e quase retas, cobrindo a tela inteira (sem brecha)
-        const passo = 130, n = Math.ceil(innerWidth / passo) + 2;
-        for (let i = 0; i < n; i++)
-          html += tira(((i - .5) * passo / innerWidth) * 100, (Math.random() - .5) * 5, passo + 120, -40 - Math.random() * 40, 140, Math.random() * .2, linhas(i));
-        // 2) por cima, tiras jogadas: tortas, umas mais altas, outras curtas
-        for (let i = 0; i < 8; i++)
-          html += tira(Math.random() * 100, (Math.random() - .5) * (Math.random() < .35 ? 70 : 30), 175 + Math.round(Math.random() * 35), -40 - Math.random() * 260, 70 + Math.random() * 70, .05 + Math.random() * .2, linhas(i + 7));
-        // 3) a fita com os seus holerites cai por cima de todas
-        minha = tira(50, Math.random() * 6 - 3, 200, -30, 130, .12, minhas + linhas(3));
-      }
-      // a fita com os seus holerites cai por cima de todas
-      ov.innerHTML = html + minha;
-      document.body.appendChild(ov);
-      // Se ninguém clicar, em 3 segundos a fita já se rasgou e sumiu; depois que some, aparece a nota da carga
-      let sozinha = 0;
-      const fechar = () => {
-        if (ov.classList.contains("rasga")) return;
-        clearTimeout(sozinha); ov.classList.add("rasga");
-        setTimeout(() => { ov.remove(); rolando = false; impressas = 0; iguais = 0; if (despenca || reduzMov) cena.classList.add("carga"); }, reduzMov ? 0 : 950);
-      };
-      sozinha = setTimeout(fechar, 2050);
-      ov.addEventListener("click", fechar, { once: true });
-      document.addEventListener("keydown", function sai(e){ if (e.key === "Escape"){ document.removeEventListener("keydown", sai); if (ov.isConnected) fechar(); } });
-    }
-
-    // A chuva de notas: a tela chacoalha e as notas despencam de uma vez
-    function chuvaDeNotas(){
-      desenrolar(!reduzMov);
-      if (reduzMov) return;
-      const tremor = [];
-      for (let i = 0, n = 16; i < n; i++){
-        const a = 24 * Math.pow(1 - i / n, 1.4), ang = (Math.random() - .5) * 3 * (1 - i / n);
-        tremor.push({ transform: `translate(${((Math.random() - .5) * 2 * a).toFixed(1)}px,${((Math.random() - .5) * 2 * a).toFixed(1)}px) rotate(${ang.toFixed(2)}deg)` });
-      }
-      tremor.push({ transform: "none" });
-      [document.querySelector(".wrap"), document.querySelector(".rolo")].forEach(el => el && el.animate(tremor, { duration: 720, easing: "linear" }));
-    }
-    imprimir("0,00", "T");
-    return { apertar, demo, pararDemo };
-  }
-
-  (() => {
-    const h = document.querySelector('[data-calc="hero"]'), r = document.querySelector('[data-calc="rub"]');
-    if (h) calcHero = criarCalculadora(h);
-    if (r) calcRub = criarCalculadora(r);
-    // Teclado: vale para a calculadora que está na tela
-    const MAPA = { "Enter": "=", "=": "=", "Backspace": "⌫", "Escape": "AC", "Delete": "AC", ",": ",", ".": "," };
-    document.addEventListener("keydown", e => {
-      if (e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || document.querySelector(".rolo")) return;
-      const alvo = vista === "home" ? calcHero : (vista === "rubricas" && !$("viewRub").classList.contains("carregado") ? calcRub : null);
-      if (!alvo) return;
-      const k = /^\d$/.test(e.key) ? e.key : MAPA[e.key]; if (!k) return;
-      e.preventDefault(); alvo.pararDemo(); alvo.apertar(k);
-    });
-  })();
-  // No Rubricas, a calculadora faz uma conta de reflexo sozinha na primeira visita
-  var demoRubFeita = false;
-  function iniciarDemoRub(){
-    if (demoRubFeita || !calcRub) return; demoRubFeita = true;
-    calcRub.demo(["1","2","5","0","0","=","3","6","0","0","="]);
-  }
 
 
-  // Luz que segue o mouse (cards e área de envio)
-  document.querySelectorAll(".mod").forEach(el => {
-    el.addEventListener("pointermove", e => {
-      const r = el.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-      el.style.setProperty("--mx", x + "px"); el.style.setProperty("--my", y + "px");
-      el.style.setProperty("--ry", ((x / r.width - .5) * 7).toFixed(2) + "deg");
-      el.style.setProperty("--rx", (-(y / r.height - .5) * 7).toFixed(2) + "deg");
-    });
-    el.addEventListener("pointerleave", () => { el.style.setProperty("--rx", "0deg"); el.style.setProperty("--ry", "0deg"); });
-  });
+
   drop.addEventListener("pointermove", e => {
     const r = drop.getBoundingClientRect(); drop.style.setProperty("--mx", (e.clientX - r.left) + "px"); drop.style.setProperty("--my", (e.clientY - r.top) + "px");
   });
@@ -4629,25 +4516,6 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
     box.scrollTop = box.scrollHeight;
   }
 
-  function iniciarChuvaDeCifraos(){
-    if (reduzMov) return;
-    let count = 0;
-    const interval = setInterval(() => {
-      for (let i = 0; i < 4; i++){
-        const drop = document.createElement("div");
-        drop.classList.add("chuva-cifrao");
-        drop.innerText = "$";
-        drop.style.left = Math.random() * 100 + "vw";
-        drop.style.fontSize = (Math.random() * 25 + 20) + "px";
-        drop.style.animationDuration = (Math.random() * 2 + 2) + "s";
-        document.body.appendChild(drop);
-        setTimeout(() => drop.remove(), 5000);
-      }
-      count++;
-      if (count > 25) clearInterval(interval);
-    }, 100);
-  }
-
   // Sanitizador global: zero caixa alta, preenchimento "-"
   function removerCaps(val){
     if (val === null || val === undefined || val === "") return "-";
@@ -4935,7 +4803,6 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
     $('saldoMagicoDarf').innerText = "R$ " + utilFormataMoeda(tD);
     $('saldoMagicoRetencao').innerText = "R$ " + utilFormataMoeda(tR);
     renderTabelaSaldo();
-    if (triggerRain && (tD > 0 || tR > 0)) iniciarChuvaDeCifraos();
   }
 
   function chaveCompDctf(c){ const [m, y] = String(c).split('/').map(Number); return (y || 0) * 100 + (m || 0); }
@@ -7280,8 +7147,6 @@ CREATE OR REPLACE MACRO xp_apur(i) AS CASE WHEN i = '2' THEN '13º salário' ELS
       progDiag.fim(upl5011File ? 2 : 1);
       $('downloadsAreaDiag').hidden = false;
       logTerminal(`Auditoria concluída com sucesso! Total Mapeado: R$ ${tG.toLocaleString('pt-BR',{minimumFractionDigits:2})}`, "log-sucesso", "logBoxDiag");
-
-      if (tG > 0) iniciarChuvaDeCifraos();
 
     } catch (e) { logTerminal(`Erro Fatal: ${e.message}`, "log-erro", "logBoxDiag"); pararProgresso("diag", diagStub); }
     btn.disabled = false;
