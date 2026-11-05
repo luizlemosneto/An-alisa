@@ -1634,7 +1634,7 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
   <main id="viewXml" hidden>
     <div class="mod-head">
       <h1>XML eSocial</h1>
-      <p class="lede">Envie os XMLs dos eventos do eSocial. O módulo identifica cada evento, remove duplicados e retificados e deixa você baixar tudo em planilha ou Parquet.</p>
+      <p class="lede">Envie os XMLs dos eventos do eSocial. O módulo identifica cada evento, remove duplicados e retificados e deixa você baixar tudo em planilha ou Parquet. A leitura é gravada num banco dentro do navegador: aguenta centenas de milhares de arquivos e não se perde se a página travar ou recarregar.</p>
     </div>
 
     <div class="stub compacto" id="xmlStub">
@@ -1661,7 +1661,8 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
     <details class="how">
       <summary>Como a leitura funciona</summary>
       <ol>
-        <li>Arquivos .zip são abertos automaticamente, inclusive zip dentro de zip e pastas internas; só os .xml são lidos.</li>
+        <li>Arquivos .zip são abertos automaticamente, inclusive zip dentro de zip e pastas internas; só os .xml são lidos. Os zips são lidos aos poucos, sem carregar o arquivo inteiro na memória.</li>
+        <li>Tudo o que é lido vai sendo gravado num banco no disco deste navegador (a cada alguns milhares de arquivos). Se a página travar ou for recarregada, a leitura anterior volta sozinha; para continuar, é só enviar de novo os mesmos arquivos: o que já está guardado é pulado.</li>
         <li>Cada XML pode ter um ou vários eventos (como no lote do portal). O tipo é reconhecido pela tag do evento: evtRemun (S-1200), evtTabRubrica (S-1010), evtCS (S-5011), evtBasesTrab (S-5001) e qualquer outro evento do eSocial.</li>
         <li>Duplicados saem pelo Id do evento. Vale sempre o recibo mais recente: nos S-1200, o de cada empregador, CPF, tipo de apuração e competência; nos S-5011, o de cada competência; nos S-5001, o de cada CPF e competência. A data de recepção do retorno do portal (quando o XML a traz) ou, sem ela, a data de geração do Id decide qual é o mais novo, e quem foi substituído por retificação (número do recibo retificado) não entra.</li>
         <li>Cruzamento de eventos: cada rubrica do S-1200 recebe tipo, natureza, descrição e incidência do S-1010 (vale a versão da tabela na competência) e as alíquotas de RAT, FAP, FPAS e terceiros do S-5011. Rubrica sem S-1010 não pode ser classificada e fica como “Corrompido” em Validade do evento (desconsiderada pelo módulo Rubricas); as demais ficam “Válido”. O arquivo tem as colunas que o módulo Rubricas já lê. Também entram nome, data de admissão e de desligamento do trabalhador (S-2200 e S-2299) e se a competência foi fechada (S-1299, ou reaberta pelo S-1298).</li>
@@ -1701,8 +1702,9 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
         <div class="xml-guard" id="xmlGuardados" hidden></div>
       </div>
       <div class="xml-acoes">
-        <button class="btn primary" type="button" id="xmlReprocessar" hidden title="Lê de novo os arquivos guardados com a versão atual do site"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Reprocessar</button>
-        <button class="btn ghost" type="button" id="xmlLimpar" hidden title="Limpa o que foi lido; os arquivos guardados continuam"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 11v6M14 11v6M7 7l1 12h8l1-12M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0"/><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Limpar leitura</button>
+        <button class="btn ghost perigo" type="button" id="xmlParar" hidden title="Para a leitura: o que já foi lido fica guardado e dá para continuar depois">Parar leitura</button>
+        <button class="btn primary" type="button" id="xmlReprocessar" hidden title="Refaz todos os conjuntos a partir do que está guardado no navegador, sem precisar dos XMLs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Refazer conjuntos</button>
+        <button class="btn ghost" type="button" id="xmlLimpar" hidden title="Apaga tudo o que foi lido e está guardado neste navegador"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 11v6M14 11v6M7 7l1 12h8l1-12M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0"/><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Limpar leitura</button>
         <button class="btn ghost perigo" type="button" id="xmlEsquecer" hidden title="Apaga os arquivos guardados neste navegador"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 11v6M14 11v6M7 7l1 12h8l1-12M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Esquecer arquivos</button>
       </div>
     </div>
@@ -2208,7 +2210,16 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
   }
 
   async function procTab(file, fnSel, fnProc, aoProgredir){
-    if (file.__ds){   // conjunto entregue direto da memória (cruzamento do módulo XML): sem arquivo no meio
+    if (file.__ds && file.__ds.fluxo){   // conjunto do módulo XML lido do banco, aos poucos (sem arquivo no meio e sem tudo na memória)
+      const ds = file.__ds, colsReq = fnSel(ds.cols), tt = ds.n; let feitos = 0;
+      for await (const lote of ds.fluxo(colsReq, 50000)){
+        fnProc(lote.map(r => { const o = {}; for (let j = 0; j < colsReq.length; j++) o[colsReq[j]] = r[j]; return o; }));
+        feitos += lote.length; if (aoProgredir) aoProgredir(feitos / Math.max(1, tt), feitos, tt);
+        await pausa();
+      }
+      return tt;
+    }
+    if (file.__ds){   // conjunto entregue direto da memória: sem arquivo no meio
       const ds = file.__ds, colsReq = fnSel(ds.cols), idx = colsReq.map(c => ds.cols.indexOf(c)), tt = ds.rows.length, FATIA = 50000;
       for (let i = 0; i < tt; i += FATIA){
         const fim = Math.min(i + FATIA, tt);
@@ -2916,12 +2927,13 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
     }
     function pintar(v, html){ pend = { v, html: html ?? (pend ? pend.html : null) }; if (!raf) raf = requestAnimationFrame(aplicar); }
     return {
+      livre(v, html){ pintar(v, html); },
       iniciar(n){ clearTimeout(timer); total = n; box.hidden = false; box.classList.remove("done"); topo.classList.add("on"); stubEl.classList.add("busy"); pintar(0, "Preparando a leitura…"); },
       arquivo(k, nome){ pintar(k / total, `Abrindo <b>${esc(nome)}</b> · arquivo ${k + 1} de ${total}`); },
       parte(k, frac, nome, det){ pintar((k + frac) / total, `<b>${esc(nome)}</b> · ${det} · arquivo ${k + 1} de ${total}`); },
-      fim(n){
+      fim(n, texto){
         stubEl.classList.remove("busy"); box.classList.add("done");
-        pintar(1, `Pronto: ${n} arquivo${n > 1 ? "s" : ""} lido${n > 1 ? "s" : ""}.`);
+        pintar(1, texto || `Pronto: ${n} arquivo${n > 1 ? "s" : ""} lido${n > 1 ? "s" : ""}.`);
         timer = setTimeout(() => { topo.classList.remove("on"); box.hidden = true; topoFill.style.transform = "scaleX(0)"; }, 2200);
       }
     };
@@ -3595,7 +3607,7 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
       const d = await lerEventos(todos, (frac, feito, tt) => { progRub.parte(0, frac, nomeArqs(todos), `${feito.toLocaleString("pt-BR")} de ${tt.toLocaleString("pt-BR")} linhas`); chipLendo(frac); });
       rub.filtros = {}; rub.dados = d; rub.arquivos = todos; rub.arquivo = todos[0];
       if (!adicionar) rub.editados = new Set(restaurar ? restaurar.editados : []);
-      kv.set("rub-fonte", todos.map(f => f.__ds ? { name: f.name, size: f.size, __ds: f.__ds } : f)).catch(() => {});   // a fonte fica guardada para a próxima vez
+      kv.set("rub-fonte", todos.map(f => f.__ds ? { name: f.name, size: f.size, __ds: f.__ds.dkId ? { dkId: f.__ds.dkId } : f.__ds } : f)).catch(() => {});   // a fonte fica guardada para a próxima vez
       rub.sel.clear(); rub.filtro = [...d.grupos.values()].some(ehPendente) ? "rev" : "op"; rub.limite = 400;
       progRub.fim(1);
       const nPend = [...d.info.oe.values()].filter(o => o.origem === "pendente").length;
@@ -5182,9 +5194,243 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
   // Vale o mais recente: data de recepção do portal e, sem ela, a data de geração que vai no Id do evento (posições 18 a 31)
   const xRank = (id, dh) => dh || (id.length >= 37 ? id.slice(18, 32) : id);
 
-  function xNovoEstado(){
-    return { lidos: new Map(), ids: new Set(), descartados: 0, rubricas: [], remun: new Map(), cs: new Map(), outros: new Map(), bases: new Map(), invalidos: 0, arquivos: 0,
-      fech: new Map(), reabre: new Map(), trab: new Map(), emps: new Map(), retificados: new Set(), porRecibo: 0, resc: new Map() };
+  /* ---------- Motor de dados do módulo XML: DuckDB no navegador, com o banco guardado no disco (OPFS).
+     Nada do que é lido fica na memória da página: cada lote de arquivos vai direto para o banco e, se a página
+     travar ou for recarregada, o que já foi gravado continua lá. ---------- */
+  const DK_VER = "1.32.0", DK_ARQ = "hub-xml.db", DK_SCHEMA = "4";
+  const DK_TAB = {
+    ev:   ["x_ev",   "seq BIGINT, nome VARCHAR, id VARCHAR, rk VARCHAR, recibo VARCHAR, nrEmp VARCHAR, per VARCHAR, indAp VARCHAR, indRetif VARCHAR, nrRetif VARCHAR, cpf VARCHAR, recBase VARCHAR, baseTotal DOUBLE"],
+    rubr: ["x_rubr", "seq BIGINT, ln INTEGER, cod VARCHAR, tab VARCHAR, ini VARCHAR, fim VARCHAR, descr VARCHAR, nat VARCHAR, tp VARCHAR, incCP VARCHAR, incIRRF VARCHAR, incFGTS VARCHAR"],
+    remL: ["x_remL", "seq BIGINT, ln INTEGER, per VARCHAR, cat VARCHAR, estNr VARCHAR, lot VARCHAR, grau VARCHAR, cod VARCHAR, tab VARCHAR, val DOUBLE"],
+    csL:  ["x_csL",  "seq BIGINT, ln INTEGER, estNr VARCHAR, lot VARCHAR, rat DOUBLE, fap DOUBLE, ratAj DOUBLE, fpas VARCHAR, terc VARCHAR, susp VARCHAR, subst VARCHAR, base DOUBLE"],
+    csB:  ["x_csB",  "seq BIGINT, ln INTEGER, campo VARCHAR, valor DOUBLE"],
+    resc: ["x_resc", "seq BIGINT, dt VARCHAR, cat VARCHAR, catFora VARCHAR, totalXml INTEGER, mat VARCHAR, nis VARCHAR, mtv VARCHAR, api VARCHAR, pens VARCHAR, cump VARCHAR, indRetif VARCHAR, nrRetif VARCHAR, dh VARCHAR"],
+    rescL:["x_rescL","seq BIGINT, ln INTEGER, per VARCHAR, perApur VARCHAR, ind VARCHAR, estNr VARCHAR, lot VARCHAR, dmId VARCHAR, grau VARCHAR, cod VARCHAR, tab VARCHAR, qtd VARCHAR, fator VARCHAR, vunit VARCHAR, val DOUBLE"],
+    basL: ["x_basL", "seq BIGINT, ln INTEGER, estTp VARCHAR, estNr VARCHAR, lot VARCHAR, mat VARCHAR, cat VARCHAR, ind13 VARCHAR, tp VARCHAR, val DOUBLE"],
+    trab: ["x_trab", "seq BIGINT, cpf VARCHAR, nome VARCHAR, adm VARCHAR, des VARCHAR"],
+    emp:  ["x_emp",  "seq BIGINT, raiz VARCHAR, razao VARCHAR"],
+    outL: ["x_outL", "seq BIGINT, ln INTEGER, pos INTEGER, col VARCHAR, val VARCHAR"],
+    arq:  ["x_arq",  "h DOUBLE, nome VARCHAR, tam DOUBLE, inv INTEGER, nev INTEGER"]
+  };
+  const dk = { db: null, c: null, pronto: null, persistente: false, aviso: "", duck: null };
+  const dkAspas = s => '"' + String(s).replace(/"/g, '""') + '"';
+  const dkLit = s => "'" + String(s).replace(/'/g, "''") + "'";
+
+  // Carrega o DuckDB-WASM (CDN com reserva), abre o banco no disco do navegador e cria as tabelas
+  function dkIniciar(){
+    if (!dk.pronto) dk.pronto = dkAbrir().catch(e => { dk.pronto = null; throw e; });
+    return dk.pronto;
+  }
+  async function dkInstanciar(duck, persistente){
+    const dists = [`https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@${DK_VER}/dist/`, `https://unpkg.com/@duckdb/duckdb-wasm@${DK_VER}/dist/`];
+    let ultimo = null;
+    for (const d of dists){
+      let worker = null;
+      try {
+        const bundle = await duck.selectBundle({ mvp: { mainModule: d + "duckdb-mvp.wasm", mainWorker: d + "duckdb-browser-mvp.worker.js" }, eh: { mainModule: d + "duckdb-eh.wasm", mainWorker: d + "duckdb-browser-eh.worker.js" } });
+        worker = new Worker(URL.createObjectURL(new Blob([`importScripts(${JSON.stringify(bundle.mainWorker)});`], { type: "text/javascript" })));
+        const db = new duck.AsyncDuckDB(new duck.VoidLogger(), worker);
+        await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+        try {
+          if (persistente) await db.open({ path: "opfs://" + DK_ARQ, accessMode: duck.DuckDBAccessMode.READ_WRITE, query: { castBigIntToDouble: true } });
+          else await db.open({ query: { castBigIntToDouble: true } });
+        } catch(e){ e.aoAbrir = true; throw e; }
+        return db;
+      } catch(e){ ultimo = e; try { worker && worker.terminate(); } catch(_){} if (persistente && e.aoAbrir) throw e; }
+    }
+    throw ultimo || new Error("não consegui carregar o motor de dados");
+  }
+  async function dkAbrir(){
+    dk.duck = await importarModuloComFallback([`https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@${DK_VER}/+esm`, `https://esm.sh/@duckdb/duckdb-wasm@${DK_VER}`]);
+    let db = null;
+    if (navigator.storage && navigator.storage.getDirectory){
+      let ultimo = null;
+      for (const espera of [0, 600, 1800, 4000]){   // a aba anterior (ou outra aba) pode demorar um instante para soltar o arquivo
+        if (espera) await new Promise(r => setTimeout(r, espera));
+        try { db = await dkInstanciar(dk.duck, true); dk.persistente = true; break; }
+        catch(e){
+          ultimo = e; const msg = String(e && e.message || e);
+          if (/another open Access Handle|NoModificationAllowed|locked/i.test(msg)) continue;
+          if (/not a valid DuckDB database file|corrupt|checksum|replay/i.test(msg)){   // banco danificado (queda no meio da gravação): recria do zero
+            try { const raiz = await navigator.storage.getDirectory(); for (const n of [DK_ARQ, DK_ARQ + ".wal"]) await raiz.removeEntry(n).catch(() => {}); dk.aviso = "O banco guardado no navegador estava danificado e foi recriado do zero: envie os arquivos de novo."; } catch(_){}
+            continue;
+          }
+          break;
+        }
+      }
+      if (!db){
+        console.warn("banco no disco indisponível, usando a memória:", ultimo);
+        dk.aviso = /another open Access Handle|NoModificationAllowed|locked/i.test(String(ultimo && ultimo.message || ultimo))
+          ? "O banco guardado está aberto em outra aba deste site. Feche as outras abas e recarregue a página para guardar a leitura no disco; por enquanto ela fica só na memória."
+          : "Este navegador não permitiu guardar o banco no disco: a leitura funciona, mas não sobrevive ao recarregar a página.";
+      }
+    } else dk.aviso = "Este navegador não permite guardar o banco no disco: a leitura funciona, mas não sobrevive ao recarregar a página.";
+    if (!db) db = await dkInstanciar(dk.duck, false);
+    dk.db = db; dk.c = await db.connect();
+    await dkEsquema();
+    return dk;
+  }
+  async function dkExec(sql, cx){ await (cx || dk.c).query(sql); }
+  // Converte o resultado do Arrow em linhas simples (números em vez de BigInt)
+  const dkVal = v => typeof v === "bigint" ? Number(v) : v;
+  function dkLote(batch, nulo){
+    const n = batch.numRows, cols = []; for (let i = 0; i < batch.numCols; i++) cols.push(batch.getChildAt(i));
+    const out = new Array(n);
+    for (let r = 0; r < n; r++){ const lin = new Array(cols.length); for (let c = 0; c < cols.length; c++){ const v = cols[c].get(r); lin[c] = v == null ? (nulo ? nulo[c] : null) : dkVal(v); } out[r] = lin; }
+    return out;
+  }
+  async function dkLinhas(sql, cx){ const t = await (cx || dk.c).query(sql); return dkLote(t, null); }
+  const dkUm = async sql => { const l = await dkLinhas(sql); return l.length ? l[0][0] : null; };
+
+  const DK_MACROS = String.raw`
+CREATE OR REPLACE MACRO xp_comp(v) AS CASE WHEN regexp_full_match(trim(COALESCE(v,'')),'\d{4}') THEN '13/' || trim(v) WHEN regexp_full_match(trim(COALESCE(v,'')),'\d{4}-\d{2}(-\d{2})?') THEN substr(trim(v),6,2) || '/' || substr(trim(v),1,4) ELSE trim(COALESCE(v,'')) END;
+CREATE OR REPLACE MACRO xp_per_ord(p) AS CASE WHEN length(p)=4 THEN p || '-13' ELSE p END;
+CREATE OR REPLACE MACRO xp_dig(v) AS regexp_replace(COALESCE(v,''),'\D','','g');
+CREATE OR REPLACE MACRO xp_fmt(d) AS regexp_replace(d,'^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$','\1.\2.\3/\4-\5');
+CREATE OR REPLACE MACRO xp_resto(s, pesos) AS list_sum(list_transform(range(len(pesos)), i -> pesos[i+1] * CAST(s[i+1] AS INTEGER))) % 11;
+CREATE OR REPLACE MACRO xp_dv(s, pesos) AS CASE WHEN xp_resto(s, pesos) < 2 THEN 0 ELSE 11 - xp_resto(s, pesos) END;
+CREATE OR REPLACE MACRO xp_matriz(raiz) AS (raiz || '0001' || CAST(xp_dv(raiz || '0001', [5,4,3,2,9,8,7,6,5,4,3,2]) AS VARCHAR) || CAST(xp_dv(raiz || '0001' || CAST(xp_dv(raiz || '0001', [5,4,3,2,9,8,7,6,5,4,3,2]) AS VARCHAR), [6,5,4,3,2,9,8,7,6,5,4,3,2]) AS VARCHAR));
+CREATE OR REPLACE MACRO xp_cnpj(v) AS CASE WHEN length(xp_dig(v))=8 THEN xp_fmt(xp_matriz(xp_dig(v))) WHEN length(xp_dig(v))=14 THEN xp_fmt(xp_dig(v)) ELSE COALESCE(v,'') END;
+CREATE OR REPLACE MACRO xp_tp(tp) AS CASE WHEN tp IS NULL OR tp='' THEN '' ELSE tp || COALESCE(' - ' || CASE tp WHEN '1' THEN 'Vencimento' WHEN '2' THEN 'Desconto' WHEN '3' THEN 'Informativa' WHEN '4' THEN 'Informativa dedutora' END, '') END;
+CREATE OR REPLACE MACRO xp_an(g) AS CASE WHEN g IS NULL OR g='' THEN NULL WHEN g='1' THEN 0.0 WHEN g='2' THEN 12.0 WHEN g='3' THEN 9.0 WHEN g='4' THEN 6.0 ELSE 0.0 END;
+CREATE OR REPLACE MACRO xp_r2(x) AS floor(x * 100 + 0.5) / 100;
+CREATE OR REPLACE MACRO xp_p(dif, base) AS CASE WHEN base <> 0 THEN abs(dif / base) WHEN dif = 0 THEN 0 ELSE 1e300 END;
+CREATE OR REPLACE MACRO xp_sit(dif, base) AS CASE WHEN xp_p(dif, base) < 0.01 THEN 'Válido' WHEN xp_p(dif, base) <= 0.05 THEN 'Válido com Ressalvas' ELSE 'Inválido' END;
+CREATE OR REPLACE MACRO xp_num(v) AS CASE WHEN v IS NULL OR v = '' THEN NULL ELSE COALESCE(TRY_CAST(replace(v, ',', '.') AS DOUBLE), 0.0) END;
+CREATE OR REPLACE MACRO xp_apur(i) AS CASE WHEN i = '2' THEN '13º salário' ELSE 'Mensal' END;`;
+
+  async function dkEsquema(){
+    await dkExec("CREATE TABLE IF NOT EXISTS x_meta(k VARCHAR, v VARCHAR)");
+    const v = await dkLinhas("SELECT v FROM x_meta WHERE k='schema'");
+    if (!v.length || v[0][0] !== DK_SCHEMA){
+      // versão nova do site com tabelas diferentes: o que estava guardado é descartado (os arquivos originais precisam ser enviados de novo)
+      for (const [t] of await dkLinhas("SELECT view_name FROM duckdb_views() WHERE NOT internal")) await dkExec(`DROP VIEW IF EXISTS ${dkAspas(t)}`);
+      for (const [t] of await dkLinhas("SELECT table_name FROM duckdb_tables()")) await dkExec(`DROP TABLE IF EXISTS ${dkAspas(t)}`);
+      await dkExec("CREATE TABLE x_meta(k VARCHAR, v VARCHAR)");
+      await dkExec(`INSERT INTO x_meta VALUES ('schema', ${dkLit(DK_SCHEMA)})`);
+    }
+    for (const [nome, defs] of Object.values(DK_TAB)) await dkExec(`CREATE TABLE IF NOT EXISTS ${nome}(${defs})`);
+    for (const s of DK_MACROS.split(/;\s*\n/)) if (s.trim()) await dkExec(s.trim());
+  }
+
+  /* Grava um lote de linhas (texto separado por um caractere de controle) numa tabela */
+  const DK_CSV = "delim='\u001f', quote='\u0002', escape='\u0002', nullstr='\u0001', header=false, auto_detect=false, max_line_size=33554432";
+  async function dkInserir(tab, linhas){
+    if (!linhas.length) return;
+    const [nome, defs] = DK_TAB[tab], f = `carga_${nome}.csv`;
+    const cols = defs.split(", ").map(d => { const [n, t] = d.split(" "); return `${dkLit(n)}: ${dkLit(t)}`; }).join(", ");
+    await dk.db.registerFileText(f, linhas.join("\n") + "\n");
+    try { await dkExec(`INSERT INTO ${nome} SELECT * FROM read_csv(${dkLit(f)}, ${DK_CSV}, columns={${cols}})`); }
+    finally { try { await dk.db.dropFile(f); } catch(_){} }
+  }
+  // Um lote só vale por inteiro: ou entram todos os arquivos dele (com os respectivos registros) ou nenhum
+  async function dkGravarColetor(col){
+    const b = col.b;
+    await dkExec("BEGIN TRANSACTION");
+    try {
+      for (const t of Object.keys(b)) await dkInserir(t, b[t]);
+      await dkExec("COMMIT");
+    } catch(e){ try { await dkExec("ROLLBACK"); } catch(_){} throw e; }
+    for (const t of Object.keys(b)) b[t] = [];
+  }
+
+  /* ---------- Leitura de .zip em fluxo: só o índice (diretório central) e, um a um, os arquivos que serão lidos.
+     Nada de carregar o zip inteiro na memória; funciona com zip64 (mais de 65 mil arquivos ou mais de 4 GB). ---------- */
+  const xcDec = new TextDecoder("utf-8");
+  async function xcAbrirZip(blob){
+    const tam = blob.size;
+    const cauda = new Uint8Array(await blob.slice(Math.max(0, tam - 70000), tam).arrayBuffer());
+    const dv = new DataView(cauda.buffer, cauda.byteOffset, cauda.byteLength);
+    let e = -1; for (let i = cauda.length - 22; i >= 0; i--) if (dv.getUint32(i, true) === 0x06054b50){ e = i; break; }
+    if (e < 0) throw new Error("o arquivo não parece um .zip válido");
+    let total = dv.getUint16(e + 10, true), cdTam = dv.getUint32(e + 12, true), cdOff = dv.getUint32(e + 16, true);
+    if (total === 0xFFFF || cdTam === 0xFFFFFFFF || cdOff === 0xFFFFFFFF){
+      const l = e - 20;
+      if (l < 0 || dv.getUint32(l, true) !== 0x07064b50) throw new Error("zip64 inválido");
+      const off64 = Number(dv.getBigUint64(l + 8, true));
+      const reg = new DataView(await blob.slice(off64, off64 + 56).arrayBuffer());
+      if (reg.getUint32(0, true) !== 0x06064b50) throw new Error("zip64 inválido");
+      total = Number(reg.getBigUint64(32, true)); cdTam = Number(reg.getBigUint64(40, true)); cdOff = Number(reg.getBigUint64(48, true));
+    }
+    const buf = await blob.slice(cdOff, cdOff + cdTam).arrayBuffer(), cd = new DataView(buf), u8 = new Uint8Array(buf), ents = [];
+    for (let p = 0; p + 46 <= buf.byteLength && cd.getUint32(p, true) === 0x02014b50;){
+      const flag = cd.getUint16(p + 8, true), met = cd.getUint16(p + 10, true), crc = cd.getUint32(p + 16, true);
+      let cs = cd.getUint32(p + 20, true), us = cd.getUint32(p + 24, true), lo = cd.getUint32(p + 42, true);
+      const nl = cd.getUint16(p + 28, true), el = cd.getUint16(p + 30, true), cl = cd.getUint16(p + 32, true);
+      if (us === 0xFFFFFFFF || cs === 0xFFFFFFFF || lo === 0xFFFFFFFF){
+        for (let q = p + 46 + nl, fx = q + el; q + 4 <= fx;){
+          const id = cd.getUint16(q, true), sz = cd.getUint16(q + 2, true);
+          if (id === 1){ let r = q + 4; if (us === 0xFFFFFFFF){ us = Number(cd.getBigUint64(r, true)); r += 8; } if (cs === 0xFFFFFFFF){ cs = Number(cd.getBigUint64(r, true)); r += 8; } if (lo === 0xFFFFFFFF) lo = Number(cd.getBigUint64(r, true)); break; }
+          q += 4 + sz;
+        }
+      }
+      ents.push({ nome: xcDec.decode(u8.subarray(p + 46, p + 46 + nl)), flag, met, crc, cs, us, lo, nl });
+      p += 46 + nl + el + cl;
+    }
+    ents.sort((a, b) => a.lo - b.lo);   // leitura sempre para a frente: o disco agradece
+    const JANELA = 8 << 20; let ini = 0, fim = 0, jan = null;
+    const bytes = async (off, len) => {
+      if (!jan || off < ini || off + len > fim){ ini = off; fim = Math.min(tam, off + Math.max(len, JANELA)); jan = new Uint8Array(await blob.slice(ini, fim).arrayBuffer()); }
+      return jan.subarray(off - ini, off - ini + len);
+    };
+    async function extrair(ent){
+      if (ent.flag & 1) throw new Error("arquivo protegido por senha");
+      const cab = await bytes(ent.lo, 30), cv = new DataView(cab.buffer, cab.byteOffset, 30);
+      if (cv.getUint32(0, true) !== 0x04034b50) throw new Error("entrada do zip corrompida");
+      const ini2 = ent.lo + 30 + cv.getUint16(26, true) + cv.getUint16(28, true), dados = await bytes(ini2, ent.cs);
+      if (ent.met === 0) return dados;
+      if (ent.met === 8){
+        if (!window.fflate) throw new Error("biblioteca de descompactação indisponível");
+        return window.fflate.inflateSync(dados, { out: new Uint8Array(ent.us) });
+      }
+      throw new Error("método de compactação " + ent.met + " não suportado");
+    }
+    return { ents, extrair, total };
+  }
+  // Entrega os XMLs dos arquivos enviados (soltos, em .zip ou em zip dentro de zip), um de cada vez
+  async function* xcItens(lista, log, contar){
+    for (const f of lista){
+      const nome = f.webkitRelativePath || f.name;
+      if (/\.xml$/i.test(f.name)) yield { chave: `${nome}|${f.size}|${f.lastModified}`, nome, ler: () => f.text() };
+      else if (/\.zip$/i.test(f.name)) yield* xcItensZip(f, nome, log, contar);
+    }
+  }
+  async function* xcItensZip(blob, rotulo, log, contar){
+    let z;
+    try { log(`Abrindo o índice de ${rotulo}…`); z = await xcAbrirZip(blob); }
+    catch(e){ log(`Não consegui abrir ${rotulo}: ${e.message}`, "log-erro"); return; }
+    const uteis = z.ents.filter(e => !/\/$/.test(e.nome) && !/(^|\/)(__MACOSX\/|\._)/.test(e.nome));
+    contar(uteis.filter(e => /\.xml$/i.test(e.nome)).length);
+    for (const e of uteis){
+      const nome = `${rotulo} › ${e.nome}`;
+      if (/\.xml$/i.test(e.nome)) yield { chave: `${nome}|${e.us}|${e.crc}`, nome, ler: async () => xcDec.decode(await z.extrair(e)) };
+      else if (/\.zip$/i.test(e.nome)){
+        let interno = null;
+        try { interno = new Blob([await z.extrair(e)]); } catch(err){ log(`Não consegui abrir ${nome}: ${err.message}`, "log-erro"); }
+        if (interno) yield* xcItensZip(interno, nome, log, contar);
+      }
+    }
+  }
+  // Identificação curta (53 bits) de cada arquivo lido: é o que permite retomar uma leitura interrompida sem repetir o que já foi gravado
+  function xcHash(s){
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (let i = 0, ch; i < s.length; i++){ ch = s.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+  }
+  let xcUltimaVez = 0;
+  const xcCede = async () => { const t = performance.now(); if (t - xcUltimaVez > 40){ await new Promise(r => setTimeout(r, 0)); xcUltimaVez = performance.now(); } };
+
+  /* ---------- Coletor: o que o leitor extrai de cada evento vira linhas de texto, gravadas no banco a cada lote ---------- */
+  function xNovoColetor(seq0){
+    return { seq: seq0 || 0, peso: 0, arqs: 0, ids: new Set(), b: { ev: [], rubr: [], remL: [], csL: [], csB: [], resc: [], rescL: [], basL: [], trab: [], emp: [], outL: [], arq: [] } };
+  }
+  const XC_RUIM = /[\u0000-\u0008\u000a-\u001f]/g;
+  function xcPush(col, tab, ...v){
+    let s = "";
+    for (let i = 0; i < v.length; i++){ const x = v[i]; s += (i ? "\u001f" : "") + (x == null ? "" : typeof x === "number" ? (Number.isFinite(x) ? x : 0) : String(x).replace(XC_RUIM, " ")); }
+    col.b[tab].push(s); col.peso += s.length + 1;
   }
 
   // Achata um evento qualquer: cada ramo repetido vira uma linha, herdando os campos dos níveis acima
@@ -5205,74 +5451,73 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
     for (const r of ramos) xAchatar(r, base, linhas);
   }
 
-  function xGuardarMaisRecente(mapa, chave, rank, dados, estado){
-    const ex = mapa.get(chave);
-    if (ex){ estado.descartados++; if (ex.rank >= rank) return; }
-    mapa.set(chave, { rank, ...dados });
-  }
-
-  function xProcessarEvento(ev, estado, ctx){
-    const nome = ev.localName, id = ev.getAttribute("Id") || "";
-    estado.lidos.set(nome, (estado.lidos.get(nome) || 0) + 1);
-    if (id){ if (estado.ids.has(id)){ estado.descartados++; return; } estado.ids.add(id); }
-    const env = xEnvelope(ev, ctx.doc, ctx.unico), rank = xRank(id, env.dh), recibo = env.recibo;
+  // Lê um evento e entrega ao coletor o que interessa dele. Quem vale (duplicados, retificações, recibo mais recente) é decidido depois, no banco.
+  function xProcessarEvento(ev, col, ctx){
+    const nome = ev.localName, id = ev.getAttribute("Id") || "", seq = ++col.seq;
+    const env = xEnvelope(ev, ctx.doc, ctx.unico), rk = xRank(id, env.dh), recibo = env.recibo;
     const per = xTxt(ev, "ideEvento/perApur"), nrEmp = xDig(xTxt(ev, "ideEmpregador/nrInsc")), indAp = xTxt(ev, "ideEvento/indApuracao");
-    const nrRetif = xTxt(ev, "ideEvento/nrRecibo");
-    if (xTxt(ev, "ideEvento/indRetif") === "2" && nrRetif) estado.retificados.add(nrRetif);
+    const nrRetif = xTxt(ev, "ideEvento/nrRecibo"), indRetif = xTxt(ev, "ideEvento/indRetif");
+    let cpf = "", recBase = "", baseTotal = 0;
+    const cab = () => xcPush(col, "ev", seq, nome, id, rk, recibo, nrEmp, per, indAp, indRetif, nrRetif, cpf, recBase, baseTotal);
+    // o mesmo Id já veio neste lote: só o cabeçalho segue (o banco descarta a repetição)
+    if (id){ if (col.ids.has(id)){ cab(); return; } col.ids.add(id); }
 
     if (nome === "evtTabRubrica"){
+      let ln = 0;
       for (const b of xDesc(ev, ["inclusao", "alteracao"])){
         const ide = xDir(b, "ideRubrica"), d = xDir(b, "dadosRubrica"); if (!ide || !d) continue;
         const nova = xTxt(b, "novaValidade/iniValid");
-        estado.rubricas.push({ cod: xTxt(ide, "codRubr"), tab: xTxt(ide, "ideTabRubr"), ini: nova || xTxt(ide, "iniValid"), fim: nova ? xTxt(b, "novaValidade/fimValid") : xTxt(ide, "fimValid"),
-          desc: xTxt(d, "dscRubr"), nat: xTxt(d, "natRubr"), tp: xTxt(d, "tpRubr"), incCP: xTxt(d, "codIncCP"), incIRRF: xTxt(d, "codIncIRRF"), incFGTS: xTxt(d, "codIncFGTS"), id, rank });
+        xcPush(col, "rubr", seq, ln++, xTxt(ide, "codRubr"), xTxt(ide, "ideTabRubr"), nova || xTxt(ide, "iniValid"), nova ? xTxt(b, "novaValidade/fimValid") : xTxt(ide, "fimValid"),
+          xTxt(d, "dscRubr"), xTxt(d, "natRubr"), xTxt(d, "tpRubr"), xTxt(d, "codIncCP"), xTxt(d, "codIncIRRF"), xTxt(d, "codIncFGTS"));
       }
-      return;
+      cab(); return;
     }
 
     if (nome === "evtRemun"){
-      const cpf = xDig(xTxt(ev, "ideTrabalhador/cpfTrab")), indRetif = xTxt(ev, "ideEvento/indRetif");
-      const linhas = [];
+      cpf = xDig(xTxt(ev, "ideTrabalhador/cpfTrab"));
+      let ln = 0;
       for (const dm of xDesc(ev, ["dmDev"])){
         const cat = xTxt(dm, "codCateg"); if (!cat.startsWith("1")) continue;
         for (const el of xDesc(dm, ["ideEstabLot"])){
           let perRef = ""; for (let a = el.parentNode; a && a !== dm; a = a.parentNode){ if (a.localName === "idePeriodo"){ perRef = xTxt(a, "perRef"); break; } }
-          const estTp = xTxt(el, "tpInsc"), estNr = xDig(xTxt(el, "nrInsc")), lot = xTxt(el, "codLotacao");
+          const estNr = xDig(xTxt(el, "nrInsc")), lot = xTxt(el, "codLotacao");
           for (const v of xDesc(el, ["detVerbas", "itensRemun"]))
-            linhas.push({ per: perRef || per, cat, estTp, estNr, lot, grau: xGrau(v, el), cod: xTxt(v, "codRubr"), tab: xTxt(v, "ideTabRubr"), val: xNum(xTxt(v, "vrRubr")) });
+            xcPush(col, "remL", seq, ln++, perRef || per, cat, estNr, lot, xGrau(v, el), xTxt(v, "codRubr"), xTxt(v, "ideTabRubr"), xNum(xTxt(v, "vrRubr")));
         }
       }
-      xGuardarMaisRecente(estado.remun, [nome, nrEmp, cpf, indAp, per].join("|"), rank, { id, recibo, indRetif, indAp, perEv: per, nrEmp, cpf, linhas }, estado);
-      return;
+      cab(); return;
     }
 
     if (nome === "evtCS"){
-      const subst = xTxt(ev, "infoCS/infoContrib/infoPJ/indSubstPatr"), linhas = [];
-      let baseTotal = 0;
+      const subst = xTxt(ev, "infoCS/infoContrib/infoPJ/indSubstPatr");
+      recBase = xAcha(ev, "nrRecArqBase");
+      let ln = 0;
       for (const est of xDesc(ev, ["ideEstab"])){
         const estNr = xDig(xTxt(est, "nrInsc")), rat = xNum(xTxt(est, "infoEstab/aliqRat")), fap = xNum(xTxt(est, "infoEstab/fap")), ratAj = xNum(xTxt(est, "infoEstab/aliqRatAjust"));
         const lots = xDesc(est, ["ideLotacao"]);
-        if (!lots.length) linhas.push({ per, nrEmp, estNr, lot: "", rat, fap, ratAj, fpas: "", terc: "", susp: "", subst, bases: {}, base: 0 });
+        if (!lots.length) xcPush(col, "csL", seq, ln++, estNr, "", rat, fap, ratAj, "", "", "", subst, 0);
         for (const l of lots){
           const bases = {}; let base = 0;
           for (const b of xDescRe(l, /^vrBcCp\d+$/)){
             const v = xNum(b.textContent); let cat = ""; for (let a = b.parentNode; a && a !== l; a = a.parentNode){ const c = xDir(a, "codCateg"); if (c){ cat = (c.textContent || "").trim(); break; } }
-            if (cat && !cat.startsWith("1"))continue;
+            if (cat && !cat.startsWith("1")) continue;
             bases[b.localName] = (bases[b.localName] || 0) + v; base += v;
           }
           baseTotal += base;
-          linhas.push({ per, nrEmp, estNr, lot: xTxt(l, "codLotacao"), rat, fap, ratAj, fpas: xTxt(l, "fpas"), terc: xTxt(l, "codTercs"), susp: xTxt(l, "codTercsSusp"), subst, bases, base });
+          xcPush(col, "csL", seq, ln, estNr, xTxt(l, "codLotacao"), rat, fap, ratAj, xTxt(l, "fpas"), xTxt(l, "codTercs"), xTxt(l, "codTercsSusp"), subst, base);
+          for (const campo in bases) xcPush(col, "csB", seq, ln, campo, bases[campo]);
+          ln++;
         }
       }
-      // "Recibo" do S-5011 = número do recibo do arquivo base (nrRecArqBase, dentro de infoCS); `recibo` segue só para o controle de retificações
-      xGuardarMaisRecente(estado.cs, [nome, nrEmp, indAp, per].join("|"), rank, { id, recibo, recBase: xAcha(ev, "nrRecArqBase"), indAp, per, nrEmp, baseTotal, linhas }, estado);
-      return;
+      cab(); return;
     }
 
     // S-2299: as verbas rescisórias também entram na base do S-5011, então vão para o confronto (o S-2399 não entra; o evento segue para a tabela achatada)
     if (nome === "evtDeslig"){
-      const cpf = xDig(xAcha(ev, "cpfTrab")), cat = xAcha(ev, "codCateg"), dt = xAcha(ev, "dtDeslig"), mat = xAcha(ev, "matricula");
-      const linhas = [], totalXml = xDesc(ev, ["detVerbas", "itensRemun"]).length, catFora = !!cat && !cat.startsWith("1");
+      cpf = xDig(xAcha(ev, "cpfTrab"));
+      const cat = xAcha(ev, "codCateg"), dt = xAcha(ev, "dtDeslig"), mat = xAcha(ev, "matricula");
+      const totalXml = xDesc(ev, ["detVerbas", "itensRemun"]).length, catFora = !!cat && !cat.startsWith("1");
+      const linhas = [];
       for (const dm of xDesc(ev, ["dmDev"])){
         const ind = xTxt(dm, "indPerApur") === "2" ? "2" : "1";
         for (const el of xDesc(dm, ["ideEstabLot"])){
@@ -5281,60 +5526,51 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
           const perApur = ind === "2" ? dt.slice(0, 4) : dt.slice(0, 7);
           const dmId = xTxt(dm, "ideDmDev");
           for (const v of xDesc(el, ["detVerbas", "itensRemun"]))
-            linhas.push({ per: perRef || perApur, perApur, ind, estNr, lot, dmId, grau: xGrau(v, el), cod: xTxt(v, "codRubr"), tab: xTxt(v, "ideTabRubr"), qtd: xTxt(v, "qtdRubr"), fator: xTxt(v, "fatorRubr"), unit: xTxt(v, "vrUnit"), val: xNum(xTxt(v, "vrRubr")) });
+            linhas.push([perRef || perApur, perApur, ind, estNr, lot, dmId, xGrau(v, el), xTxt(v, "codRubr"), xTxt(v, "ideTabRubr"), xTxt(v, "qtdRubr"), xTxt(v, "fatorRubr"), xTxt(v, "vrUnit"), xNum(xTxt(v, "vrRubr"))]);
         }
       }
-      const extra = { nis: xDig(xAcha(ev, "nisTrab")), mat, mtv: xAcha(ev, "mtvDeslig"), api: xAcha(ev, "indPagtoAPI"), pens: xAcha(ev, "pensAlim"), cump: xAcha(ev, "indCumprParc"), indRetif: xTxt(ev, "ideEvento/indRetif"), nrRetif: nrRetif, dh: env.dh };
-      if (linhas.length || totalXml) xGuardarMaisRecente(estado.resc, [nome, nrEmp, cpf, mat, dt].join("|"), rank, { id, recibo, nome, cpf, dt, cat, catFora, totalXml, nrEmp, extra, linhas }, estado);
+      if (linhas.length || totalXml){
+        xcPush(col, "resc", seq, dt, cat, catFora ? "1" : "0", totalXml, mat, xDig(xAcha(ev, "nisTrab")), xAcha(ev, "mtvDeslig"), xAcha(ev, "indPagtoAPI"), xAcha(ev, "pensAlim"), xAcha(ev, "indCumprParc"), indRetif, nrRetif, env.dh);
+        linhas.forEach((l, ln) => xcPush(col, "rescL", seq, ln, ...l));
+      }
     }
 
     // Eventos que também alimentam o cruzamento (e continuam saindo como tabela achatada)
-    if (nome === "evtFechaEvPer" || nome === "evtReabreEvPer"){
-      xGuardarMaisRecente(nome === "evtFechaEvPer" ? estado.fech : estado.reabre, [nrEmp, per].join("|"), rank, { id, recibo }, estado);
-    } else if (nome === "evtInfoEmpregador"){
-      const rz = xAcha(ev, "nmRazao"); if (rz && nrEmp) estado.emps.set(nrEmp.slice(0, 8), rz);
+    if (nome === "evtInfoEmpregador"){
+      const rz = xAcha(ev, "nmRazao"); if (rz && nrEmp) xcPush(col, "emp", seq, nrEmp.slice(0, 8), rz);
     } else if (nome === "evtAdmissao" || nome === "evtTSVInicio" || nome === "evtDeslig" || nome === "evtTSVTermino"){
-      const cpf = xDig(xAcha(ev, "cpfTrab"));
-      if (cpf){
-        const t = estado.trab.get(cpf) || { nome: "", adm: "", deslig: "" };
-        const nm = xAcha(ev, "nmTrab"); if (nm) t.nome = nm;
-        const adm = xAcha(ev, "dtAdm") || xAcha(ev, "dtInicio"), des = xAcha(ev, "dtDeslig") || xAcha(ev, "dtTerm");
-        if (adm && (!t.adm || adm < t.adm)) t.adm = adm;
-        if (des && des > t.deslig) t.deslig = des;
-        estado.trab.set(cpf, t);
-      }
+      const c = xDig(xAcha(ev, "cpfTrab"));
+      if (c) xcPush(col, "trab", seq, c, xAcha(ev, "nmTrab"), xAcha(ev, "dtAdm") || xAcha(ev, "dtInicio"), xAcha(ev, "dtDeslig") || xAcha(ev, "dtTerm"));
     }
 
-    // S-5001: uma linha por estabelecimento/lotação, categoria e tipo de valor (vale o mais recente de cada CPF e competência)
+    // S-5001: uma linha por estabelecimento/lotação, categoria e tipo de valor
     if (nome === "evtBasesTrab"){
-      const cpf = xDig(xTxt(ev, "ideTrabalhador/cpfTrab")), linhas = [];
+      cpf = xDig(xTxt(ev, "ideTrabalhador/cpfTrab")); recBase = xTxt(ev, "ideEvento/nrRecArqBase");
+      let ln = 0;
       for (const el of xDesc(ev, ["ideEstabLot"])){
         const estTp = xTxt(el, "tpInsc"), estNr = xDig(xTxt(el, "nrInsc")), lot = xTxt(el, "codLotacao");
         for (const ci of xDesc(el, ["infoCategIncid"])){
           const mat = xTxt(ci, "matricula"), cat = xTxt(ci, "codCateg");
-          for (const b of xDesc(ci, ["infoBaseCS"])) linhas.push({ estTp, estNr, lot, mat, cat, ind13: xTxt(b, "ind13"), tp: xTxt(b, "tpValor"), val: xNum(xTxt(b, "valor")) });
+          for (const b of xDesc(ci, ["infoBaseCS"])) xcPush(col, "basL", seq, ln++, estTp, estNr, lot, mat, cat, xTxt(b, "ind13"), xTxt(b, "tpValor"), xNum(xTxt(b, "valor")));
         }
       }
-      xGuardarMaisRecente(estado.bases, [nome, nrEmp, cpf, indAp, per].join("|"), rank, { id, recibo, recBase: xTxt(ev, "ideEvento/nrRecArqBase"), indAp, per, nrEmp, cpf, linhas }, estado);
-      return;
+      cab(); return;
     }
 
-    // Demais eventos: tabela achatada; só perdem repetições exatas
+    // Demais eventos: tabela achatada (cada célula é uma linha: o banco remonta as colunas depois)
     const linhas = []; xAchatar(ev, { "Id do evento": id }, linhas);
-    if (!estado.outros.has(nome)) estado.outros.set(nome, new Map());
-    const mapa = estado.outros.get(nome);
-    const chave = id || nome + "|" + mapa.size;
-    xGuardarMaisRecente(mapa, chave, rank, { id, recibo, linhas }, estado);
+    linhas.forEach((l, ln) => { let pos = 0; for (const k in l) xcPush(col, "outL", seq, ln, pos++, k, l[k]); });
+    cab();
   }
 
-  // Lê um arquivo XML (pode ter vários eventos, como no lote do portal)
-  function xProcessarTexto(texto, estado){
+  // Lê um arquivo XML (pode ter vários eventos, como no lote do portal). Devolve quantos eventos achou (0 = arquivo inválido)
+  function xProcessarTexto(texto, col){
     const doc = new DOMParser().parseFromString(texto, "application/xml");
-    if (!doc.documentElement || doc.getElementsByTagName("parsererror").length){ estado.invalidos++; return 0; }
+    if (!doc.documentElement || doc.getElementsByTagName("parsererror").length) return 0;
     const evs = xEventos(doc.documentElement); if (/^evt[A-Z]/.test(doc.documentElement.localName)) evs.unshift(doc.documentElement);
-    if (!evs.length){ estado.invalidos++; return 0; }
+    if (!evs.length) return 0;
     const ctx = { doc, unico: evs.length === 1 };
-    evs.forEach(ev => xProcessarEvento(ev, estado, ctx));
+    evs.forEach(ev => xProcessarEvento(ev, col, ctx));
     return evs.length;
   }
 
@@ -5346,277 +5582,316 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
   const xTp = r => r.tp ? `${r.tp} - ${XML_TP_RUBR[r.tp] || ""}`.replace(/ - $/, "") : "";
   const xPerOrd = p => (p.length === 4 ? p + "-13" : p);
 
-  // Monta as tabelas finais a partir do que foi lido
-  function xMontar(estado){
-    const conjuntos = [];
-    // Quem foi retificado por um recibo mais novo não vale, mesmo que a data de geração empate ou venha trocada
-    const vivo = e => !(e.recibo && estado.retificados.has(e.recibo));
-    const remuns = [...estado.remun.values()].filter(vivo), css = [...estado.cs.values()].filter(vivo), rescs = [...estado.resc.values()].filter(vivo);
-    estado.porRecibo = (estado.remun.size - remuns.length) + (estado.cs.size - css.length);
+  /* ---------- Montagem dos conjuntos: as mesmas regras de antes, agora em SQL sobre o banco.
+     Cada etapa guarda seu resultado numa tabela m_*; os conjuntos que o usuário baixa são consultas sobre elas. ---------- */
+  const XC_BASE = "('11','12','13','14')";
+  const DK_ETAPAS = [
+    ["Eventos únicos", `CREATE OR REPLACE TABLE m_ev AS SELECT * FROM x_ev QUALIFY id = '' OR row_number() OVER (PARTITION BY id ORDER BY seq) = 1`],
+    ["Retificações", `CREATE OR REPLACE TABLE m_ret AS SELECT DISTINCT nrRetif AS rec FROM m_ev WHERE indRetif = '2' AND nrRetif <> ''`],
+    ["S-1200 mais recentes", `CREATE OR REPLACE TABLE m_rem AS SELECT e.*, NOT (e.recibo <> '' AND e.recibo IN (SELECT rec FROM m_ret)) AS vivo FROM m_ev e WHERE nome = 'evtRemun'
+       QUALIFY row_number() OVER (PARTITION BY nrEmp, cpf, indAp, per ORDER BY rk DESC, seq ASC) = 1`],
+    ["S-5011 mais recentes", `CREATE OR REPLACE TABLE m_cs AS SELECT e.*, NOT (e.recibo <> '' AND e.recibo IN (SELECT rec FROM m_ret)) AS vivo FROM m_ev e WHERE nome = 'evtCS'
+       QUALIFY row_number() OVER (PARTITION BY nrEmp, indAp, per ORDER BY rk DESC, seq ASC) = 1`],
+    ["S-5001 mais recentes", `CREATE OR REPLACE TABLE m_bas AS SELECT e.*, NOT (e.recibo <> '' AND e.recibo IN (SELECT rec FROM m_ret)) AS vivo FROM m_ev e WHERE nome = 'evtBasesTrab'
+       QUALIFY row_number() OVER (PARTITION BY nrEmp, cpf, indAp, per ORDER BY rk DESC, seq ASC) = 1`],
+    ["S-2299 mais recentes", `CREATE OR REPLACE TABLE m_resc AS SELECT e.seq, e.id, e.rk, e.recibo, e.nrEmp, e.cpf, r.dt, r.cat, r.catFora, r.totalXml, r.mat, r.nis, r.mtv, r.api, r.pens, r.cump, r.indRetif, r.nrRetif, r.dh,
+         NOT (e.recibo <> '' AND e.recibo IN (SELECT rec FROM m_ret)) AS vivo FROM m_ev e JOIN x_resc r ON r.seq = e.seq
+       QUALIFY row_number() OVER (PARTITION BY e.nrEmp, e.cpf, r.mat, r.dt ORDER BY e.rk DESC, e.seq ASC) = 1`],
+    ["Fechamentos", `CREATE OR REPLACE TABLE m_fech AS SELECT * FROM m_ev WHERE nome = 'evtFechaEvPer' QUALIFY row_number() OVER (PARTITION BY nrEmp, per ORDER BY rk DESC, seq ASC) = 1`],
+    ["Reaberturas", `CREATE OR REPLACE TABLE m_reab AS SELECT * FROM m_ev WHERE nome = 'evtReabreEvPer' QUALIFY row_number() OVER (PARTITION BY nrEmp, per ORDER BY rk DESC, seq ASC) = 1`],
+    ["Empresas e trabalhadores", `CREATE OR REPLACE TABLE m_emp AS SELECT raiz, arg_max(razao, x.seq) AS razao FROM x_emp x JOIN m_ev e ON e.seq = x.seq GROUP BY raiz`],
+    ["", `CREATE OR REPLACE TABLE m_trab AS SELECT x.cpf AS cpf, COALESCE(arg_max(x.nome, x.seq) FILTER (WHERE x.nome <> ''), '') AS nome, COALESCE(min(x.adm) FILTER (WHERE x.adm <> ''), '') AS adm, COALESCE(max(x.des) FILTER (WHERE x.des <> ''), '') AS deslig
+       FROM x_trab x JOIN m_ev e ON e.seq = x.seq GROUP BY x.cpf`],
+    ["Tabela de rubricas", `CREATE OR REPLACE TABLE m_rub AS SELECT r.*, e.id, e.rk FROM x_rubr r JOIN m_ev e ON e.seq = r.seq
+       QUALIFY row_number() OVER (PARTITION BY r.cod, r.tab, r.ini ORDER BY e.rk DESC, r.seq DESC, r.ln DESC) = 1`],
+    ["Rubricas usadas", `CREATE OR REPLACE TABLE m_need AS SELECT DISTINCT cod, tab, per FROM (
+         SELECT l.cod, l.tab, l.per FROM x_remL l JOIN m_rem e ON e.seq = l.seq WHERE e.vivo
+         UNION ALL SELECT l.cod, l.tab, l.per FROM x_rescL l JOIN m_resc e ON e.seq = l.seq WHERE e.vivo)`],
+    ["Vigência das rubricas", `CREATE OR REPLACE TABLE m_rubde AS
+       WITH n AS (SELECT cod, tab, per, CASE WHEN length(per) = 4 THEN per || '-12' ELSE per END AS p, EXISTS (SELECT 1 FROM m_rub r WHERE r.cod = m_need.cod AND r.tab = m_need.tab) AS ht FROM m_need),
+       c AS (SELECT n.cod AS ncod, n.tab AS ntab, n.per AS nper, r.ini, r.fim, r.descr, r.nat, r.tp, r.incCP, r.incIRRF, r.incFGTS, r.id, r.seq, (r.ini = '' OR r.ini <= n.p) AS ok
+             FROM n JOIN m_rub r ON r.cod = n.cod AND (NOT n.ht OR r.tab = n.tab))
+       SELECT ncod AS cod, ntab AS tab, nper AS per, ini, fim, descr, nat, tp, incCP, incIRRF, incFGTS, id FROM c
+       QUALIFY row_number() OVER (PARTITION BY ncod, ntab, nper ORDER BY ok DESC, CASE WHEN ok THEN ini END DESC NULLS LAST, CASE WHEN ok THEN seq END DESC NULLS LAST, CASE WHEN NOT ok THEN ini END ASC NULLS LAST, seq ASC) = 1`],
+    ["Alíquotas do S-5011 (por lotação)", `CREATE OR REPLACE TABLE m_cs1 AS SELECT * EXCLUDE rn FROM (SELECT c.per, l.estNr, l.lot, l.rat, l.fap, l.ratAj, l.fpas, l.terc, l.susp, l.subst,
+         row_number() OVER (PARTITION BY l.estNr, c.per, l.lot ORDER BY c.seq, l.ln) AS rn FROM m_cs c JOIN x_csL l ON l.seq = c.seq WHERE c.vivo) WHERE rn = 1`],
+    ["", `CREATE OR REPLACE TABLE m_cs2 AS SELECT * EXCLUDE rn FROM (SELECT c.per, l.estNr, l.lot, l.rat, l.fap, l.ratAj, l.fpas, l.terc, l.susp, l.subst,
+         row_number() OVER (PARTITION BY l.estNr, c.per ORDER BY c.seq, l.ln) AS rn FROM m_cs c JOIN x_csL l ON l.seq = c.seq WHERE c.vivo) WHERE rn = 1`],
+    ["", `CREATE OR REPLACE TABLE m_csnec AS SELECT DISTINCT estNr, per, lot FROM (
+         SELECT l.estNr, l.per, l.lot FROM x_remL l JOIN m_rem e ON e.seq = l.seq WHERE e.vivo
+         UNION ALL SELECT l.estNr, e.per, l.lot FROM x_basL l JOIN m_bas e ON e.seq = l.seq WHERE e.vivo)`],
+    ["", `CREATE OR REPLACE TABLE m_csde AS
+       SELECT n.estNr, n.per, n.lot,
+         COALESCE(a1.estNr, a2.estNr, b1.estNr, b2.estNr) AS achou,
+         COALESCE(a1.rat, a2.rat, b1.rat, b2.rat) AS rat, COALESCE(a1.fap, a2.fap, b1.fap, b2.fap) AS fap, COALESCE(a1.ratAj, a2.ratAj, b1.ratAj, b2.ratAj) AS ratAj,
+         COALESCE(a1.fpas, a2.fpas, b1.fpas, b2.fpas) AS fpas, COALESCE(a1.terc, a2.terc, b1.terc, b2.terc) AS terc, COALESCE(a1.susp, a2.susp, b1.susp, b2.susp) AS susp, COALESCE(a1.subst, a2.subst, b1.subst, b2.subst) AS subst
+       FROM (SELECT estNr, per, lot, CASE WHEN length(per) = 4 THEN per || '-12' END AS p12 FROM m_csnec) n
+       LEFT JOIN m_cs1 a1 ON a1.estNr = n.estNr AND a1.per = n.per AND a1.lot = n.lot LEFT JOIN m_cs2 a2 ON a2.estNr = n.estNr AND a2.per = n.per
+       LEFT JOIN m_cs1 b1 ON b1.estNr = n.estNr AND b1.per = n.p12 AND b1.lot = n.lot LEFT JOIN m_cs2 b2 ON b2.estNr = n.estNr AND b2.per = n.p12`],
+    ["Fechamento das competências", `CREATE OR REPLACE TABLE m_fnec AS SELECT DISTINCT nrEmp, per FROM (
+         SELECT nrEmp, per FROM m_rem WHERE vivo UNION ALL SELECT r.nrEmp, l.perApur FROM m_resc r JOIN x_rescL l ON l.seq = r.seq WHERE r.vivo
+         UNION ALL SELECT nrEmp, per FROM m_cs WHERE vivo)`],
+    ["", `CREATE OR REPLACE TABLE m_fechde AS
+       SELECT n.nrEmp, n.per,
+         CASE WHEN COALESCE(f1.seq, f2.seq) IS NULL AND COALESCE(r1.seq, r2.seq) IS NULL THEN 'Sem S-1299'
+              WHEN COALESCE(r1.seq, r2.seq) IS NOT NULL AND (COALESCE(f1.seq, f2.seq) IS NULL OR COALESCE(r1.rk, r2.rk) > COALESCE(f1.rk, f2.rk)) THEN 'Reaberto (S-1298)'
+              ELSE 'Fechado' END AS st
+       FROM m_fnec n LEFT JOIN m_fech f1 ON f1.nrEmp = left(n.nrEmp, 8) AND f1.per = n.per LEFT JOIN m_fech f2 ON f2.nrEmp = n.nrEmp AND f2.per = n.per
+       LEFT JOIN m_reab r1 ON r1.nrEmp = left(n.nrEmp, 8) AND r1.per = n.per LEFT JOIN m_reab r2 ON r2.nrEmp = n.nrEmp AND r2.per = n.per`],
+    ["Rubricas do S-1200 com o S-1010", `CREATE OR REPLACE TABLE m_l AS
+       SELECT l.seq, l.ln, e.nrEmp, e.indAp, e.per AS perEv, e.cpf, l.per, l.cat, l.estNr, l.lot, l.grau, l.cod, l.tab, l.val,
+         d.cod IS NOT NULL AS achou, COALESCE(d.tp, '') AS tp, COALESCE(d.incCP, '') AS incCP,
+         CASE WHEN d.cod IS NULL THEN 'Sem S-1010' WHEN d.tp = '1' AND d.incCP IN ${XC_BASE} THEN 'Sim' ELSE 'Não' END AS entra
+       FROM x_remL l JOIN m_rem e ON e.seq = l.seq LEFT JOIN m_rubde d ON d.cod = l.cod AND d.tab = l.tab AND d.per = l.per WHERE e.vivo`],
+    ["Verbas rescisórias com o S-1010", `CREATE OR REPLACE TABLE m_rescl AS
+       SELECT l.seq, l.ln, e.nrEmp, e.cpf, l.per, l.perApur, l.ind, l.estNr, l.lot, l.dmId, l.grau, l.cod, l.tab, l.qtd, l.fator, l.vunit, l.val,
+         d.cod IS NOT NULL AS achou, COALESCE(d.tp, '') AS tp, COALESCE(d.incCP, '') AS incCP,
+         CASE WHEN e.catFora = '1' THEN 'Categoria fora' WHEN d.cod IS NULL THEN 'Sem S-1010' WHEN d.tp = '1' AND d.incCP IN ${XC_BASE} THEN 'Sim' ELSE 'Não' END AS entra
+       FROM x_rescL l JOIN m_resc e ON e.seq = l.seq LEFT JOIN m_rubde d ON d.cod = l.cod AND d.tab = l.tab AND d.per = l.per WHERE e.vivo`],
+    ["Somas por competência", `CREATE OR REPLACE TABLE m_somarem AS SELECT nrEmp, indAp, perEv AS per, sum(CASE WHEN entra = 'Sim' THEN val ELSE 0 END) AS rem, sum(CASE WHEN entra = 'Sem S-1010' THEN val ELSE 0 END) AS semtab,
+         sum(val) AS total, count(DISTINCT cpf) AS trabs FROM m_l GROUP BY nrEmp, indAp, perEv`],
+    ["", `CREATE OR REPLACE TABLE m_somaresc AS SELECT nrEmp, ind AS indAp, perApur AS per, sum(CASE WHEN entra = 'Sim' THEN val ELSE 0 END) AS rem FROM m_rescl GROUP BY nrEmp, ind, perApur`],
+    ["", `CREATE OR REPLACE TABLE m_somabase AS SELECT nrEmp, indAp, per, sum(baseTotal) AS base FROM m_cs WHERE vivo GROUP BY nrEmp, indAp, per`],
+    ["Somas por estabelecimento e lotação", `CREATE OR REPLACE TABLE m_lot AS
+       SELECT nrEmp, indAp, per, estNr, lot, sum(rem) AS rem, sum(resc) AS resc, sum(base) AS base, bool_or(temb) AS temBase FROM (
+         SELECT nrEmp, indAp, perEv AS per, estNr, trim(lot) AS lot, val AS rem, 0.0 AS resc, 0.0 AS base, false AS temb FROM m_l WHERE entra = 'Sim'
+         UNION ALL SELECT nrEmp, ind, perApur, estNr, trim(lot), 0.0, val, 0.0, false FROM m_rescl WHERE entra = 'Sim'
+         UNION ALL SELECT c.nrEmp, c.indAp, c.per, l.estNr, trim(l.lot), 0.0, 0.0, l.base, true FROM m_cs c JOIN x_csL l ON l.seq = c.seq WHERE c.vivo)
+       GROUP BY nrEmp, indAp, per, estNr, lot`],
+    ["Conferência por estabelecimento", `CREATE OR REPLACE TABLE m_cfg AS SELECT (SELECT count(*) FROM m_cs WHERE vivo) = 0 AS semval`],
+    ["", `CREATE OR REPLACE TABLE m_nest AS SELECT nrEmp, indAp, perEv AS per, estNr, count(*) AS n FROM m_l GROUP BY nrEmp, indAp, perEv, estNr`],
+    ["", `CREATE OR REPLACE TABLE m_est AS
+       WITH a AS (SELECT nrEmp, indAp, per, estNr, sum(rem + resc) AS tot, sum(base) AS base, bool_or(temBase) AS temBase FROM m_lot GROUP BY nrEmp, indAp, per, estNr),
+       b AS (SELECT *, CASE WHEN NOT temBase THEN 'Sem S-5011' ELSE xp_sit(xp_r2(tot - base), xp_r2(base)) END AS sit,
+                CASE WHEN temBase AND base <> 0 THEN (tot - base) / base END AS pct FROM a)
+       SELECT b.*, (SELECT semval FROM m_cfg) OR b.sit IN ('Válido', 'Válido com Ressalvas') AS ok, COALESCE(n.n, 0) AS n
+       FROM b LEFT JOIN m_nest n ON n.nrEmp = b.nrEmp AND n.indAp = b.indAp AND n.per = b.per AND n.estNr = b.estNr`],
+    ["Conferência por competência", `CREATE OR REPLACE TABLE m_conf AS
+       WITH k AS (SELECT nrEmp, indAp, per FROM m_somarem UNION SELECT nrEmp, indAp, per FROM m_somaresc UNION SELECT nrEmp, indAp, per FROM m_somabase),
+       j AS (SELECT k.nrEmp, k.indAp, k.per, a.nrEmp IS NOT NULL AS tema, rs.nrEmp IS NOT NULL AS temr, b.nrEmp IS NOT NULL AS temb, a.rem AS a_rem, a.semtab, a.total, a.trabs, rs.rem AS r_rem, b.base AS b_base
+             FROM k LEFT JOIN m_somarem a ON a.nrEmp = k.nrEmp AND a.indAp = k.indAp AND a.per = k.per
+             LEFT JOIN m_somaresc rs ON rs.nrEmp = k.nrEmp AND rs.indAp = k.indAp AND rs.per = k.per
+             LEFT JOIN m_somabase b ON b.nrEmp = k.nrEmp AND b.indAp = k.indAp AND b.per = k.per),
+       r AS (SELECT *, CASE WHEN tema THEN xp_r2(a_rem) WHEN temr THEN 0.0 END AS rem, CASE WHEN temr THEN xp_r2(r_rem) ELSE 0.0 END AS resc, CASE WHEN temb THEN xp_r2(b_base) END AS base FROM j),
+       t AS (SELECT *, CASE WHEN rem IS NOT NULL THEN xp_r2(rem + resc) END AS tot FROM r),
+       d AS (SELECT *, CASE WHEN tot IS NOT NULL AND base IS NOT NULL THEN xp_r2(tot - base) END AS dif FROM t)
+       SELECT *, CASE WHEN tot IS NULL THEN 'Só no S-5011' WHEN base IS NULL THEN 'Sem S-5011' ELSE xp_sit(dif, base) END AS sit FROM d`],
+    ["Desligados", `CREATE OR REPLACE TABLE m_desl AS SELECT l.cpf, l.nrEmp, l.ind, l.perApur, arg_min(e.dt, e.seq) AS dt FROM m_rescl l JOIN m_resc e ON e.seq = l.seq GROUP BY l.cpf, l.nrEmp, l.ind, l.perApur`],
+    ["Resumo dos desligamentos", `CREATE OR REPLACE TABLE m_rgrp AS
+       SELECT seq, per, linhas, entra, outrosv, descv, info, sem FROM (
+         SELECT l.seq, l.perApur AS per, l.ind, count(*) AS linhas,
+           sum(CASE WHEN e.catFora = '1' OR NOT l.achou THEN 0 WHEN l.tp = '1' AND l.incCP IN ${XC_BASE} THEN l.val ELSE 0 END) AS entra,
+           sum(CASE WHEN e.catFora = '1' OR NOT l.achou THEN 0 WHEN l.tp = '1' THEN l.val ELSE 0 END) - sum(CASE WHEN e.catFora = '1' OR NOT l.achou THEN 0 WHEN l.tp = '1' AND l.incCP IN ${XC_BASE} THEN l.val ELSE 0 END) AS outrosv,
+           sum(CASE WHEN e.catFora = '1' OR NOT l.achou THEN 0 WHEN l.tp = '2' THEN l.val ELSE 0 END) AS descv,
+           sum(CASE WHEN e.catFora = '1' OR NOT l.achou THEN 0 WHEN l.tp NOT IN ('1', '2') THEN l.val ELSE 0 END) AS info,
+           sum(CASE WHEN e.catFora <> '1' AND NOT l.achou THEN l.val ELSE 0 END) AS sem
+         FROM m_rescl l JOIN m_resc e ON e.seq = l.seq GROUP BY l.seq, l.perApur, l.ind
+         UNION ALL
+         SELECT e.seq, substr(e.dt, 1, 7), '', 0, 0.0, 0.0, 0.0, 0.0, 0.0 FROM m_resc e WHERE e.vivo AND e.seq NOT IN (SELECT seq FROM m_rescl))`],
+    ["", `CREATE OR REPLACE TABLE m_rlid AS SELECT seq, count(*) AS lidas FROM m_rescl GROUP BY seq`],
+    ["Cruzamento do S-5011 por estabelecimento", `CREATE OR REPLACE TABLE m_c5 AS
+       WITH L AS (SELECT c.seq, c.nrEmp, c.indAp, c.per, c.id, c.recBase, c.recibo, l.ln, l.estNr, l.lot, l.rat, l.fap, l.ratAj, l.fpas, l.terc, l.susp, l.subst, COALESCE(b.campo, 'vrBcCp00') AS campo, COALESCE(b.valor, 0.0) AS valor
+                  FROM m_cs c JOIN x_csL l ON l.seq = c.seq LEFT JOIN x_csB b ON b.seq = l.seq AND b.ln = l.ln WHERE c.vivo),
+       E AS (SELECT nrEmp, indAp, per, estNr, count(DISTINCT concat_ws('|', fpas, terc, susp, subst, fap, rat, ratAj)) AS combos,
+               concat_ws(', ', CASE WHEN count(DISTINCT fpas) > 1 THEN 'FPAS' END, CASE WHEN count(DISTINCT terc) > 1 THEN 'Código OE' END, CASE WHEN count(DISTINCT susp) > 1 THEN 'Código OE suspenso' END,
+                 CASE WHEN count(DISTINCT subst) > 1 THEN 'Substituição patronal' END, CASE WHEN count(DISTINCT fap) > 1 THEN 'FAP' END, CASE WHEN count(DISTINCT rat) > 1 THEN 'RAT' END, CASE WHEN count(DISTINCT ratAj) > 1 THEN 'RAT ajustado' END) AS difs
+             FROM L GROUP BY nrEmp, indAp, per, estNr),
+       S AS (SELECT nrEmp, indAp, per, estNr, fpas, terc, susp, subst, fap, rat, ratAj, campo, sum(valor) AS base,
+               array_to_string(list_sort(list_distinct(list(lot) FILTER (WHERE lot <> ''))), ', ') AS lots, arg_min(id, seq * 1000000 + ln) AS id, arg_min(CASE WHEN recBase <> '' THEN recBase ELSE recibo END, seq * 1000000 + ln) AS rec
+             FROM L GROUP BY nrEmp, indAp, per, estNr, fpas, terc, susp, subst, fap, rat, ratAj, campo)
+       SELECT S.*, E.combos, E.difs FROM S JOIN E ON E.nrEmp = S.nrEmp AND E.indAp = S.indAp AND E.per = S.per AND E.estNr = S.estNr`]
+  ];
 
-    const porCod = new Map(), porCodTab = new Map();
-    const unicas = new Map(); estado.rubricas.forEach(r => { const k = [r.cod, r.tab, r.ini].join("|"), ex = unicas.get(k); if (!ex || ex.rank <= r.rank) unicas.set(k, r); });
-    [...unicas.values()].sort((a, b) => a.ini.localeCompare(b.ini)).forEach(r => {
-      (porCodTab.get(r.cod + "|" + r.tab) || porCodTab.set(r.cod + "|" + r.tab, []).get(r.cod + "|" + r.tab)).push(r);
-      (porCod.get(r.cod) || porCod.set(r.cod, []).get(r.cod)).push(r);
-    });
-    const rubDe = (cod, tab, per) => {
-      const lista = porCodTab.get(cod + "|" + tab) || porCod.get(cod); if (!lista) return null;
-      const p = per.length === 4 ? per + "-12" : per;
-      let v = null; for (const r of lista){ if (!r.ini || r.ini <= p) v = r; }
-      return v || lista[0];
-    };
-    const csChave = new Map();
-    css.forEach(c => c.linhas.forEach(l => {
-      const k1 = [l.estNr, l.per, l.lot].join("|"), k2 = [l.estNr, l.per].join("|");
-      if (!csChave.has(k1)) csChave.set(k1, l); if (!csChave.has(k2)) csChave.set(k2, l);
-    }));
-    const csDe = (estNr, per, lot) => {
-      const ps = [per]; if (per.length === 4) ps.push(per + "-12");
-      for (const p of ps){ const r = csChave.get([estNr, p, lot].join("|")) || csChave.get([estNr, p].join("|")); if (r) return r; }
-      return null;
-    };
-    // S-1299 fechou a competência (e o S-1298 só a reabre se for mais novo)
-    const fechamento = (nrEmp, per) => {
-      const f = estado.fech.get(nrEmp.slice(0, 8) + "|" + per) || estado.fech.get(nrEmp + "|" + per), r = estado.reabre.get(nrEmp.slice(0, 8) + "|" + per) || estado.reabre.get(nrEmp + "|" + per);
-      if (!f && !r) return "Sem S-1299";
-      if (r && (!f || r.rank > f.rank)) return "Reaberto (S-1298)";
-      return "Fechado";
-    };
-    const fechPer = (nrEmp, per) => { const k = nrEmp + "|" + per; if (!estado._fc) estado._fc = new Map(); if (!estado._fc.has(k)) estado._fc.set(k, fechamento(nrEmp, per)); return estado._fc.get(k); };
+  // Descrição de um conjunto: colunas [nome, expressão SQL], de onde sai, filtro e chaves de ordenação
+  function xdConjunto(o){
+    const cols = o.cols.map(c => c[0]), sel = o.cols.map(c => `${c[1]} AS ${dkAspas(c[0])}`).join(", "), keys = (o.keys || []).map((k, i) => `${k} AS _k${i}`);
+    const filtro = o.where ? ` WHERE ${o.where}` : "";
+    const inner = `SELECT ${sel}${keys.length ? ", " + keys.join(", ") : ""} FROM ${o.from}${filtro}`;
+    const ordem = (o.keys || []).map((_, i) => `_k${i}`).join(", ");
+    return { id: o.id, titulo: o.titulo, sub: o.sub, cols, num: new Set(o.num || []), arquivo: o.arquivo, sit: o.sit, pct: o.pct, nulo: o.nulo || {}, inner, ordem, temParticao: !!o.particao,
+      contar: `SELECT count(*) FROM ${o.from}${filtro}`, n: 0, dkId: o.id };
+  }
+  const XD_EMP = "COALESCE(em.razao, '')", XD_APUR = "xp_apur(indAp)";
+  const XD_LX = `m_l l JOIN m_rem e ON e.seq = l.seq
+      LEFT JOIN m_emp em ON em.raiz = left(l.nrEmp, 8) LEFT JOIN m_trab t ON t.cpf = l.cpf LEFT JOIN m_rubde d ON d.cod = l.cod AND d.tab = l.tab AND d.per = l.per
+      LEFT JOIN m_csde c ON c.estNr = l.estNr AND c.per = l.per AND c.lot = l.lot LEFT JOIN m_fechde f ON f.nrEmp = l.nrEmp AND f.per = l.perEv
+      LEFT JOIN m_est s ON s.nrEmp = l.nrEmp AND s.indAp = l.indAp AND s.per = l.perEv AND s.estNr = l.estNr CROSS JOIN m_cfg g`;
+  const XD_OK = "(g.semval OR COALESCE(s.ok, false))";
+  const XD_CRUZ = [
+    ["Período", "xp_comp(l.per)"], ["Tipo Rubrica", "CASE WHEN l.achou THEN xp_tp(l.tp) ELSE '' END"], ["Incidência Previdência Social", "l.incCP"], ["Natureza Rubrica", "COALESCE(d.nat, '')"], ["Descrição Rubrica", "COALESCE(d.descr, '')"],
+    ["Código Rubrica", "l.cod"], ["Tabela de Rubricas", "l.tab"], ["Vlr Total Rubrica", "l.val"], ["Validade do evento", "CASE WHEN l.achou THEN 'Válido' ELSE 'Corrompido' END"],
+    ["Número Inscrição", "xp_cnpj(l.nrEmp)"], ["Empresa", XD_EMP], ["Número Inscrição Estabelecimento", "xp_cnpj(l.estNr)"], ["Código Lotação", "l.lot"], ["Código Categoria", "l.cat"], ["CPF Trabalhador", "l.cpf"],
+    ["Nome Trabalhador", "COALESCE(t.nome, '')"], ["Data Admissão", "COALESCE(t.adm, '')"], ["Data Desligamento", "COALESCE(t.deslig, '')"], ["Indicador Apuração", "l.indAp"], ["Indicador Retificação", "e.indRetif"], ["Id Evento", "e.id"], ["Recibo", "e.recibo"],
+    ["Alíquota RAT Estabelecimento", "c.rat"], ["FAP Estabelecimento", "c.fap"], ["RAT Ajustado Estabelecimento", "c.ratAj"], ["Grau Exposição Agente Nocivo", "l.grau"], ["Alíquota Agente Nocivo", "xp_an(l.grau)"],
+    ["FPAS", "COALESCE(c.fpas, '')"], ["Código Terceiros", "COALESCE(c.terc, '')"], ["Código Terceiros Suspenso", "COALESCE(c.susp, '')"], ["Substituição Contribuição Previdenciária Patronal", "COALESCE(c.subst, '')"], ["Período Fechado (S-1299)", "COALESCE(f.st, 'Sem S-1299')"]
+  ];
+  const XD_RX = `m_rescl l JOIN m_resc e ON e.seq = l.seq LEFT JOIN m_emp em ON em.raiz = left(l.nrEmp, 8) LEFT JOIN m_trab t ON t.cpf = l.cpf LEFT JOIN m_rubde d ON d.cod = l.cod AND d.tab = l.tab AND d.per = l.per`;
+  const XD_ESP = (origem, per) => `SELECT xp_comp(${per}) AS per, xp_cnpj(l.nrEmp) AS nrEmp, ${XD_EMP} AS empresa, l.cpf, COALESCE(t.nome, '') AS nome, dl.dt, '${origem}' AS origem, xp_cnpj(l.estNr) AS est, l.lot, l.cod, l.tab, COALESCE(d.descr, '') AS descr,
+      CASE WHEN l.achou THEN xp_tp(l.tp) ELSE '' END AS tp, l.incCP, l.entra, l.val, e.id, e.recibo, ${per} AS perraw, l.seq AS sq, l.ln AS lnn`;
 
-    // 1) Cruzamento de eventos: S-1200 + S-1010 + S-5011 + S-1299 + S-2200/S-2299
-    const faltam = new Set(); let semCS = 0; const emp = [], empChave = [];
-    const somaRem = new Map();   // empregador|apuração|competência -> remuneração do S-1200
-    remuns.forEach(e => {
-      if (!e.linhas.length) return;
-      const t = estado.trab.get(e.cpf) || {};
-      e.linhas.forEach(l => {
-        const r = rubDe(l.cod, l.tab, l.per);
-        if (!r) faltam.add(l.cod + "|" + l.tab);
-        const c = csDe(l.estNr, l.per, l.lot); if (!c) semCS++;
-        empChave.push([e.nrEmp, e.indAp, e.perEv, l.estNr].join("|"));
-        emp.push([xCompOut(l.per), r ? xTp(r) : "", r ? r.incCP : "", r ? r.nat : "", r ? r.desc : "", l.cod, l.tab, l.val, r ? "Válido" : "Corrompido",
-          xCnpj(e.nrEmp), estado.emps.get(e.nrEmp.slice(0, 8)) || "", xCnpj(l.estNr), l.lot, l.cat, e.cpf, t.nome || "", t.adm || "", t.deslig || "", e.indAp, e.indRetif, e.id, e.recibo || "",
-          c ? c.rat : "", c ? c.fap : "", c ? c.ratAj : "", l.grau || "", xAn(l.grau), c ? c.fpas : "", c ? c.terc : "", c ? c.susp : "", c ? c.subst : "", fechPer(e.nrEmp, e.perEv)]);
-      });
-    });
-
-    // 1b) O S-1200 em si, uma linha por rubrica de cada trabalhador (válidos = recibo mais recente).
-    //     É daqui que a conferência soma: o valor dela é, linha a linha, o que está nesta tabela
-    const s1200 = [], porLot = new Map();
-    const lotAcc = (nrEmp, ind, per, est, lot) => { const k = [nrEmp, ind, per, est, String(lot).trim()].join("|"); if (!porLot.has(k)) porLot.set(k, { rem: 0, resc: 0, base: null }); return porLot.get(k); };
-    remuns.forEach(e => {
-      if (!e.linhas.length) return;
-      const chaveRem = [e.nrEmp, e.indAp, e.perEv].join("|");
-      if (!somaRem.has(chaveRem)) somaRem.set(chaveRem, { rem: 0, semTab: 0, total: 0, fora: new Map(), trabs: new Set() });
-      const acc = somaRem.get(chaveRem); acc.trabs.add(e.cpf);
-      const t = estado.trab.get(e.cpf) || {};
-      e.linhas.forEach(l => {
-        const r = rubDe(l.cod, l.tab, l.per);
-        const entra = !r ? "Sem S-1010" : (r.tp === "1" && XML_INC_BASE.has(r.incCP)) ? "Sim" : "Não";
-        if (entra === "Sim"){ acc.rem += l.val; lotAcc(e.nrEmp, e.indAp, e.perEv, l.estNr, l.lot).rem += l.val; }
-        else if (entra === "Sem S-1010") acc.semTab += l.val;
-        else { const k = `${XML_TP_RUBR[r.tp] || "tipo " + r.tp} · incidência ${r.incCP || "?"}`; acc.fora.set(k, (acc.fora.get(k) || 0) + l.val); }
-        acc.total += l.val;
-        s1200.push([xCompOut(l.per), xCompOut(e.perEv), xCnpj(e.nrEmp), estado.emps.get(e.nrEmp.slice(0, 8)) || "", xCnpj(l.estNr), l.lot, l.cat, e.cpf, t.nome || "", e.indAp, e.indRetif, l.cod, l.tab, r ? r.desc : "", r ? xTp(r) : "", r ? r.incCP : "", entra, l.grau || "", xAn(l.grau), l.val, e.id, e.recibo || "", fechPer(e.nrEmp, e.perEv)]);
-      });
-    });
-    const ordS = c => xPerOrd(String(c).split("/").reverse().join("-"));
-    s1200.sort((x, y) => ordS(x[1]).localeCompare(ordS(y[1])) || ordS(x[0]).localeCompare(ordS(y[0])) || x[7].localeCompare(y[7]) || String(x[11]).localeCompare(String(y[11])));
-    if (s1200.length) conjuntos.push({ id: "s1200", titulo: "S-1200 · Remuneração do trabalhador", sub: "Uma linha por rubrica, só o mais recente de cada trabalhador e competência (categorias 1xx). A Conferência soma daqui: linhas com “Entra na base” = Sim",
-      cols: ["Período", "Período Apuração", "Número Inscrição", "Empresa", "Número Inscrição Estabelecimento", "Código Lotação", "Código Categoria", "CPF Trabalhador", "Nome Trabalhador", "Indicador Apuração", "Indicador Retificação", "Código Rubrica", "Tabela de Rubricas", "Descrição Rubrica", "Tipo Rubrica", "Incidência Previdência Social", "Entra na base", "Grau Exposição Agente Nocivo", "Alíquota Agente Nocivo", "Vlr Rubrica", "Id Evento", "Recibo", "Período Fechado (S-1299)"],
-      rows: s1200, num: new Set(["Vlr Rubrica", "Alíquota Agente Nocivo"]), arquivo: "S-1200 Remuneracao" });
-
-    // 1c) As verbas rescisórias do S-2299, na mesma lógica da tabela do S-1200
-    const s2299 = [], somaResc = new Map();
-    rescs.forEach(e => {
-      const t = estado.trab.get(e.cpf) || {};
-      e.linhas.forEach(l => {
-        const chave = [e.nrEmp, l.ind, l.perApur].join("|");
-        if (!somaResc.has(chave)) somaResc.set(chave, { rem: 0, fora: new Map() });
-        const acc = somaResc.get(chave), r = rubDe(l.cod, l.tab, l.per);
-        const entra = e.catFora ? "Categoria fora" : !r ? "Sem S-1010" : (r.tp === "1" && XML_INC_BASE.has(r.incCP)) ? "Sim" : "Não";
-        if (entra === "Sim"){ acc.rem += l.val; lotAcc(e.nrEmp, l.ind, l.perApur, l.estNr, l.lot).resc += l.val; }
-        else if (entra === "Não"){ const k = `Rescisão · ${XML_TP_RUBR[r.tp] || "tipo " + r.tp} · incidência ${r.incCP || "?"}`; acc.fora.set(k, (acc.fora.get(k) || 0) + l.val); }
-        const x = e.extra, dh = x.dh || "", dhOut = dh.length >= 14 ? `${dh.slice(6, 8)}/${dh.slice(4, 6)}/${dh.slice(0, 4)} ${dh.slice(8, 10)}:${dh.slice(10, 12)}:${dh.slice(12, 14)}` : "";
-        s2299.push([xCompOut(l.perApur), xCnpj(e.nrEmp), estado.emps.get(e.nrEmp.slice(0, 8)) || "", xCnpj(l.estNr), l.lot, e.cpf, x.nis, x.mat, t.nome || "", x.mtv, e.dt, x.api, x.pens, x.cump, x.indRetif, x.nrRetif, l.dmId, l.ind, l.cod, l.tab, r ? r.desc : "", r ? xTp(r) : "", r ? r.incCP : "", entra, l.qtd === "" ? "" : xNum(l.qtd), l.fator === "" ? "" : xNum(l.fator), l.unit === "" ? "" : xNum(l.unit), l.val, l.grau, e.id, e.recibo || "", dhOut]);
-      });
-    });
-    s2299.sort((x, y) => ordS(x[0]).localeCompare(ordS(y[0])) || x[5].localeCompare(y[5]));
-    if (s2299.length) conjuntos.push({ id: "s2299", titulo: "S-2299 · Verbas rescisórias", sub: "Uma linha por rubrica, só o mais recente de cada desligamento. A Conferência soma daqui as linhas com “Entra na base” = Sim",
-      cols: ["Período Apuração", "Número Inscrição", "Empresa", "Número Inscrição Estabelecimento", "Código Lotação", "CPF Trabalhador", "NIS Trabalhador", "Matrícula", "Nome Trabalhador", "Motivo Desligamento", "Data Desligamento", "Indicador Pagamento API", "Pensão Alimentícia", "Indicador Cumprimento Aviso", "Indicador Retificação", "Recibo Retificado", "Id Demonstrativo", "Indicador Apuração", "Código Rubrica", "Tabela de Rubricas", "Descrição Rubrica", "Tipo Rubrica", "Incidência Previdência Social", "Entra na base", "Qtd Rubrica", "Fator Rubrica", "Vlr Unitário Rubrica", "Vlr Rubrica", "Grau Exposição Agente Nocivo", "Id Evento", "Recibo", "Data Recepção"],
-      rows: s2299, num: new Set(["Qtd Rubrica", "Fator Rubrica", "Vlr Unitário Rubrica", "Vlr Rubrica"]), arquivo: "S-2299 Verbas rescisorias" });
-
-    // 1d) Resumo por desligamento: uma linha por S-2299, com os totais separados por tipo, para comparar com o que você espera do desligamento
-    const resumo = [];
-    rescs.forEach(e => {
-      const t = estado.trab.get(e.cpf) || {}, grupos = new Map();
-      e.linhas.forEach(l => {
-        const k = l.perApur + "|" + l.ind; if (!grupos.has(k)) grupos.set(k, { per: l.perApur, linhas: 0, entra: 0, outrosV: 0, desc: 0, info: 0, sem: 0 });
-        const g = grupos.get(k), r = rubDe(l.cod, l.tab, l.per); g.linhas++;
-        if (e.catFora) return;
-        if (!r) g.sem += l.val;
-        else if (r.tp === "1"){ if (XML_INC_BASE.has(r.incCP)) g.entra += l.val; else g.outrosV += l.val; }
-        else if (r.tp === "2") g.desc += l.val; else g.info += l.val;
-      });
-      if (!grupos.size) grupos.set("", { per: (e.dt || "").slice(0, 7), linhas: 0, entra: 0, outrosV: 0, desc: 0, info: 0, sem: 0 });
-      const lidas = e.linhas.length, obs = [];
-      if (e.catFora) obs.push(`categoria ${e.cat} fora da base (não somado)`);
-      if (lidas !== e.totalXml) obs.push(`o XML tem ${e.totalXml} verba(s) e foram lidas ${lidas}`);
-      grupos.forEach(g => {
-        const venc = g.entra + g.outrosV;
-        resumo.push([xCompOut(g.per), xCnpj(e.nrEmp), estado.emps.get(e.nrEmp.slice(0, 8)) || "", e.cpf, t.nome || "", e.extra.mat, e.dt, e.extra.mtv, e.extra.indRetif, e.id, e.recibo || "", e.totalXml, lidas,
-          xMoeda(g.entra), xMoeda(g.outrosV), xMoeda(g.sem), xMoeda(venc), xMoeda(g.desc), xMoeda(g.info), xMoeda(venc - g.desc), obs.join("; ")]);
-      });
-    });
-    resumo.sort((x, y) => ordS(x[0]).localeCompare(ordS(y[0])) || x[3].localeCompare(y[3]) || String(x[6]).localeCompare(String(y[6])));
-    if (resumo.length) conjuntos.push({ id: "s2299res", titulo: "S-2299 · Resumo por desligamento", sub: "Uma linha por desligamento: vencimentos que entram na base, outros vencimentos, descontos e líquido, e quantas verbas o XML tem contra quantas foram lidas",
-      cols: ["Período Apuração", "Número Inscrição", "Empresa", "CPF Trabalhador", "Nome Trabalhador", "Matrícula", "Data Desligamento", "Motivo Desligamento", "Indicador Retificação", "Id Evento", "Recibo", "Verbas no XML", "Verbas lidas", "Vencimentos que entram na base", "Outros vencimentos", "Vencimentos sem S-1010 (não somados)", "Total de vencimentos", "Descontos", "Informativas", "Líquido (vencimentos − descontos)", "Observação"],
-      rows: resumo, num: new Set(["Verbas no XML", "Verbas lidas", "Vencimentos que entram na base", "Outros vencimentos", "Vencimentos sem S-1010 (não somados)", "Total de vencimentos", "Descontos", "Informativas", "Líquido (vencimentos − descontos)"]), arquivo: "S-2299 Resumo por desligamento" });
-
-    // 1e) Espelho do desligado no mês: tudo o que ele recebeu na competência do desligamento, S-1200 (o mês) + S-2299 (as verbas), linha a linha
-    const desl = new Map(), espelho = [];
-    rescs.forEach(e => e.linhas.forEach(l => { const k = [e.cpf, e.nrEmp, l.ind, l.perApur].join("|"); if (!desl.has(k)) desl.set(k, { cpf: e.cpf, nrEmp: e.nrEmp, per: l.perApur, dt: e.dt, nome: (estado.trab.get(e.cpf) || {}).nome || "" }); }));
-    const espLinha = (origem, k, e, l, r, entra, per, ind) => {
-      const d = desl.get(k);
-      espelho.push([xCompOut(per), xCnpj(e.nrEmp), estado.emps.get(e.nrEmp.slice(0, 8)) || "", d.cpf, d.nome, d.dt, origem, xCnpj(l.estNr), l.lot, l.cod, l.tab, r ? r.desc : "", r ? xTp(r) : "", r ? r.incCP : "", entra, l.val, e.id, e.recibo || ""]);
-    };
-    remuns.forEach(e => { const k = [e.cpf, e.nrEmp, e.indAp, e.perEv].join("|"); if (!desl.has(k)) return;
-      e.linhas.forEach(l => { const r = rubDe(l.cod, l.tab, l.per), entra = !r ? "Sem S-1010" : (r.tp === "1" && XML_INC_BASE.has(r.incCP)) ? "Sim" : "Não"; espLinha("S-1200", k, e, l, r, entra, e.perEv); }); });
-    rescs.forEach(e => e.linhas.forEach(l => { const r = rubDe(l.cod, l.tab, l.per), entra = e.catFora ? "Categoria fora" : !r ? "Sem S-1010" : (r.tp === "1" && XML_INC_BASE.has(r.incCP)) ? "Sim" : "Não"; espLinha("S-2299", [e.cpf, e.nrEmp, l.ind, l.perApur].join("|"), e, l, r, entra, l.perApur); }));
-    espelho.sort((x, y) => ordS(x[0]).localeCompare(ordS(y[0])) || x[3].localeCompare(y[3]) || x[6].localeCompare(y[6]) || String(x[9]).localeCompare(String(y[9])));
-    if (espelho.length) conjuntos.push({ id: "espelhoDeslig", titulo: "Espelho do desligado no mês (S-1200 + S-2299)", sub: "Tudo o que o desligado recebeu na competência do desligamento: as rubricas do S-1200 do mês e as do S-2299, linha a linha",
-      cols: ["Período Apuração", "Número Inscrição", "Empresa", "CPF Trabalhador", "Nome Trabalhador", "Data Desligamento", "Origem", "Número Inscrição Estabelecimento", "Código Lotação", "Código Rubrica", "Tabela de Rubricas", "Descrição Rubrica", "Tipo Rubrica", "Incidência Previdência Social", "Entra na base", "Vlr Rubrica", "Id Evento", "Recibo"],
-      rows: espelho, num: new Set(["Vlr Rubrica"]), arquivo: "Espelho do desligado no mes" });
-
-    // 2) Conferência: remuneração do S-1200 + verbas rescisórias x base do S-5011 (válidos = recibo mais recente)
-    const somaBase = new Map();
-    css.forEach(c => { const k = [c.nrEmp, c.indAp, c.per].join("|"); somaBase.set(k, (somaBase.get(k) || 0) + c.baseTotal); });
-    const conf = []; let divergencias = 0;
-    [...new Set([...somaRem.keys(), ...somaResc.keys(), ...somaBase.keys()])].forEach(k => {
-      const [nrEmp, indAp, per] = k.split("|"), a = somaRem.get(k), rs = somaResc.get(k), b = somaBase.get(k);
-      const rem = a ? xMoeda(a.rem) : (rs ? 0 : null), resc = rs ? xMoeda(rs.rem) : 0, tot = rem === null ? null : xMoeda(rem + resc), base = b !== undefined ? xMoeda(b) : null;
-      let sit, dif = null;
-      if (tot === null) sit = "Só no S-5011"; else if (base === null) sit = "Sem S-5011";
-      else { dif = xMoeda(tot - base); sit = xSituacao(dif, base); }
-      if (sit !== "Válido" && sit !== "Válido com Ressalvas") divergencias++;
-            conf.push([estado.emps.get(nrEmp.slice(0, 8)) || "-", nrEmp, per, indAp === "2" ? "13º salário" : "Mensal", rem === null ? 0 : rem, resc, tot === null ? 0 : tot, base === null ? 0 : base, dif === null ? 0 : dif, sit, fechPer(nrEmp, per) || "-",
-        a ? a.trabs.size : "-", a ? xMoeda(a.semTab) : "-", a ? xMoeda(a.total) : 0, dif === null || !base ? "-" : dif / base]);
-    });
-    conf.sort((x, y) => xPerOrd(x[2]).localeCompare(xPerOrd(y[2])) || x[1].localeCompare(y[1]));
-    conf.forEach(r => { r[1] = xCnpj(r[1]); r[2] = xCompOut(r[2]); });
-    if (conf.length) conjuntos.push({ id: "conferencia", titulo: "Auditoria de Bases e Rubricas", sub: "Soma das tabelas S-1200 e S-2299 (linhas com “Entra na base” = Sim, por Período Apuração) contra a base do S-5011",
-      cols: ["Empresa", "Número Inscrição", "Período", "Apuração", "Remuneração S-1200", "Verbas rescisórias (S-2299)", "Total S-1200 + S-2299", "Base S-5011", "Diferença", "Situação", "Fechamento (S-1299)", "Trabalhadores no S-1200", "Valor sem S-1010", "Total das rubricas do S-1200 (todas)", "Divergência (%)"],
-      rows: conf, pct: "Divergência (%)", sit: "Situação", num: new Set(["Remuneração S-1200", "Verbas rescisórias (S-2299)", "Total S-1200 + S-2299", "Base S-5011", "Diferença", "Valor sem S-1010", "Total das rubricas do S-1200 (todas)", "Divergência (%)"]), arquivo: "Auditoria de Bases e Rubricas" });
-
-    // 2b) A mesma conferência por estabelecimento e lotação: mostra em qual lotação a diferença aparece
-    css.forEach(c => c.linhas.forEach(l => { const a = lotAcc(l.nrEmp, c.indAp, c.per, l.estNr, l.lot); a.base = (a.base || 0) + l.base; }));
-    const confLot = [...porLot].map(([k, v]) => { const [nrEmp, indAp, per, est, lot] = k.split("|"), tot = xMoeda(v.rem + v.resc), base = v.base === null ? "" : xMoeda(v.base), dif = base === "" ? "" : xMoeda(tot - base);
-      return [estado.emps.get(nrEmp.slice(0, 8)) || "", xCnpj(nrEmp), per, indAp === "2" ? "13º salário" : "Mensal", xCnpj(est), lot, xMoeda(v.rem), xMoeda(v.resc), tot, base, dif, base === "" ? "Sem S-5011" : xSituacao(dif, base)]; });
-    confLot.sort((x, y) => xPerOrd(x[2]).localeCompare(xPerOrd(y[2])) || x[4].localeCompare(y[4]) || String(x[5]).localeCompare(String(y[5])));
-    confLot.forEach(r => { r[2] = xCompOut(r[2]); });
-    if (confLot.length) conjuntos.push({ id: "conferenciaLot", titulo: "Auditoria de Bases e Rubricas (por Estabelecimento)", sub: "S-1200 + S-2299 contra o S-5011, em cada estabelecimento e lotação (para achar onde a diferença está)",
-      cols: ["Empresa", "Número Inscrição", "Período", "Apuração", "Número Inscrição Estabelecimento", "Código Lotação", "Remuneração S-1200", "Verbas rescisórias (S-2299)", "Total S-1200 + S-2299", "Base S-5011", "Diferença", "Situação"],
-      rows: confLot, num: new Set(["Remuneração S-1200", "Verbas rescisórias (S-2299)", "Total S-1200 + S-2299", "Base S-5011", "Diferença"]), arquivo: "Auditoria de Bases e Rubricas (por Estabelecimento)" });
-
-    // 2d) Conferência por competência e estabelecimento: só segue para a análise (cruzamento) o que está Válido ou Válido com Ressalvas
-    const porEstab = new Map();
-    porLot.forEach((v, k) => { const [nrEmp, ind, per, est] = k.split("|"), k4 = [nrEmp, ind, per, est].join("|"); if (!porEstab.has(k4)) porEstab.set(k4, { tot: 0, base: 0, temBase: false });
-      const a = porEstab.get(k4); a.tot += v.rem + v.resc; if (v.base !== null){ a.base += v.base; a.temBase = true; } });
-    const sitEst = k => { const a = porEstab.get(k); return !a || !a.temBase ? "Sem S-5011" : xSituacao(xMoeda(a.tot - a.base), xMoeda(a.base)); };
-    const pctEst = k => { const a = porEstab.get(k); return a && a.temBase && a.base ? (a.tot - a.base) / a.base : "-"; };
-    const semValidacao = css.length === 0;   // sem nenhum S-5011 não há como validar: o cruzamento segue completo
-    const okEst = k => semValidacao || ["Válido", "Válido com Ressalvas"].includes(sitEst(k));
-    const linhasEst = new Map(); empChave.forEach(k => linhasEst.set(k, (linhasEst.get(k) || 0) + 1));
-    const empOk = [], empFora = [];
-    emp.forEach((r, i) => { if (okEst(empChave[i])) empOk.push(r); else empFora.push([...r, sitEst(empChave[i]), pctEst(empChave[i])]); });
-    const confEst = [...porEstab].map(([k, a]) => { const [nrEmp, ind, per, est] = k.split("|"), n = linhasEst.get(k) || 0, st = a.temBase ? sitEst(k) : "Sem S-5011", base = a.temBase ? xMoeda(a.base) : 0, tot = xMoeda(a.tot);
-      return [estado.emps.get(nrEmp.slice(0, 8)) || "-", xCnpj(nrEmp), per, ind === "2" ? "13º salário" : "Mensal", xCnpj(est), tot, base, a.temBase ? xMoeda(tot - base) : 0, st, pctEst(k), n, !n ? "-" : okEst(k) ? "Sim" : "Não"]; });
-    confEst.sort((x, y) => xPerOrd(x[2]).localeCompare(xPerOrd(y[2])) || x[4].localeCompare(y[4]));
-    confEst.forEach(r => { r[2] = xCompOut(r[2]); });
-    if (confEst.length) conjuntos.push({ id: "conferenciaEst", titulo: "Conferência por competência e estabelecimento", sub: "É esta a conferência que decide o que entra na análise: só segue o que está Válido ou Válido com Ressalvas",
-      cols: ["Empresa", "Número Inscrição", "Período", "Apuração", "Número Inscrição Estabelecimento", "Total S-1200 + S-2299", "Base S-5011", "Diferença", "Situação", "Divergência (%)", "Linhas no cruzamento", "Entra na análise"],
-      rows: confEst, pct: "Divergência (%)", sit: "Situação", num: new Set(["Total S-1200 + S-2299", "Base S-5011", "Diferença", "Divergência (%)", "Linhas no cruzamento"]), arquivo: "Conferencia por competencia e estabelecimento" });
-    const colsCruz = XML_COL_RUBRICAS.slice();
-    if (empOk.length) conjuntos.unshift({ id: "cruzamento", titulo: "Cruzamento de eventos (para o módulo Rubricas)", sub: semValidacao ? "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · sem S-5011 não foi possível validar: todas as linhas seguem" : "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · só competência + estabelecimento Válido ou Válido com Ressalvas", cols: colsCruz, rows: empOk, num: XML_NUM, arquivo: "Cruzamento de eventos" });
-    if (empFora.length) conjuntos.splice(empOk.length ? 1 : 0, 0, { id: "cruzamentoFora", titulo: "Cruzamento de eventos · Excluídas (inválidas)", sub: "Linhas que ficaram de fora da análise: a competência + estabelecimento não está Válido nem Válido com Ressalvas",
-      cols: [...colsCruz, "Situação (competência + estabelecimento)", "Divergência (%)"], rows: empFora, pct: "Divergência (%)", num: new Set([...XML_NUM, "Divergência (%)"]), arquivo: "Cruzamento de eventos excluidas" });
-
-    // 2c) Cruzamento do S-5011: as bases segregadas por competência, estabelecimento, código de outras entidades, substituição patronal, grau de exposição, FAP e RAT, apontando divergências de códigos entre as lotações
-    const BASE_GRAU = { vrBcCp00: "1", vrBcCp15: "2", vrBcCp20: "3", vrBcCp25: "4" };
-    const attrs = l => [l.fpas, l.terc, l.susp, l.subst, l.fap, l.rat, l.ratAj].join("|");
-    const porEst = new Map();   // apuração|competência|estabelecimento -> o que há de diferente entre as lotações
-    css.forEach(c => c.linhas.forEach(l => { const k = [l.nrEmp, c.indAp, l.per, l.estNr].join("|"); if (!porEst.has(k)) porEst.set(k, { combos: new Set(), f: { FPAS: new Set(), "Código OE": new Set(), "Código OE suspenso": new Set(), "Substituição patronal": new Set(), FAP: new Set(), RAT: new Set(), "RAT ajustado": new Set() } });
-      const e = porEst.get(k); e.combos.add(attrs(l)); e.f.FPAS.add(l.fpas); e.f["Código OE"].add(l.terc); e.f["Código OE suspenso"].add(l.susp); e.f["Substituição patronal"].add(l.subst); e.f.FAP.add(l.fap); e.f.RAT.add(l.rat); e.f["RAT ajustado"].add(l.ratAj); }));
-    const seg = new Map();
-    css.forEach(c => c.linhas.forEach(l => {
-      const campos = Object.keys(l.bases).length ? Object.keys(l.bases) : ["vrBcCp00"];
-      campos.forEach(campo => {
-        const k = [l.nrEmp, c.indAp, l.per, l.estNr, attrs(l), campo].join("|");
-        if (!seg.has(k)) seg.set(k, { c, l, campo, base: 0, lots: new Set() });
-        const g = seg.get(k); g.base += l.bases[campo] || 0; if (l.lot !== "" && l.lot !== undefined) g.lots.add(l.lot);
-      });
-    }));
-    const cruz5011 = [...seg.values()].map(g => {
-      const l = g.l, e = porEst.get([l.nrEmp, g.c.indAp, l.per, l.estNr].join("|")), dif = Object.entries(e.f).filter(([, v]) => v.size > 1).map(([n]) => n);
-      return [xCompOut(l.per), g.c.indAp === "2" ? "13º salário" : "Mensal", xCnpj(l.nrEmp), estado.emps.get(l.nrEmp.slice(0, 8)) || "", xCnpj(l.estNr), l.fpas, l.terc, l.susp, l.subst, BASE_GRAU[g.campo] || "", g.campo, l.fap, l.rat, l.ratAj, xMoeda(g.base),
-        [...g.lots].sort().join(", "), e.combos.size, dif.length ? "Sim" : "Não", dif.join(", "), g.c.id, g.c.recBase || g.c.recibo || ""];
-    });
-    cruz5011.sort((x, y) => xPerOrd(x[0].split("/").reverse().join("-")).localeCompare(xPerOrd(y[0].split("/").reverse().join("-"))) || x[4].localeCompare(y[4]) || String(x[5]).localeCompare(String(y[5])) || String(x[6]).localeCompare(String(y[6])) || String(x[9]).localeCompare(String(y[9])));
-    if (cruz5011.length) conjuntos.push({ id: "s5011cruz", titulo: "S-5011 · Cruzamento de bases por estabelecimento", sub: "Bases segregadas por competência, estabelecimento, código de outras entidades, substituição patronal, grau de exposição, FAP e RAT, com as divergências de códigos entre lotações",
-      cols: ["Período", "Apuração", "Número Inscrição", "Empresa", "Número Inscrição Estabelecimento", "FPAS", "Código OE", "Código OE Suspenso", "Substituição Patronal", "Grau Exposição", "Campo da Base", "FAP", "RAT", "RAT Ajustado", "Base CP", "Lotações", "Combinações no estabelecimento", "Divergência de códigos", "Campos divergentes", "Id Evento", "Recibo"],
-      rows: cruz5011, num: new Set(["FAP", "RAT", "RAT Ajustado", "Base CP"]), arquivo: "S-5011 Cruzamento de bases por estabelecimento" });
-
-    // 3) Tabela de rubricas
-    const tr = [...unicas.values()].sort((a, b) => a.cod.localeCompare(b.cod) || a.ini.localeCompare(b.ini))
-      .map(r => [r.cod, r.tab, r.ini, r.fim, r.desc, r.nat, xTp(r), r.incCP, r.incIRRF, r.incFGTS, r.id]);
-    if (tr.length) conjuntos.push({ id: "s1010", titulo: "S-1010 · Tabela de rubricas", sub: "Uma linha por rubrica e validade", cols: ["Código Rubrica", "Tabela de Rubricas", "Início Validade", "Fim Validade", "Descrição Rubrica", "Natureza Rubrica", "Tipo Rubrica", "Incidência Previdência Social", "Incidência IRRF", "Incidência FGTS", "Id Evento"], rows: tr, num: new Set(), arquivo: "S-1010 Tabela de rubricas" });
-
-    // 4) S-5011 (com as bases por tipo, para você conferir)
-    const nomesBase = [...new Set(css.flatMap(c => c.linhas.flatMap(l => Object.keys(l.bases))))].sort();
-    const csRaw = []; css.forEach(c => c.linhas.forEach(l => csRaw.push({ per: l.per, est: l.estNr, row: [xCompOut(l.per), xCnpj(l.nrEmp), estado.emps.get(l.nrEmp.slice(0, 8)) || "", xCnpj(l.estNr), l.lot, l.rat, l.fap, l.ratAj, l.fpas, l.terc, l.susp, l.subst, xMoeda(l.base), ...nomesBase.map(n => xMoeda(l.bases[n] || 0)), c.id, c.recBase || c.recibo || ""] })));
-    csRaw.sort((a, b) => xPerOrd(a.per).localeCompare(xPerOrd(b.per)) || a.est.localeCompare(b.est));
-    const cs = csRaw.map(x => x.row);
-    if (cs.length) conjuntos.push({ id: "s5011", titulo: "S-5011 · Alíquotas e bases por lotação", sub: "Mais recente de cada competência", cols: ["Período", "Número Inscrição", "Empresa", "Número Inscrição Estabelecimento", "Código Lotação", "Alíquota RAT Estabelecimento", "FAP Estabelecimento", "RAT Ajustado Estabelecimento", "FPAS", "Código Terceiros", "Código Terceiros Suspenso", "Substituição Contribuição Previdenciária Patronal", "Base CP Total", ...nomesBase, "Id Evento", "Recibo"],
-      rows: cs, num: new Set(["Alíquota RAT Estabelecimento", "FAP Estabelecimento", "RAT Ajustado Estabelecimento", "Base CP Total", ...nomesBase]), arquivo: "S-5011 Aliquotas e bases" });
-
-    // 4b) S-5001 pronto para o módulo Bases: FPAS e código de outras entidades vêm do S-5011 da mesma lotação
-    const bs = []; [...estado.bases.values()].filter(vivo).forEach(b => b.linhas.forEach(l => {
-      const c = csDe(l.estNr, b.per, l.lot), oe = c && c.terc !== "" ? Math.max(0, (parseInt(c.terc, 10) || 0) - (parseInt(c.susp, 10) || 0)) : "";
-      bs.push({ per: b.per, est: l.estNr, cpf: b.cpf, row: [xCompOut(b.per), b.indAp === "2" ? "13º salário" : "Mensal", xCnpj(b.nrEmp), estado.emps.get(b.nrEmp.slice(0, 8)) || "", b.cpf, (estado.trab.get(b.cpf) || {}).nome || "",
-        l.mat, l.cat, l.estTp === "4" ? "CNO" : l.estTp === "1" ? "CNPJ" : l.estTp, xCnpj(l.estNr), l.lot, l.ind13, l.tp, xMoeda(l.val), c ? c.fpas : "", c ? c.terc : "", c ? c.susp : "", oe, b.recBase, b.id] });
-    }));
-    bs.sort((a, b) => xPerOrd(a.per).localeCompare(xPerOrd(b.per)) || a.est.localeCompare(b.est) || a.cpf.localeCompare(b.cpf));
-    if (bs.length) conjuntos.push({ id: "s5001", titulo: "S-5001 · Bases por trabalhador", sub: "Mais recente de cada CPF e competência, com FPAS e código de outras entidades do S-5011 da lotação. É o arquivo que o módulo Bases lê",
-      cols: ["Período Apuração", "Indicador Apuração", "Número Inscrição", "Razão Social", "CPF Trabalhador", "Nome Trabalhador", "Matrícula", "Código Categoria", "Tipo Inscrição Lotação", "Número Inscrição Lotação", "Código Lotação Tributária",
-        "Indicativo 13º (ind13)", "Tipo Vlr Apuração Contribuição", "Vlr Base Cálculo", "FPAS", "Código Terceiros", "Código Terceiros Suspenso", "Código OE", "Recibo Arquivo Base", "Id Evento"],
-      rows: bs.map(x => x.row), num: new Set(["Vlr Base Cálculo"]), arquivo: "S-5001 Bases por trabalhador" });
-
-    // 5) Demais eventos
-    for (const [nome, mapa] of estado.outros){
-      const linhas = []; mapa.forEach(m => { if (vivo(m)) m.linhas.forEach(l => linhas.push(l)); });
-      if (!linhas.length) continue;
-      const cols = []; const vistos = new Set(); linhas.forEach(l => { for (const k in l) if (!vistos.has(k)){ vistos.add(k); cols.push(k); } });
-      const num = new Set(cols.filter(xEhValor));
-      const rows = linhas.map(l => cols.map(c => { const v = l[c] ?? ""; if (xEhComp(c)) return xCompOut(v); if (xEhInsc(c)) return xCnpj(v); return num.has(c) && v !== "" ? xNum(v) : v; }));
-      const [cod, desc] = XML_EVT[nome] || [nome, nome];
-      conjuntos.push({ id: nome, titulo: `${cod} · ${desc}`, sub: "Tabela achatada do evento", cols, rows, num, arquivo: `${cod} ${desc}` });
+  // Monta as etapas e devolve os conjuntos (com a contagem de cada um)
+  async function dkMontar(aoEtapa){
+    let k = 0, nome = "";
+    for (const [rot, sql] of DK_ETAPAS){
+      if (rot) nome = rot;
+      if (aoEtapa) aoEtapa(k, DK_ETAPAS.length, nome);
+      await dkExec(sql); k++;
+      await xcCede();
     }
-    return { conjuntos, faltam: faltam.size, semCS, divergencias, comparadas: conf.length, excluidas: empFora.length, semValidacao };
+    const maxSeq = await dkUm("SELECT COALESCE(max(seq), 0) FROM x_ev");
+    await dkExec("DELETE FROM x_meta WHERE k = 'montado'"); await dkExec(`INSERT INTO x_meta VALUES ('montado', ${dkLit(String(maxSeq))})`);
+    return dkDefinir();
+  }
+  const dkMontado = async () => { const v = await dkLinhas("SELECT v FROM x_meta WHERE k = 'montado'"); return v.length ? Number(v[0][0]) : -1; };
+
+  // Estatísticas do que foi lido e a lista dos conjuntos disponíveis (as tabelas m_* já precisam existir)
+  async function dkDefinir(){
+    const R = {};
+    const [[lidos, unicos, rem, remV, cs, csV, nres, rescU, fe, feU, re, reU, ba, baU, rescV]] = await dkLinhas(`SELECT
+      (SELECT count(*) FROM x_ev), (SELECT count(*) FROM m_ev),
+      (SELECT count(*) FROM m_ev WHERE nome = 'evtRemun'), (SELECT count(*) FROM m_rem), (SELECT count(*) FROM m_ev WHERE nome = 'evtCS'), (SELECT count(*) FROM m_cs),
+      (SELECT count(*) FROM m_ev e JOIN x_resc r ON r.seq = e.seq), (SELECT count(*) FROM m_resc),
+      (SELECT count(*) FROM m_ev WHERE nome = 'evtFechaEvPer'), (SELECT count(*) FROM m_fech), (SELECT count(*) FROM m_ev WHERE nome = 'evtReabreEvPer'), (SELECT count(*) FROM m_reab),
+      (SELECT count(*) FROM m_ev WHERE nome = 'evtBasesTrab'), (SELECT count(*) FROM m_bas), 0`);
+    const [[remVivos, csVivos]] = await dkLinhas("SELECT (SELECT count(*) FROM m_rem WHERE vivo), (SELECT count(*) FROM m_cs WHERE vivo)");
+    R.lidos = lidos;
+    R.descartados = (lidos - unicos) + (rem - remV) + (cs - csV) + (nres - rescU) + (fe - feU) + (re - reU) + (ba - baU);
+    R.porRecibo = (remV - remVivos) + (csV - csVivos);
+    const [[faltam, semCS, nLinhas]] = await dkLinhas("SELECT (SELECT count(DISTINCT cod || '|' || tab) FROM m_l WHERE NOT achou), (SELECT count(*) FROM m_l l LEFT JOIN m_csde c ON c.estNr = l.estNr AND c.per = l.per AND c.lot = l.lot WHERE c.estNr IS NULL OR c.achou IS NULL), (SELECT count(*) FROM m_l)");
+    R.faltam = faltam; R.semCS = semCS;
+    R.semValidacao = await dkUm("SELECT semval FROM m_cfg");
+
+    const cj = [];
+    const cruz = xdConjunto({ id: "cruzamento", titulo: "Cruzamento de eventos (para o módulo Rubricas)", arquivo: "Cruzamento de eventos", cols: XD_CRUZ, num: [...XML_NUM], from: XD_LX, where: XD_OK, particao: true,
+      sub: R.semValidacao ? "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · sem S-5011 não foi possível validar: todas as linhas seguem" : "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · só competência + estabelecimento Válido ou Válido com Ressalvas",
+      keys: ["xp_per_ord(l.perEv)", "l.seq", "l.ln"] });
+    const fora = xdConjunto({ id: "cruzamentoFora", titulo: "Cruzamento de eventos · Excluídas (inválidas)", arquivo: "Cruzamento de eventos excluidas", particao: true,
+      sub: "Linhas que ficaram de fora da análise: a competência + estabelecimento não está Válido nem Válido com Ressalvas",
+      cols: [...XD_CRUZ, ["Situação (competência + estabelecimento)", "COALESCE(s.sit, 'Sem S-5011')"], ["Divergência (%)", "s.pct"]], num: [...XML_NUM, "Divergência (%)"], pct: "Divergência (%)", nulo: { "Divergência (%)": "-" },
+      from: XD_LX, where: `NOT ${XD_OK}`, keys: ["xp_per_ord(l.perEv)", "l.seq", "l.ln"] });
+    const s1200 = xdConjunto({ id: "s1200", titulo: "S-1200 · Remuneração do trabalhador", arquivo: "S-1200 Remuneracao", particao: true,
+      sub: "Uma linha por rubrica, só o mais recente de cada trabalhador e competência (categorias 1xx). A Conferência soma daqui: linhas com “Entra na base” = Sim",
+      cols: [["Período", "xp_comp(l.per)"], ["Período Apuração", "xp_comp(l.perEv)"], ["Número Inscrição", "xp_cnpj(l.nrEmp)"], ["Empresa", XD_EMP], ["Número Inscrição Estabelecimento", "xp_cnpj(l.estNr)"], ["Código Lotação", "l.lot"], ["Código Categoria", "l.cat"],
+        ["CPF Trabalhador", "l.cpf"], ["Nome Trabalhador", "COALESCE(t.nome, '')"], ["Indicador Apuração", "l.indAp"], ["Indicador Retificação", "e.indRetif"], ["Código Rubrica", "l.cod"], ["Tabela de Rubricas", "l.tab"], ["Descrição Rubrica", "COALESCE(d.descr, '')"],
+        ["Tipo Rubrica", "CASE WHEN l.achou THEN xp_tp(l.tp) ELSE '' END"], ["Incidência Previdência Social", "l.incCP"], ["Entra na base", "l.entra"], ["Grau Exposição Agente Nocivo", "l.grau"], ["Alíquota Agente Nocivo", "xp_an(l.grau)"], ["Vlr Rubrica", "l.val"],
+        ["Id Evento", "e.id"], ["Recibo", "e.recibo"], ["Período Fechado (S-1299)", "COALESCE(f.st, 'Sem S-1299')"]],
+      num: ["Vlr Rubrica", "Alíquota Agente Nocivo"], from: XD_LX, keys: ["xp_per_ord(l.perEv)", "xp_per_ord(l.per)", "l.cpf", "l.cod", "l.seq", "l.ln"] });
+    const s2299 = xdConjunto({ id: "s2299", titulo: "S-2299 · Verbas rescisórias", arquivo: "S-2299 Verbas rescisorias", particao: true,
+      sub: "Uma linha por rubrica, só o mais recente de cada desligamento. A Conferência soma daqui as linhas com “Entra na base” = Sim",
+      cols: [["Período Apuração", "xp_comp(l.perApur)"], ["Número Inscrição", "xp_cnpj(l.nrEmp)"], ["Empresa", XD_EMP], ["Número Inscrição Estabelecimento", "xp_cnpj(l.estNr)"], ["Código Lotação", "l.lot"], ["CPF Trabalhador", "l.cpf"], ["NIS Trabalhador", "e.nis"], ["Matrícula", "e.mat"],
+        ["Nome Trabalhador", "COALESCE(t.nome, '')"], ["Motivo Desligamento", "e.mtv"], ["Data Desligamento", "e.dt"], ["Indicador Pagamento API", "e.api"], ["Pensão Alimentícia", "e.pens"], ["Indicador Cumprimento Aviso", "e.cump"], ["Indicador Retificação", "e.indRetif"],
+        ["Recibo Retificado", "e.nrRetif"], ["Id Demonstrativo", "l.dmId"], ["Indicador Apuração", "l.ind"], ["Código Rubrica", "l.cod"], ["Tabela de Rubricas", "l.tab"], ["Descrição Rubrica", "COALESCE(d.descr, '')"], ["Tipo Rubrica", "CASE WHEN l.achou THEN xp_tp(l.tp) ELSE '' END"],
+        ["Incidência Previdência Social", "l.incCP"], ["Entra na base", "l.entra"], ["Qtd Rubrica", "xp_num(l.qtd)"], ["Fator Rubrica", "xp_num(l.fator)"], ["Vlr Unitário Rubrica", "xp_num(l.vunit)"], ["Vlr Rubrica", "l.val"],
+        ["Grau Exposição Agente Nocivo", "l.grau"], ["Id Evento", "e.id"], ["Recibo", "e.recibo"],
+        ["Data Recepção", "CASE WHEN length(e.dh) >= 14 THEN substr(e.dh, 7, 2) || '/' || substr(e.dh, 5, 2) || '/' || substr(e.dh, 1, 4) || ' ' || substr(e.dh, 9, 2) || ':' || substr(e.dh, 11, 2) || ':' || substr(e.dh, 13, 2) ELSE '' END"]],
+      num: ["Qtd Rubrica", "Fator Rubrica", "Vlr Unitário Rubrica", "Vlr Rubrica"], from: XD_RX, keys: ["xp_per_ord(l.perApur)", "l.cpf", "l.seq", "l.ln"] });
+    const resumo = xdConjunto({ id: "s2299res", titulo: "S-2299 · Resumo por desligamento", arquivo: "S-2299 Resumo por desligamento",
+      sub: "Uma linha por desligamento: vencimentos que entram na base, outros vencimentos, descontos e líquido, e quantas verbas o XML tem contra quantas foram lidas",
+      cols: [["Período Apuração", "xp_comp(g.per)"], ["Número Inscrição", "xp_cnpj(e.nrEmp)"], ["Empresa", "COALESCE(em.razao, '')"], ["CPF Trabalhador", "e.cpf"], ["Nome Trabalhador", "COALESCE(t.nome, '')"], ["Matrícula", "e.mat"], ["Data Desligamento", "e.dt"],
+        ["Motivo Desligamento", "e.mtv"], ["Indicador Retificação", "e.indRetif"], ["Id Evento", "e.id"], ["Recibo", "e.recibo"], ["Verbas no XML", "e.totalXml"], ["Verbas lidas", "COALESCE(li.lidas, 0)"],
+        ["Vencimentos que entram na base", "xp_r2(g.entra)"], ["Outros vencimentos", "xp_r2(g.outrosv)"], ["Vencimentos sem S-1010 (não somados)", "xp_r2(g.sem)"], ["Total de vencimentos", "xp_r2(g.entra + g.outrosv)"], ["Descontos", "xp_r2(g.descv)"],
+        ["Informativas", "xp_r2(g.info)"], ["Líquido (vencimentos − descontos)", "xp_r2(g.entra + g.outrosv - g.descv)"],
+        ["Observação", "concat_ws('; ', CASE WHEN e.catFora = '1' THEN 'categoria ' || e.cat || ' fora da base (não somado)' END, CASE WHEN COALESCE(li.lidas, 0) <> e.totalXml THEN 'o XML tem ' || e.totalXml || ' verba(s) e foram lidas ' || COALESCE(li.lidas, 0) END)"]],
+      num: ["Verbas no XML", "Verbas lidas", "Vencimentos que entram na base", "Outros vencimentos", "Vencimentos sem S-1010 (não somados)", "Total de vencimentos", "Descontos", "Informativas", "Líquido (vencimentos − descontos)"],
+      from: "m_rgrp g JOIN m_resc e ON e.seq = g.seq LEFT JOIN m_emp em ON em.raiz = left(e.nrEmp, 8) LEFT JOIN m_trab t ON t.cpf = e.cpf LEFT JOIN m_rlid li ON li.seq = g.seq",
+      keys: ["xp_per_ord(g.per)", "e.cpf", "e.dt", "e.seq"] });
+    const espelho = xdConjunto({ id: "espelhoDeslig", titulo: "Espelho do desligado no mês (S-1200 + S-2299)", arquivo: "Espelho do desligado no mes",
+      sub: "Tudo o que o desligado recebeu na competência do desligamento: as rubricas do S-1200 do mês e as do S-2299, linha a linha",
+      cols: [["Período Apuração", "per"], ["Número Inscrição", "nrEmp"], ["Empresa", "empresa"], ["CPF Trabalhador", "cpf"], ["Nome Trabalhador", "nome"], ["Data Desligamento", "dt"], ["Origem", "origem"], ["Número Inscrição Estabelecimento", "est"], ["Código Lotação", "lot"],
+        ["Código Rubrica", "cod"], ["Tabela de Rubricas", "tab"], ["Descrição Rubrica", "descr"], ["Tipo Rubrica", "tp"], ["Incidência Previdência Social", "incCP"], ["Entra na base", "entra"], ["Vlr Rubrica", "val"], ["Id Evento", "id"], ["Recibo", "recibo"]],
+      num: ["Vlr Rubrica"], keys: ["xp_per_ord(perraw)", "cpf", "origem", "cod", "sq", "lnn"],
+      from: `(${XD_ESP("S-1200", "l.perEv")} FROM m_l l JOIN m_rem e ON e.seq = l.seq JOIN m_desl dl ON dl.cpf = l.cpf AND dl.nrEmp = l.nrEmp AND dl.ind = l.indAp AND dl.perApur = l.perEv
+          LEFT JOIN m_emp em ON em.raiz = left(l.nrEmp, 8) LEFT JOIN m_trab t ON t.cpf = l.cpf LEFT JOIN m_rubde d ON d.cod = l.cod AND d.tab = l.tab AND d.per = l.per
+        UNION ALL ${XD_ESP("S-2299", "l.perApur")} FROM m_rescl l JOIN m_resc e ON e.seq = l.seq JOIN m_desl dl ON dl.cpf = l.cpf AND dl.nrEmp = l.nrEmp AND dl.ind = l.ind AND dl.perApur = l.perApur
+          LEFT JOIN m_emp em ON em.raiz = left(l.nrEmp, 8) LEFT JOIN m_trab t ON t.cpf = l.cpf LEFT JOIN m_rubde d ON d.cod = l.cod AND d.tab = l.tab AND d.per = l.per) esp` });
+    const conf = xdConjunto({ id: "conferencia", titulo: "Auditoria de Bases e Rubricas", arquivo: "Auditoria de Bases e Rubricas", pct: "Divergência (%)", sit: "Situação",
+      sub: "Soma das tabelas S-1200 e S-2299 (linhas com “Entra na base” = Sim, por Período Apuração) contra a base do S-5011",
+      cols: [["Empresa", "COALESCE(NULLIF(em.razao, ''), '-')"], ["Número Inscrição", "xp_cnpj(m.nrEmp)"], ["Período", "xp_comp(m.per)"], ["Apuração", "xp_apur(m.indAp)"], ["Remuneração S-1200", "COALESCE(m.rem, 0.0)"], ["Verbas rescisórias (S-2299)", "m.resc"],
+        ["Total S-1200 + S-2299", "COALESCE(m.tot, 0.0)"], ["Base S-5011", "COALESCE(m.base, 0.0)"], ["Diferença", "COALESCE(m.dif, 0.0)"], ["Situação", "m.sit"], ["Fechamento (S-1299)", "COALESCE(f.st, '-')"],
+        ["Trabalhadores no S-1200", "CASE WHEN m.tema THEN m.trabs END"], ["Valor sem S-1010", "CASE WHEN m.tema THEN xp_r2(m.semtab) END"], ["Total das rubricas do S-1200 (todas)", "CASE WHEN m.tema THEN xp_r2(m.total) ELSE 0.0 END"],
+        ["Divergência (%)", "CASE WHEN m.dif IS NULL OR m.base = 0 THEN NULL ELSE m.dif / m.base END"]],
+      num: ["Remuneração S-1200", "Verbas rescisórias (S-2299)", "Total S-1200 + S-2299", "Base S-5011", "Diferença", "Valor sem S-1010", "Total das rubricas do S-1200 (todas)", "Divergência (%)"],
+      nulo: { "Trabalhadores no S-1200": "-", "Valor sem S-1010": "-", "Divergência (%)": "-" },
+      from: "m_conf m LEFT JOIN m_emp em ON em.raiz = left(m.nrEmp, 8) LEFT JOIN m_fechde f ON f.nrEmp = m.nrEmp AND f.per = m.per", keys: ["xp_per_ord(m.per)", "m.nrEmp", "m.indAp"] });
+    const confLot = xdConjunto({ id: "conferenciaLot", titulo: "Auditoria de Bases e Rubricas (por Estabelecimento)", arquivo: "Auditoria de Bases e Rubricas (por Estabelecimento)",
+      sub: "S-1200 + S-2299 contra o S-5011, em cada estabelecimento e lotação (para achar onde a diferença está)",
+      cols: [["Empresa", "COALESCE(em.razao, '')"], ["Número Inscrição", "xp_cnpj(m.nrEmp)"], ["Período", "xp_comp(m.per)"], ["Apuração", "xp_apur(m.indAp)"], ["Número Inscrição Estabelecimento", "xp_cnpj(m.estNr)"], ["Código Lotação", "m.lot"],
+        ["Remuneração S-1200", "xp_r2(m.rem)"], ["Verbas rescisórias (S-2299)", "xp_r2(m.resc)"], ["Total S-1200 + S-2299", "xp_r2(m.rem + m.resc)"], ["Base S-5011", "CASE WHEN m.temBase THEN xp_r2(m.base) END"],
+        ["Diferença", "CASE WHEN m.temBase THEN xp_r2(xp_r2(m.rem + m.resc) - xp_r2(m.base)) END"], ["Situação", "CASE WHEN NOT m.temBase THEN 'Sem S-5011' ELSE xp_sit(xp_r2(xp_r2(m.rem + m.resc) - xp_r2(m.base)), xp_r2(m.base)) END"]],
+      num: ["Remuneração S-1200", "Verbas rescisórias (S-2299)", "Total S-1200 + S-2299", "Base S-5011", "Diferença"],
+      from: "m_lot m LEFT JOIN m_emp em ON em.raiz = left(m.nrEmp, 8)", keys: ["xp_per_ord(m.per)", "xp_cnpj(m.estNr)", "m.lot", "m.nrEmp", "m.indAp"] });
+    const confEst = xdConjunto({ id: "conferenciaEst", titulo: "Conferência por competência e estabelecimento", arquivo: "Conferencia por competencia e estabelecimento", pct: "Divergência (%)", sit: "Situação",
+      sub: "É esta a conferência que decide o que entra na análise: só segue o que está Válido ou Válido com Ressalvas",
+      cols: [["Empresa", "COALESCE(NULLIF(em.razao, ''), '-')"], ["Número Inscrição", "xp_cnpj(m.nrEmp)"], ["Período", "xp_comp(m.per)"], ["Apuração", "xp_apur(m.indAp)"], ["Número Inscrição Estabelecimento", "xp_cnpj(m.estNr)"],
+        ["Total S-1200 + S-2299", "xp_r2(m.tot)"], ["Base S-5011", "CASE WHEN m.temBase THEN xp_r2(m.base) ELSE 0.0 END"], ["Diferença", "CASE WHEN m.temBase THEN xp_r2(xp_r2(m.tot) - xp_r2(m.base)) ELSE 0.0 END"], ["Situação", "m.sit"],
+        ["Divergência (%)", "m.pct"], ["Linhas no cruzamento", "m.n"], ["Entra na análise", "CASE WHEN m.n = 0 THEN '-' WHEN m.ok THEN 'Sim' ELSE 'Não' END"]],
+      num: ["Total S-1200 + S-2299", "Base S-5011", "Diferença", "Divergência (%)", "Linhas no cruzamento"], nulo: { "Divergência (%)": "-" },
+      from: "m_est m LEFT JOIN m_emp em ON em.raiz = left(m.nrEmp, 8)", keys: ["xp_per_ord(m.per)", "xp_cnpj(m.estNr)", "m.nrEmp", "m.indAp"] });
+    const c5 = xdConjunto({ id: "s5011cruz", titulo: "S-5011 · Cruzamento de bases por estabelecimento", arquivo: "S-5011 Cruzamento de bases por estabelecimento",
+      sub: "Bases segregadas por competência, estabelecimento, código de outras entidades, substituição patronal, grau de exposição, FAP e RAT, com as divergências de códigos entre lotações",
+      cols: [["Período", "xp_comp(m.per)"], ["Apuração", "xp_apur(m.indAp)"], ["Número Inscrição", "xp_cnpj(m.nrEmp)"], ["Empresa", "COALESCE(em.razao, '')"], ["Número Inscrição Estabelecimento", "xp_cnpj(m.estNr)"], ["FPAS", "m.fpas"], ["Código OE", "m.terc"],
+        ["Código OE Suspenso", "m.susp"], ["Substituição Patronal", "m.subst"], ["Grau Exposição", "CASE m.campo WHEN 'vrBcCp00' THEN '1' WHEN 'vrBcCp15' THEN '2' WHEN 'vrBcCp20' THEN '3' WHEN 'vrBcCp25' THEN '4' ELSE '' END"], ["Campo da Base", "m.campo"],
+        ["FAP", "m.fap"], ["RAT", "m.rat"], ["RAT Ajustado", "m.ratAj"], ["Base CP", "xp_r2(m.base)"], ["Lotações", "m.lots"], ["Combinações no estabelecimento", "m.combos"],
+        ["Divergência de códigos", "CASE WHEN m.difs <> '' THEN 'Sim' ELSE 'Não' END"], ["Campos divergentes", "m.difs"], ["Id Evento", "m.id"], ["Recibo", "m.rec"]],
+      num: ["FAP", "RAT", "RAT Ajustado", "Base CP"], from: "m_c5 m LEFT JOIN m_emp em ON em.raiz = left(m.nrEmp, 8)",
+      keys: ["xp_per_ord(m.per)", "xp_cnpj(m.estNr)", "m.fpas", "m.terc", "CASE m.campo WHEN 'vrBcCp00' THEN '1' WHEN 'vrBcCp15' THEN '2' WHEN 'vrBcCp20' THEN '3' WHEN 'vrBcCp25' THEN '4' ELSE '' END"] });
+    const s1010 = xdConjunto({ id: "s1010", titulo: "S-1010 · Tabela de rubricas", arquivo: "S-1010 Tabela de rubricas", sub: "Uma linha por rubrica e validade",
+      cols: [["Código Rubrica", "r.cod"], ["Tabela de Rubricas", "r.tab"], ["Início Validade", "r.ini"], ["Fim Validade", "r.fim"], ["Descrição Rubrica", "r.descr"], ["Natureza Rubrica", "r.nat"], ["Tipo Rubrica", "xp_tp(r.tp)"],
+        ["Incidência Previdência Social", "r.incCP"], ["Incidência IRRF", "r.incIRRF"], ["Incidência FGTS", "r.incFGTS"], ["Id Evento", "r.id"]], from: "m_rub r", keys: ["r.cod", "r.ini", "r.tab"] });
+    const nomesBase = (await dkLinhas("SELECT DISTINCT b.campo FROM x_csB b JOIN m_cs c ON c.seq = b.seq WHERE c.vivo ORDER BY 1")).map(r => r[0]);
+    const s5011 = xdConjunto({ id: "s5011", titulo: "S-5011 · Alíquotas e bases por lotação", arquivo: "S-5011 Aliquotas e bases", sub: "Mais recente de cada competência",
+      cols: [["Período", "xp_comp(c.per)"], ["Número Inscrição", "xp_cnpj(c.nrEmp)"], ["Empresa", "COALESCE(em.razao, '')"], ["Número Inscrição Estabelecimento", "xp_cnpj(l.estNr)"], ["Código Lotação", "l.lot"], ["Alíquota RAT Estabelecimento", "l.rat"],
+        ["FAP Estabelecimento", "l.fap"], ["RAT Ajustado Estabelecimento", "l.ratAj"], ["FPAS", "l.fpas"], ["Código Terceiros", "l.terc"], ["Código Terceiros Suspenso", "l.susp"], ["Substituição Contribuição Previdenciária Patronal", "l.subst"],
+        ["Base CP Total", "xp_r2(l.base)"], ...nomesBase.map((n, i) => [n, `xp_r2(COALESCE(bb.b${i}, 0.0))`]), ["Id Evento", "c.id"], ["Recibo", "CASE WHEN c.recBase <> '' THEN c.recBase ELSE c.recibo END"]],
+      num: ["Alíquota RAT Estabelecimento", "FAP Estabelecimento", "RAT Ajustado Estabelecimento", "Base CP Total", ...nomesBase],
+      from: `m_cs c JOIN x_csL l ON l.seq = c.seq LEFT JOIN m_emp em ON em.raiz = left(c.nrEmp, 8)
+        ${nomesBase.length ? `LEFT JOIN (SELECT seq, ln, ${nomesBase.map((n, i) => `sum(valor) FILTER (WHERE campo = ${dkLit(n)}) AS b${i}`).join(", ")} FROM x_csB GROUP BY seq, ln) bb ON bb.seq = l.seq AND bb.ln = l.ln` : ""}`,
+      where: "c.vivo", keys: ["xp_per_ord(c.per)", "l.estNr", "c.seq", "l.ln"] });
+    const s5001 = xdConjunto({ id: "s5001", titulo: "S-5001 · Bases por trabalhador", arquivo: "S-5001 Bases por trabalhador", particao: true,
+      sub: "Mais recente de cada CPF e competência, com FPAS e código de outras entidades do S-5011 da lotação. É o arquivo que o módulo Bases lê",
+      cols: [["Período Apuração", "xp_comp(b.per)"], ["Indicador Apuração", "xp_apur(b.indAp)"], ["Número Inscrição", "xp_cnpj(b.nrEmp)"], ["Razão Social", "COALESCE(em.razao, '')"], ["CPF Trabalhador", "b.cpf"], ["Nome Trabalhador", "COALESCE(t.nome, '')"],
+        ["Matrícula", "l.mat"], ["Código Categoria", "l.cat"], ["Tipo Inscrição Lotação", "CASE l.estTp WHEN '4' THEN 'CNO' WHEN '1' THEN 'CNPJ' ELSE l.estTp END"], ["Número Inscrição Lotação", "xp_cnpj(l.estNr)"], ["Código Lotação Tributária", "l.lot"],
+        ["Indicativo 13º (ind13)", "l.ind13"], ["Tipo Vlr Apuração Contribuição", "l.tp"], ["Vlr Base Cálculo", "xp_r2(l.val)"], ["FPAS", "COALESCE(c.fpas, '')"], ["Código Terceiros", "COALESCE(c.terc, '')"], ["Código Terceiros Suspenso", "COALESCE(c.susp, '')"],
+        ["Código OE", "CASE WHEN c.achou IS NOT NULL AND c.terc <> '' THEN greatest(0, COALESCE(TRY_CAST(c.terc AS INTEGER), 0) - COALESCE(TRY_CAST(c.susp AS INTEGER), 0)) END"], ["Recibo Arquivo Base", "b.recBase"], ["Id Evento", "b.id"]],
+      num: ["Vlr Base Cálculo"], from: "m_bas b JOIN x_basL l ON l.seq = b.seq LEFT JOIN m_emp em ON em.raiz = left(b.nrEmp, 8) LEFT JOIN m_trab t ON t.cpf = b.cpf LEFT JOIN m_csde c ON c.estNr = l.estNr AND c.per = b.per AND c.lot = l.lot",
+      where: "b.vivo", keys: ["xp_per_ord(b.per)", "l.estNr", "b.cpf", "b.seq", "l.ln"] });
+    // Os conjuntos têm a mesma ordem de antes
+    const todos = [cruz, fora, s1200, s2299, resumo, espelho, conf, confLot, confEst, c5, s1010, s5011, s5001];
+    // Demais eventos: tabela achatada (as colunas são as que aparecem nos dados, na ordem em que aparecem)
+    const evs = await dkLinhas(`SELECT e.nome, count(DISTINCT o.seq) FROM x_outL o JOIN m_ev e ON e.seq = o.seq WHERE NOT (e.recibo <> '' AND e.recibo IN (SELECT rec FROM m_ret)) GROUP BY e.nome ORDER BY min(o.seq)`);
+    for (const [nome] of evs){
+      const cols = (await dkLinhas(`SELECT o.col FROM x_outL o JOIN m_ev e ON e.seq = o.seq WHERE e.nome = ${dkLit(nome)} AND NOT (e.recibo <> '' AND e.recibo IN (SELECT rec FROM m_ret)) GROUP BY o.col ORDER BY min(struct_pack(s := o.seq, l := o.ln, p := o.pos))`)).map(r => r[0]);
+      if (!cols.length) continue;
+      const num = cols.filter(xEhValor), [cod, desc] = XML_EVT[nome] || [nome, nome];
+      const expr = c => { const v = `any_value(o.val) FILTER (WHERE o.col = ${dkLit(c)})`; return xEhComp(c) ? `xp_comp(${v})` : xEhInsc(c) ? `xp_cnpj(${v})` : xEhValor(c) ? `xp_num(${v})` : `COALESCE(${v}, '')`; };
+      todos.push(xdConjunto({ id: nome, titulo: `${cod} · ${desc}`, sub: "Tabela achatada do evento", arquivo: `${cod} ${desc}`, num, cols: cols.map(c => [c, `p.${dkAspas("c" + cols.indexOf(c))}`]),
+        from: `(SELECT o.seq, o.ln, ${cols.map((c, i) => `${expr(c)} AS ${dkAspas("c" + i)}`).join(", ")} FROM x_outL o JOIN m_ev e ON e.seq = o.seq WHERE e.nome = ${dkLit(nome)} AND NOT (e.recibo <> '' AND e.recibo IN (SELECT rec FROM m_ret)) GROUP BY o.seq, o.ln) p`,
+        keys: ["p.seq", "p.ln"] }));
+    }
+    for (const ds of todos){ ds.n = await dkUm(ds.contar); if (ds.n > 0) cj.push(ds); }
+    R.conjuntos = cj;
+    const c = cj.find(x => x.id === "conferencia");
+    R.comparadas = c ? c.n : 0;
+    R.divergencias = c ? await dkUm("SELECT count(*) FROM m_conf WHERE sit NOT IN ('Válido', 'Válido com Ressalvas')") : 0;
+    R.excluidas = (cj.find(x => x.id === "cruzamentoFora") || { n: 0 }).n;
+    return R;
   }
 
   /* ---------- XML eSocial: tela, exportação em planilha ou Parquet ---------- */
   const xmlStub = $("xmlStub"), progXml = criarProgresso("xml", xmlStub);
-  let xmlEstado = xNovoEstado(), xmlRes = { conjuntos: [], faltam: 0, semCS: 0, divergencias: 0, comparadas: 0 }, xmlLendo = false;
+  const xmlVazio = () => ({ conjuntos: [], faltam: 0, semCS: 0, divergencias: 0, comparadas: 0, excluidas: 0, lidos: 0, descartados: 0, porRecibo: 0, semValidacao: false });
+  let xmlPararFlag = false;
+  let xmlRes = xmlVazio(), xmlStats = { arquivos: 0, invalidos: 0 }, xmlLendo = false, xmlNomeEmp = "", xmlRestauracao = Promise.resolve();
   const logXml = (m, t) => logTerminal(m, t || "log-info", "consoleLogXml");
-  const xmlN = n => n.toLocaleString("pt-BR");
+  const xmlN = n => Number(n || 0).toLocaleString("pt-BR");
+  const xmlStatus = (txt, cls) => { $("statusXml").textContent = txt; $("statusXml").className = "badge" + (cls ? " " + cls : ""); };
+  const xmlFlag = v => { try { if (v === undefined) return localStorage.getItem("xml-dados"); localStorage.setItem("xml-dados", v); } catch(e){} return null; };
+  const xmlAvisoSaida = e => { e.preventDefault(); e.returnValue = ""; };
 
   let xmlUltimosExtras = "";
   function renderXml(){
-    const evs = [...xmlEstado.lidos.values()].reduce((a, b) => a + b, 0);
-    $("xmlKArq").textContent = xmlN(xmlEstado.arquivos); $("xmlKEv").textContent = xmlN(evs);
-    $("xmlKDup").textContent = xmlN(xmlEstado.descartados + xmlEstado.porRecibo); $("xmlKInv").textContent = xmlN(xmlEstado.invalidos);
+    $("xmlKArq").textContent = xmlN(xmlStats.arquivos); $("xmlKEv").textContent = xmlN(xmlRes.lidos);
+    $("xmlKDup").textContent = xmlN(xmlRes.descartados + xmlRes.porRecibo); $("xmlKInv").textContent = xmlN(xmlStats.invalidos);
     const extras = [];
     if (xmlRes.excluidas) extras.push(`${xmlN(xmlRes.excluidas)} linha${xmlRes.excluidas === 1 ? "" : "s"} do cruzamento ficaram de fora da análise (competência + estabelecimento inválidos): veja “Cruzamento de eventos · Excluídas”`);
     if (xmlRes.semValidacao && xmlRes.conjuntos.some(c => c.id === "cruzamento")) extras.push("sem S-5011 nos arquivos nenhuma competência pôde ser validada: o cruzamento segue completo");
@@ -5628,9 +5903,9 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
       av.dataset.t = texto; av.hidden = !texto;
       av.innerHTML = texto ? '<span class="xml-aviso-fio"></span><span class="xml-aviso-txt"></span>' : ""; if (texto) av.querySelector(".xml-aviso-txt").textContent = texto;
     }
-    $("xmlLimpar").hidden = !xmlEstado.arquivos;
+    $("xmlLimpar").hidden = !xmlStats.arquivos;
     $("xmlCorpo").innerHTML = xmlRes.conjuntos.length ? xmlRes.conjuntos.map((c, i) =>
-      `<tr><td><b>${esc(c.titulo)}</b><div class="sub-t">${esc(c.sub)}</div></td><td class="num">${xmlN(c.rows.length)}</td><td class="num">${xmlN(c.cols.length)}</td><td class="xml-acao"><button type="button" class="btn primary" data-i="${i}">Exportar</button></td></tr>`).join("")
+      `<tr><td><b>${esc(c.titulo)}</b><div class="sub-t">${esc(c.sub)}</div></td><td class="num">${xmlN(c.n)}</td><td class="num">${xmlN(c.cols.length)}</td><td class="xml-acao"><button type="button" class="btn primary" data-i="${i}">Exportar</button></td></tr>`).join("")
       : '<tr><td colspan="4" class="empty">Envie os XMLs para ver o que dá para exportar.</td></tr>';
     $("xmlExportarTudo").hidden = !xmlRes.conjuntos.length;
     $("xmlParaRubricas").hidden = !xmlRes.conjuntos.some(c => c.id === "cruzamento");
@@ -5638,99 +5913,178 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
     $("xmlResumo").textContent = xmlRes.conjuntos.length ? `${xmlRes.conjuntos.length} conjunto${xmlRes.conjuntos.length === 1 ? "" : "s"}` : "Aguardando arquivos";
   }
 
-  // Abre os .zip (inclusive zip dentro de zip e pastas internas) e devolve a lista de XMLs a ler
-  async function xmlExpandir(lista, log){
-    const itens = [];
-    const abrir = async (zip, origem) => {
-      for (const e of Object.values(zip.files)){
-        if (e.dir || /(^|\/)(__MACOSX\/|\._)/.test(e.name)) continue;
-        const nome = `${origem} › ${e.name}`;
-        if (/\.xml$/i.test(e.name)) itens.push({ nome, ler: () => e.async("string") });
-        else if (/\.zip$/i.test(e.name)){
-          try { await abrir(await JSZip.loadAsync(await e.async("arraybuffer")), nome); }
-          catch(err){ log(`Não consegui abrir ${nome}: ${err.message}`, "log-erro"); }
+  /* ---------- Conjuntos como consultas: as linhas são lidas do banco em lotes, nunca todas de uma vez ---------- */
+  async function* dsLotes(ds, { cols = ds.cols, tamanho = 20000, ordenar = true } = {}){
+    const cx = await dk.db.connect();
+    try {
+      const sels = cols.map(dkAspas).join(", "), nulo = cols.map(c => c in ds.nulo ? ds.nulo[c] : "");
+      let particoes = [null];
+      // conjuntos muito grandes são ordenados por pedaços (por competência): a ordem final é a mesma, com muito menos memória
+      if (ordenar && ds.temParticao && ds.n > 1000000) particoes = (await dkLinhas(`SELECT DISTINCT _k0 FROM (${ds.inner}) ORDER BY 1`, cx)).map(r => r[0]);
+      for (const pk of particoes){
+        const sql = `SELECT ${sels} FROM (${ds.inner})${pk !== null ? ` WHERE _k0 = ${dkLit(pk)}` : ""}${ordenar && ds.ordem ? ` ORDER BY ${ds.ordem}` : ""}`;
+        let acc = [];
+        for await (const batch of await cx.send(sql)){
+          for (const l of dkLote(batch, nulo)) acc.push(l);
+          if (acc.length >= tamanho){ yield acc; acc = []; }
         }
+        if (acc.length) yield acc;
       }
-    };
-    for (const f of lista){
-      if (/\.xml$/i.test(f.name)) itens.push({ nome: f.webkitRelativePath || f.name, ler: () => f.text() });
-      else if (/\.zip$/i.test(f.name)){
-        if (!window.JSZip){ log("A biblioteca de ZIP não carregou. Confira a internet e recarregue a página.", "log-erro"); continue; }
-        log(`Descompactando ${f.name}…`);
-        try { await abrir(await JSZip.loadAsync(f), f.name); }
-        catch(err){ log(`Não consegui abrir ${f.name}: ${err.message}`, "log-erro"); }
-        await pausa();
-      }
-    }
-    return itens;
+    } finally { try { await cx.close(); } catch(e){} }
+  }
+  async function dsTodas(ds, limite = 300000){
+    if (ds.n > limite) throw new Error("conjunto grande demais para esta saída");
+    const tudo = []; for await (const l of dsLotes(ds)) tudo.push(...l); return tudo;
+  }
+  // Os módulos Rubricas e Bases recebem o conjunto como fluxo (sem passar por arquivo)
+  const xmlLigarFluxo = ds => { ds.fluxo = (cols, tam) => dsLotes(ds, { cols, tamanho: tam, ordenar: false }); return ds; };
+
+  async function xmlNomeDaEmpresa(){
+    const raizes = (await dkLinhas("SELECT DISTINCT left(nrEmp, 8) FROM (SELECT nrEmp FROM m_rem UNION ALL SELECT nrEmp FROM m_cs UNION ALL SELECT nrEmp FROM m_resc) WHERE nrEmp <> ''")).map(r => r[0]);
+    const todas = raizes.length ? raizes : (await dkLinhas("SELECT raiz FROM m_emp")).map(r => r[0]);
+    if (todas.length !== 1) return "";
+    const nome = (await dkLinhas(`SELECT razao FROM m_emp WHERE raiz = ${dkLit(todas[0])}`)).map(r => r[0])[0] || "";
+    return nome.replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+  }
+  const xmlNomeEmpresa = () => xmlNomeEmp;
+
+  /* Depois de ler (ou ao reabrir a página): refaz os conjuntos a partir do banco */
+  async function xmlMontar(forcar){
+    const stat = (await dkLinhas("SELECT count(*), CAST(COALESCE(sum(inv), 0) AS DOUBLE) FROM x_arq"))[0];
+    xmlStats = { arquivos: stat[0], invalidos: stat[1] };
+    const maxSeq = await dkUm("SELECT COALESCE(max(seq), 0) FROM x_ev");
+    if (!maxSeq){ xmlRes = xmlVazio(); xmlNomeEmp = ""; return; }
+    const p = progXml; let aberto = false;
+    const R = (forcar || (await dkMontado()) !== maxSeq) ? await (async () => {
+      aberto = true; p.iniciar(1);
+      try { return await dkMontar((k, n, nome) => { xmlStatus("Montando", "run"); p.livre(k / n, `Montando os conjuntos · etapa ${k + 1} de ${n}${nome ? ": " + esc(nome) : ""}`); }); }
+      finally { p.fim(1); }
+    })() : await dkDefinir();
+    R.conjuntos.forEach(xmlLigarFluxo);
+    xmlRes = R; xmlNomeEmp = await xmlNomeDaEmpresa();
   }
 
-  /* Os arquivos enviados ficam guardados neste navegador (IndexedDB), para reprocessar depois de uma atualização sem enviar tudo de novo */
-  const xmlBanco = {
-    abrir: () => new Promise((ok, falha) => { const r = indexedDB.open("HubXmlDB", 1); r.onupgradeneeded = e => e.target.result.createObjectStore("arquivos"); r.onsuccess = e => ok(e.target.result); r.onerror = e => falha(e.target.error); }),
-    async guardar(lista){
-      const db = await this.abrir();
-      const chave = f => [f.webkitRelativePath || f.name, f.size, f.lastModified].join("|");
-      await new Promise((ok, falha) => { const tx = db.transaction("arquivos", "readwrite"), st = tx.objectStore("arquivos"); lista.forEach(f => st.put(f, chave(f))); tx.oncomplete = ok; tx.onerror = () => falha(tx.error); tx.onabort = () => falha(tx.error); });
-      db.close();
-    },
-    async todos(){ const db = await this.abrir(); const r = await new Promise((ok, falha) => { const q = db.transaction("arquivos").objectStore("arquivos").getAll(); q.onsuccess = () => ok(q.result); q.onerror = () => falha(q.error); }); db.close(); return r; },
-    async limpar(){ const db = await this.abrir(); await new Promise((ok, falha) => { const tx = db.transaction("arquivos", "readwrite"); tx.objectStore("arquivos").clear(); tx.oncomplete = ok; tx.onerror = () => falha(tx.error); }); db.close(); }
-  };
-  async function atualizarGuardados(){
-    try {
-      const fs = await xmlBanco.todos(), mb = fs.reduce((t, f) => t + f.size, 0) / 1048576;
-      $("xmlGuardados").hidden = !fs.length; $("xmlReprocessar").hidden = !fs.length; $("xmlEsquecer").hidden = !fs.length;
-      const tam = mb >= 1024 ? (mb / 1024).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + " GB" : mb.toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + " MB";
-      $("xmlGuardados").innerHTML = fs.length ? `<b>${xmlN(fs.length)} arquivo${fs.length === 1 ? "" : "s"} guardado${fs.length === 1 ? "" : "s"}</b><small>${tam} neste navegador</small>` : "";
-    } catch(e){ $("xmlGuardados").hidden = true; $("xmlReprocessar").hidden = true; $("xmlEsquecer").hidden = true; }
+  async function carregarFflate(){
+    for (const u of FFLATE_URLS){ if (window.fflate) break; try { await carregarScript(u); } catch(e){} }
+    return !!window.fflate;
   }
-  async function lerXmls(lista, guardar = true){
+  async function lerXmls(lista){
+    await xmlRestauracao;
     if (xmlLendo) return;
-    if (!lista.some(f => /\.(xml|zip)$/i.test(f.name))){ toast("Nenhum arquivo .xml ou .zip encontrado."); return; }
-    xmlLendo = true;
-    $("statusXml").textContent = "Lendo"; $("statusXml").className = "badge run";
-    if (guardar){
-      try { await xmlBanco.guardar(lista.filter(f => /\.(xml|zip)$/i.test(f.name))); }
-      catch(e){ logXml("Não consegui guardar os arquivos neste navegador para reprocessar depois (" + (e && e.message || "sem espaço") + "). A leitura segue normalmente.", "log-erro"); }
+    lista = lista.filter(f => /\.(xml|zip)$/i.test(f.name));
+    if (!lista.length){ toast("Nenhum arquivo .xml ou .zip encontrado."); return; }
+    xmlLendo = true; xmlPararFlag = false; $("xmlParar").disabled = false; xmlStatus("Preparando", "run");
+    window.addEventListener("beforeunload", xmlAvisoSaida);
+    try {
+      logXml("Preparando o banco de dados do navegador…");
+      await dkIniciar(); xmlFlag("1");
+      if (dk.aviso) logXml(dk.aviso, "log-erro");
+      if (lista.some(f => /\.zip$/i.test(f.name)) && !(await carregarFflate())){ logXml("A biblioteca de descompactação não carregou. Confira a internet e recarregue a página.", "log-erro"); toast("Não consegui abrir os .zip. Confira a internet."); return; }
+      const feitos = new Set((await dkLinhas("SELECT h FROM x_arq")).map(r => r[0]));
+      let col = xNovoColetor(await dkUm("SELECT COALESCE(max(seq), 0) FROM x_ev"));
+      let total = 0, vistos = 0, novos = 0, pulados = 0, erros = 0, ultimaTela = 0, pend = Promise.resolve(), t0 = performance.now(), gravados = 0;
+      xmlStatus("Lendo", "run"); progXml.iniciar(1);
+      const tela = (forcar) => {
+        const agora = performance.now(); if (!forcar && agora - ultimaTela < 200) return; ultimaTela = agora;
+        const seg = (agora - t0) / 1000, vel = novos / Math.max(seg, 0.001), falta = total && vel > 0 ? Math.max(0, (total - vistos) / Math.max(vel, 0.001)) : 0;
+        const eta = falta > 90 ? ` · faltam ~${Math.ceil(falta / 60)} min` : falta > 3 ? ` · faltam ~${Math.ceil(falta)} s` : "";
+        progXml.livre(total ? Math.min(0.999, vistos / total) : 0, `Lendo <b>${xmlN(vistos)}</b> de ${xmlN(total)} XMLs · ${xmlN(Math.round(vel))}/s${eta}${pulados ? ` · ${xmlN(pulados)} já estavam guardados` : ""}`);
+        $("xmlStatus").textContent = `${xmlN(gravados)} arquivos gravados no banco`;
+      };
+      const gravar = async () => {   // grava o lote em segundo plano enquanto o próximo já está sendo lido
+        const pronto = col; col = xNovoColetor(pronto.seq);
+        await pend;
+        pend = dkGravarColetor(pronto).then(() => { gravados += pronto.arqs; });
+      };
+      logXml("Lendo os arquivos. O que for lido vai sendo gravado no banco: se algo travar, é só enviar os mesmos arquivos de novo que a leitura continua de onde parou.");
+      $("xmlParar").hidden = false;
+      for await (const it of xcItens(lista, logXml, n => { total += n; })){
+        if (xmlPararFlag){ logXml("Leitura parada a seu pedido. O que já foi lido está guardado; envie os mesmos arquivos de novo para continuar de onde parou.", "log-erro"); break; }
+        vistos++;
+        const h = xcHash(it.chave);
+        if (feitos.has(h)){ pulados++; if (vistos % 500 === 0){ tela(); await xcCede(); } continue; }
+        let nev = 0, tam = 0;
+        try { const texto = await it.ler(); tam = texto.length; nev = xProcessarTexto(texto, col); }
+        catch(e){ logXml(`Erro em ${it.nome}: ${e.message}`, "log-erro"); }
+        if (!nev) erros++;
+        xcPush(col, "arq", h, it.nome.slice(-300), tam, nev ? 0 : 1, nev);
+        feitos.add(h); novos++; col.arqs++;
+        if (col.arqs >= 2500 || col.peso > 10e6) await gravar();
+        tela(); await xcCede();
+      }
+      $("xmlParar").hidden = true;
+      if (col.arqs) await gravar();
+      await pend;
+      tela(true); progXml.fim(vistos, xmlPararFlag ? "Leitura parada." : undefined);
+      logXml(`Leitura ${xmlPararFlag ? "parada" : "concluída"}: ${xmlN(novos)} arquivo(s) novo(s)${pulados ? `, ${xmlN(pulados)} já estavam guardados` : ""}${erros ? `, ${xmlN(erros)} inválido(s)` : ""}. Montando os conjuntos…`, "log-sucesso");
+      if (novos || !xmlRes.conjuntos.length) await xmlMontar(true);
+      $("xmlStatus").textContent = `${xmlN(xmlStats.arquivos)} arquivo${xmlStats.arquivos === 1 ? "" : "s"} lido${xmlStats.arquivos === 1 ? "" : "s"}`;
+      $("dropXml").classList.add("feito");
+      logXml(`Pronto. ${xmlRes.descartados + xmlRes.porRecibo ? xmlN(xmlRes.descartados + xmlRes.porRecibo) + " evento(s) duplicado(s) ou substituído(s) por retificação removido(s)." : "Nenhuma duplicidade."}`, "log-sucesso");
+      xmlStatus("Pronto", "ok");
+    } catch(e){
+      console.error(e);
+      logXml("A leitura parou: " + (e && e.message || e) + ". O que já foi gravado está guardado; envie os arquivos de novo para continuar.", "log-erro");
+      toast("A leitura parou. O que já foi lido está guardado.");
+      progXml.fim(0, "Leitura interrompida."); xmlStatus("Erro", "");
+      try { await xmlMontar(true); } catch(_){}
+    } finally {
+      xmlLendo = false; $("xmlParar").hidden = true; window.removeEventListener("beforeunload", xmlAvisoSaida);
+      renderXml(); xmlAtualizarGuardados();
     }
-    const arquivos = await xmlExpandir(lista, logXml);
-    if (!arquivos.length){ logXml("Nenhum XML encontrado nos arquivos enviados.", "log-erro"); toast("Nenhum XML encontrado."); xmlLendo = false; $("statusXml").textContent = "Aguardando"; $("statusXml").className = "badge"; return; }
-    logXml(`Lendo ${xmlN(arquivos.length)} XML(s)…`);
-    progXml.iniciar(arquivos.length);
-    const antes = xmlEstado.descartados + xmlEstado.porRecibo;
-    for (const [k, f] of arquivos.entries()){
-      progXml.arquivo(k, f.nome.split(" › ").pop());
-      try { xmlEstado.arquivos++; xProcessarTexto(await f.ler(), xmlEstado); }
-      catch(e){ xmlEstado.invalidos++; logXml(`Erro em ${f.nome}: ${e.message}`, "log-erro"); }
-      if (k % 20 === 19) await pausa();
-    }
-    xmlRes = xMontar(xmlEstado);
-    progXml.fim(arquivos.length);
-    $("xmlStatus").textContent = `${xmlN(xmlEstado.arquivos)} arquivo${xmlEstado.arquivos === 1 ? "" : "s"} lido${xmlEstado.arquivos === 1 ? "" : "s"}`;
-    $("dropXml").classList.add("feito");
-    const dup = xmlEstado.descartados + xmlEstado.porRecibo - antes;
-    logXml(`Leitura concluída. ${dup ? xmlN(dup) + " evento(s) duplicado(s) ou substituído(s) por retificação removido(s)." : "Nenhuma duplicidade."}`, "log-sucesso");
-    $("statusXml").textContent = "Pronto"; $("statusXml").className = "badge ok";
-    xmlLendo = false;
-    renderXml(); atualizarGuardados();
   }
   ligarSlotHub($("dropXml"), $("xmlPasta"), xmlStub, f => lerXmls(f));
-  $("xmlReprocessar").addEventListener("click", async () => {
-    if (xmlLendo) return;
+  $("xmlArqs").addEventListener("change", e => { const fs = Array.from(e.target.files || []); e.target.value = ""; if (fs.length) lerXmls(fs); });
+
+  $("xmlParar").addEventListener("click", () => { xmlPararFlag = true; $("xmlParar").disabled = true; });
+  async function xmlAtualizarGuardados(){
     try {
-      const fs = await xmlBanco.todos(); if (!fs.length){ toast("Não há arquivos guardados."); return; }
-      xmlEstado = xNovoEstado(); xmlRes = { conjuntos: [], faltam: 0, semCS: 0, divergencias: 0, comparadas: 0 };
-      logXml(`Reprocessando ${xmlN(fs.length)} arquivo(s) guardado(s) com a versão atual…`);
-      await lerXmls(fs, false);
-    } catch(e){ toast("Não consegui ler os arquivos guardados. " + e.message); }
+      const n = xmlStats.arquivos, est = navigator.storage && navigator.storage.estimate ? await navigator.storage.estimate() : null, mb = est && est.usage ? est.usage / 1048576 : 0;
+      const tam = mb >= 1024 ? (mb / 1024).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + " GB" : mb.toLocaleString("pt-BR", { maximumFractionDigits: 0 }) + " MB";
+      $("xmlGuardados").hidden = !n; $("xmlReprocessar").hidden = !n;
+      $("xmlGuardados").innerHTML = n ? `<b>${xmlN(n)} arquivo${n === 1 ? "" : "s"} guardado${n === 1 ? "" : "s"}</b><small>${dk.persistente ? (mb ? tam + " no disco deste navegador" : "no disco deste navegador") : "só na memória (não sobrevive ao recarregar)"}</small>` : "";
+    } catch(e){ $("xmlGuardados").hidden = true; }
+  }
+  // Refaz os conjuntos com a versão atual do site, sem precisar dos XMLs
+  $("xmlReprocessar").addEventListener("click", async () => {
+    if (xmlLendo) return; xmlLendo = true; xmlStatus("Montando", "run");
+    try { await dkIniciar(); logXml("Refazendo os conjuntos a partir do que está guardado…"); await xmlMontar(true); xmlStatus("Pronto", "ok"); logXml("Conjuntos refeitos.", "log-sucesso"); }
+    catch(e){ xmlStatus("Erro", ""); logXml("Não consegui refazer os conjuntos: " + e.message, "log-erro"); toast("Não consegui refazer. " + e.message); }
+    finally { xmlLendo = false; renderXml(); xmlAtualizarGuardados(); }
   });
-  $("xmlEsquecer").addEventListener("click", async () => {
-    if (xmlLendo || !confirm("Apagar os arquivos guardados neste navegador? Você precisará enviá-los de novo para reprocessar.")) return;
-    try { await xmlBanco.limpar(); logXml("Arquivos guardados apagados.", "log-sucesso"); } catch(e){ toast("Não consegui apagar. " + e.message); }
-    atualizarGuardados();
+  $("xmlEsquecer").hidden = true;
+  $("xmlLimpar").addEventListener("click", async () => {
+    if (xmlLendo || !confirm("Apagar tudo o que foi lido e está guardado neste navegador? Para ver os resultados de novo, será preciso enviar os XMLs outra vez.")) return;
+    try {
+      await dkIniciar();
+      for (const [t] of await dkLinhas("SELECT table_name FROM duckdb_tables() WHERE table_name LIKE 'm\\_%' ESCAPE '\\'")) await dkExec(`DROP TABLE IF EXISTS ${dkAspas(t)}`);
+      for (const [nome] of Object.values(DK_TAB)) await dkExec(`DELETE FROM ${nome}`);
+      await dkExec("DELETE FROM x_meta WHERE k = 'montado'"); await dkExec("CHECKPOINT");
+    } catch(e){ toast("Não consegui apagar. " + e.message); return; }
+    xmlFlag("0"); xmlRes = xmlVazio(); xmlStats = { arquivos: 0, invalidos: 0 }; xmlNomeEmp = "";
+    $("xmlStatus").textContent = ""; $("dropXml").classList.remove("feito"); xmlStatus("Aguardando");
+    logXml("Leitura limpa e arquivos guardados apagados.", "log-sucesso"); renderXml(); xmlAtualizarGuardados();
   });
-  atualizarGuardados();
+  renderXml();
+
+  /* ---------- Ao abrir a página: se há leitura guardada no navegador, ela volta sozinha ---------- */
+  xmlRestauracao = (async () => {
+    if (xmlFlag() === "0") return;   // já se sabe que não há nada guardado: não vale baixar o motor à toa
+    try { const raiz = await navigator.storage.getDirectory(); await raiz.getFileHandle(DK_ARQ); } catch(e){ return; }   // nada guardado
+    await new Promise(r => setTimeout(r, 600));
+    xmlLendo = true; xmlStatus("Restaurando", "run");
+    try {
+      await dkIniciar();
+      if (dk.aviso) logXml(dk.aviso, "log-erro");
+      if (!(await dkUm("SELECT count(*) FROM x_ev"))){ xmlStatus("Aguardando"); xmlFlag("0"); return; }
+      await xmlMontar(false);
+      $("xmlStatus").textContent = `${xmlN(xmlStats.arquivos)} arquivo${xmlStats.arquivos === 1 ? "" : "s"} lido${xmlStats.arquivos === 1 ? "" : "s"}`; $("dropXml").classList.add("feito");
+      logXml(`Leitura anterior restaurada: ${xmlN(xmlStats.arquivos)} arquivo(s), ${xmlN(xmlRes.lidos)} evento(s). Se aquela leitura foi interrompida, envie os mesmos arquivos de novo: o que já está guardado é pulado.`, "log-sucesso");
+      xmlStatus("Pronto", "ok");
+    } catch(e){ console.warn("restauração do módulo XML:", e); xmlStatus("Aguardando"); logXml("Não consegui restaurar a leitura anterior: " + (e && e.message || e), "log-erro"); }
+    finally { xmlLendo = false; renderXml(); xmlAtualizarGuardados(); }
+  })();
+  const xmlConjuntoDisponivel = async id => { await xmlRestauracao; return xmlRes.conjuntos.find(c => c.id === id) || null; };
 
   /* ---------- Ao abrir: a sessão anterior volta (módulos genéricos e Rubricas) ---------- */
   async function restaurarSessao(){
@@ -5745,6 +6099,8 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
     sessaoPronta = true; render();
     try {
       const fonte = await kv.get("rub-fonte");
+      // o conjunto vindo do módulo XML volta do banco guardado no navegador (se ele ainda estiver lá)
+      if (Array.isArray(fonte)) for (const f of fonte) if (f && f.__ds && f.__ds.dkId){ const ds = await xmlConjuntoDisponivel(f.__ds.dkId); if (ds){ f.__ds = ds; f.size = ds.n; } else { fonte.length = 0; break; } }
       if (Array.isArray(fonte) && fonte.length && !rub.dados && !rub.lendo){
         const aj = (await kv.get("rub-ajustes")) || {};
         (aj.empresas || []).forEach(([k, v]) => rub.empresas.set(k, v)); rub.arqEmp = aj.arqEmp || ""; rub.nEmp = aj.nEmp || 0;
@@ -5755,35 +6111,17 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
     if (voltou) toast("Sua sessão anterior foi restaurada.");
   }
   restaurarSessao();
-  $("xmlArqs").addEventListener("change", e => { const fs = Array.from(e.target.files || []); e.target.value = ""; if (fs.length) lerXmls(fs); });
-  $("xmlLimpar").addEventListener("click", () => {
-    if (xmlLendo) return;
-    xmlEstado = xNovoEstado(); xmlRes = { conjuntos: [], faltam: 0, semCS: 0, divergencias: 0, comparadas: 0 };
-    $("xmlStatus").textContent = ""; $("dropXml").classList.remove("feito");
-    $("statusXml").textContent = "Aguardando"; $("statusXml").className = "badge";
-    logXml("Leitura limpa."); renderXml();
-  });
-
   // Pergunta sempre o formato antes de baixar
   function perguntarFormatoXml(ds){
     const dlg = $("xmlFmt");
     $("xmlFmtTitulo").textContent = ds.titulo;
-    $("xmlFmtInfo").textContent = ds.info || `${xmlN(ds.rows.length)} linhas · ${xmlN(ds.cols.length)} colunas`;
-    $("xmlFmtAviso").hidden = (ds.maxLinhas ?? ds.rows.length) <= 1000000;
+    $("xmlFmtInfo").textContent = ds.info || `${xmlN(ds.n)} linhas · ${xmlN(ds.cols.length)} colunas`;
+    $("xmlFmtAviso").hidden = (ds.maxLinhas ?? ds.n) <= 1000000;
     return new Promise(res => { dlg.returnValue = ""; dlg.addEventListener("close", () => res(dlg.returnValue || null), { once: true }); dlg.showModal(); });
   }
   function baixarArquivoXml(nome, dados, mime){
     const u = URL.createObjectURL(new Blob([dados], { type: mime })), a = document.createElement("a");
     a.href = u; a.download = nome; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
-  }
-  // Com uma só empresa nos arquivos lidos, o nome dela abre o nome do arquivo exportado
-  function xmlNomeEmpresa(){
-    const raizes = new Set();
-    for (const m of [xmlEstado.remun, xmlEstado.cs, xmlEstado.resc]) for (const e of m.values()) if (e.nrEmp) raizes.add(e.nrEmp.slice(0, 8));
-    if (!raizes.size) xmlEstado.emps.forEach((_, r) => raizes.add(r));
-    if (raizes.size !== 1) return "";
-    const nome = xmlEstado.emps.get([...raizes][0]) || "";
-    return nome.replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
   }
   /* A planilha é gravada em fluxo: as linhas chegam em lotes, viram XML do .xlsx e já saem compactadas (fflate).
      Nada de um objeto por célula: a memória fica no tamanho do arquivo final, e não no de milhões de células.
@@ -5875,22 +6213,18 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
       } catch(err){ self.postMessage({ tipo: "erro", erro: String(err && err.message || err) }); }
     };
   }
-  // Fala com o worker um lote por vez (espera a resposta antes de mandar o próximo): a página nunca copia tudo de uma vez
-  function planilhaNoWorker(ds, lote, prog){
-    return new Promise((ok, falha) => {
-      let w; try { w = new Worker(URL.createObjectURL(new Blob([`const FFLATE_URLS = ${JSON.stringify(FFLATE_URLS)};\n${escritorXlsx.toString()}\n(${corpoWorkerPlanilha.toString()})()`], { type: "text/javascript" }))); } catch(e){ falha(e); return; }
-      const fim = () => { try { w.terminate(); } catch(e){} };
-      let p = 0, enviouFim = false;
-      w.onmessage = m => {
-        const d = m.data;
-        if (d.tipo === "erro"){ fim(); falha(new Error(d.erro)); }
-        else if (d.tipo === "pronto"){ fim(); ok(d.blob); }
-        else if (p < ds.rows.length){ const parte = ds.rows.slice(p, p + lote); p += parte.length; prog(p / ds.rows.length); w.postMessage({ tipo: "lote", rows: parte }); }
-        else if (!enviouFim){ enviouFim = true; w.postMessage({ tipo: "fim" }); }
-      };
-      w.onerror = e => { e.preventDefault(); fim(); falha(new Error(e.message || "worker indisponível")); };
-      w.postMessage({ tipo: "ini", cols: ds.cols, sit: ds.sit || "", pct: ds.pct || "" });
-    });
+  // Fala com o worker um lote por vez (espera a resposta antes de mandar o próximo): as linhas vêm do banco aos poucos e a página nunca guarda tudo
+  async function planilhaNoWorker(ds, lote, prog){
+    let w; w = new Worker(URL.createObjectURL(new Blob([`const FFLATE_URLS = ${JSON.stringify(FFLATE_URLS)};\n${escritorXlsx.toString()}\n(${corpoWorkerPlanilha.toString()})()`], { type: "text/javascript" })));
+    let rejeitar = null;
+    w.onerror = e => { e.preventDefault(); if (rejeitar) rejeitar(new Error(e.message || "worker indisponível")); };
+    const falar = msg => new Promise((ok, falha) => { rejeitar = falha; w.onmessage = m => { if (m.data.tipo === "erro") falha(new Error(m.data.erro)); else ok(m.data); }; w.postMessage(msg); });
+    try {
+      await falar({ tipo: "ini", cols: ds.cols, sit: ds.sit || "", pct: ds.pct || "" });
+      let feitos = 0;
+      for await (const rows of dsLotes(ds, { tamanho: lote })){ await falar({ tipo: "lote", rows }); feitos += rows.length; prog(feitos / Math.max(1, ds.n)); }
+      return (await falar({ tipo: "fim" })).blob;
+    } finally { try { w.terminate(); } catch(e){} }
   }
   // Sem worker: o mesmo escritor na página, um lote por vez e devolvendo a vez à tela entre eles
   function carregarScript(u){ return new Promise((ok, falha) => { const s = document.createElement("script"); s.src = u; s.onload = ok; s.onerror = () => falha(new Error("não carregou " + u)); document.head.appendChild(s); }); }
@@ -5898,8 +6232,8 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
     for (const u of FFLATE_URLS){ if (window.fflate) break; try { await carregarScript(u); } catch(e){} }
     if (!window.fflate) throw new Error("biblioteca de compactação indisponível");
     const escr = escritorXlsx(window.fflate, ds.cols, ds.sit || "", ds.pct || "");
-    lote = Math.max(200, Math.floor(lote / 6));   // na página, lotes menores: a tela respira entre um e outro
-    for (let p = 0; p < ds.rows.length; p += lote){ escr.lote(ds.rows.slice(p, p + lote)); prog(Math.min(1, (p + lote) / ds.rows.length)); await pausa(); }
+    let feitos = 0;
+    for await (const rows of dsLotes(ds, { tamanho: Math.max(200, Math.floor(lote / 6)) })){ escr.lote(rows); feitos += rows.length; prog(feitos / Math.max(1, ds.n)); await pausa(); }
     return escr.fim();
   }
   async function gerarPlanilhaXml(ds, prog){
@@ -5910,50 +6244,64 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
     }
     return planilhaNaPagina(ds, lote, prog);
   }
-  // Monta o arquivo de um conjunto (planilha ou Parquet) e devolve o nome e os bytes
+  const XML_PARTE_PARQUET = 250000;
+  // Monta o(s) arquivo(s) de um conjunto (planilha ou Parquet) e devolve uma lista de { nome, dados, mime }
   async function gerarArquivoXml(ds, fmt, base, prog = () => {}){
-    if (fmt !== "parquet"){
-      try { return { nome: base + ".xlsx", dados: await gerarPlanilhaXml(ds, prog), mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }; }
-      catch(e){ console.warn("gravação em fluxo indisponível, usando a biblioteca de planilhas:", e); }
-    }
     if (fmt === "parquet"){
       const { parquetWriteBuffer } = await importarModuloComFallback(["https://esm.sh/hyparquet-writer@0", "https://cdn.jsdelivr.net/npm/hyparquet-writer@0/+esm"]);
-      const columnData = ds.cols.map((n, i) => {
+      const gravar = rows => parquetWriteBuffer({ columnData: ds.cols.map((n, i) => {
         const nm = ds.num.has(n);
-        return { name: n, type: nm ? "DOUBLE" : "STRING", data: ds.rows.map(r => nm ? (r[i] === "" || r[i] == null || !Number.isFinite(Number(r[i])) ? null : Number(r[i])) : String(r[i] ?? "")) };
-      });
-      return { nome: base + ".parquet", dados: parquetWriteBuffer({ columnData }), mime: "application/octet-stream" };
+        return { name: n, type: nm ? "DOUBLE" : "STRING", data: rows.map(r => nm ? (r[i] === "" || r[i] == null || !Number.isFinite(Number(r[i])) ? null : Number(r[i])) : String(r[i] ?? "")) };
+      }) });
+      const partes = []; let acc = [], feitos = 0;
+      for await (const rows of dsLotes(ds, { tamanho: 50000 })){
+        for (const r of rows) acc.push(r);
+        feitos += rows.length; prog(feitos / Math.max(1, ds.n));
+        if (acc.length >= XML_PARTE_PARQUET){ partes.push(gravar(acc)); acc = []; await pausa(); }
+      }
+      if (acc.length || !partes.length) partes.push(gravar(acc));
+      return partes.map((dados, k) => ({ nome: partes.length === 1 ? base + ".parquet" : `${base} (parte ${k + 1}).parquet`, dados, mime: "application/octet-stream" }));
     }
+    try { return [{ nome: base + ".xlsx", dados: await gerarPlanilhaXml(ds, prog), mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }]; }
+    catch(e){ console.warn("gravação em fluxo indisponível, usando a biblioteca de planilhas:", e); }
+    const rows = await dsTodas(ds);   // só para conjuntos pequenos
     const wb = XLSX.utils.book_new(), LIM = 1000000;
-    for (let p = 0, n = 1; p < Math.max(ds.rows.length, 1); p += LIM, n++){
-      const ws = XLSX.utils.aoa_to_sheet([ds.cols, ...ds.rows.slice(p, p + LIM)]);
+    for (let p = 0, n = 1; p < Math.max(rows.length, 1); p += LIM, n++){
+      const ws = XLSX.utils.aoa_to_sheet([ds.cols, ...rows.slice(p, p + LIM)]);
       ws["!cols"] = ds.cols.map(c => ({ wch: Math.min(Math.max(c.length + 2, 12), 40) }));
       if (ds.sit){ // Situação: verde (Válido), âmbar (com Ressalvas) e vermelho (Inválido)
         const si = ds.cols.indexOf(ds.sit), cor = { "Válido": "1E8E3E", "Válido com Ressalvas": "B26A00", "Inválido": "C00000" };
-        ds.rows.slice(p, p + LIM).forEach((r, i) => { const c = ws[XLSX.utils.encode_cell({ r: i + 1, c: si })]; if (c && cor[r[si]]) c.s = { font: { bold: true, color: { rgb: cor[r[si]] } } }; });
+        rows.slice(p, p + LIM).forEach((r, i) => { const c = ws[XLSX.utils.encode_cell({ r: i + 1, c: si })]; if (c && cor[r[si]]) c.s = { font: { bold: true, color: { rgb: cor[r[si]] } } }; });
       }
       if (ds.pct){ // % de divergência: vermelho acima de 5%, âmbar de 1% a 5%, verde abaixo de 1%
         const ci = ds.cols.indexOf(ds.pct);
-        ds.rows.slice(p, p + LIM).forEach((r, i) => { const v = r[ci]; if (typeof v !== "number") return; const c = ws[XLSX.utils.encode_cell({ r: i + 1, c: ci })]; if (!c) return;
+        rows.slice(p, p + LIM).forEach((r, i) => { const v = r[ci]; if (typeof v !== "number") return; const c = ws[XLSX.utils.encode_cell({ r: i + 1, c: ci })]; if (!c) return;
           c.z = "0.00%"; c.s = { font: { bold: true, color: { rgb: Math.abs(v) > 0.05 ? "C00000" : Math.abs(v) >= 0.01 ? "B26A00" : "1E8E3E" } } }; });
       }
       XLSX.utils.book_append_sheet(wb, ws, (n === 1 ? "Dados" : "Dados " + n));
     }
-    return { nome: base + ".xlsx", dados: XLSX.write(wb, { bookType: "xlsx", type: "array" }), mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" };
+    return [{ nome: base + ".xlsx", dados: XLSX.write(wb, { bookType: "xlsx", type: "array" }), mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }];
   }
   const nomeBaseXml = ds => `${xmlNomeEmpresa() ? xmlNomeEmpresa() + " - " : ""}${ds.arquivo}`;
   const xmlGerando = new Set();
   async function exportarXml(ds, btn){
     if (xmlGerando.has(ds)) return;
+    if (xmlLendo){ toast("Aguarde a leitura terminar para exportar."); return; }
     const fmt = await perguntarFormatoXml(ds); if (!fmt) return;
     const txt0 = btn ? btn.textContent : ""; xmlGerando.add(ds); if (btn) btn.disabled = true;
     const prog = f => { if (btn) btn.textContent = `Gerando ${Math.round(f * 100)}%`; };
     try {
       prog(0);
-      const f = await gerarArquivoXml(ds, fmt, nomeBaseXml(ds), prog);
-      baixarArquivoXml(f.nome, f.dados, f.mime);
-      logXml(`Exportado: ${f.nome} (${xmlN(ds.rows.length)} linhas).`, "log-sucesso");
-      toast(`Arquivo gerado: ${f.nome}`);
+      const arqs = await gerarArquivoXml(ds, fmt, nomeBaseXml(ds), prog);
+      if (arqs.length === 1) baixarArquivoXml(arqs[0].nome, arqs[0].dados, arqs[0].mime);
+      else {
+        if (!window.JSZip) throw new Error("a biblioteca de ZIP não carregou");
+        const zip = new JSZip(); arqs.forEach(a => zip.file(a.nome, a.dados));
+        baixarArquivoXml(nomeBaseXml(ds) + ".zip", await zip.generateAsync({ type: "blob", compression: "STORE" }), "application/zip");
+      }
+      const nome = arqs.length === 1 ? arqs[0].nome : `${nomeBaseXml(ds)}.zip (${arqs.length} arquivos)`;
+      logXml(`Exportado: ${nome} (${xmlN(ds.n)} linhas).`, "log-sucesso");
+      toast(`Arquivo gerado: ${nome}`);
     } catch(e){ logXml("Falha ao exportar: " + e.message, "log-erro"); toast("Não foi possível exportar. " + e.message); }
     finally { xmlGerando.delete(ds); if (btn){ btn.disabled = false; btn.textContent = txt0; } }
   }
@@ -5961,18 +6309,20 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
   let xmlExportandoTudo = false;
   async function exportarTodosXml(){
     const lista = xmlRes.conjuntos; if (!lista.length || xmlExportandoTudo) return;
+    if (xmlLendo){ toast("Aguarde a leitura terminar para exportar."); return; }
     if (!window.JSZip){ toast("A biblioteca de ZIP não carregou. Confira a internet e recarregue a página."); return; }
-    const total = lista.reduce((t, c) => t + c.rows.length, 0);
-    const fmt = await perguntarFormatoXml({ titulo: "Exportar todos os conjuntos", info: `${xmlN(lista.length)} arquivos num único .zip · ${xmlN(total)} linhas no total`, maxLinhas: Math.max(...lista.map(c => c.rows.length)) });
+    const total = lista.reduce((t, c) => t + c.n, 0);
+    const fmt = await perguntarFormatoXml({ titulo: "Exportar todos os conjuntos", info: `${xmlN(lista.length)} arquivos num único .zip · ${xmlN(total)} linhas no total`, maxLinhas: Math.max(...lista.map(c => c.n)) });
     if (!fmt) return;
     const btn = $("xmlExportarTudo"), txt0 = btn.textContent; xmlExportandoTudo = true; btn.disabled = true;
     try {
       const zip = new JSZip(), usados = new Set();
       for (const [k, ds] of lista.entries()){
         btn.textContent = `Gerando ${k + 1} de ${lista.length}…`; await pausa();
-        const f = await gerarArquivoXml(ds, fmt, nomeBaseXml(ds), p => { btn.textContent = `Gerando ${k + 1} de ${lista.length} · ${Math.round(p * 100)}%`; });
-        let nome = f.nome, n = 2; while (usados.has(nome)) nome = f.nome.replace(/(\.\w+)$/, ` (${n++})$1`);
-        usados.add(nome); zip.file(nome, f.dados, /\.xlsx$/.test(nome) ? { compression: "STORE" } : {});   // o .xlsx já vem compactado
+        for (const f of await gerarArquivoXml(ds, fmt, nomeBaseXml(ds), p => { btn.textContent = `Gerando ${k + 1} de ${lista.length} · ${Math.round(p * 100)}%`; })){
+          let nome = f.nome, n = 2; while (usados.has(nome)) nome = f.nome.replace(/(\.\w+)$/, ` (${n++})$1`);
+          usados.add(nome); zip.file(nome, f.dados, /\.xlsx$/.test(nome) ? { compression: "STORE" } : {});   // o .xlsx já vem compactado
+        }
       }
       btn.textContent = "Compactando…"; await pausa();
       const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 3 } });
@@ -5986,13 +6336,13 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
 
   /* ---------- Do cruzamento direto para as Rubricas, com o mesmo movimento da navegação entre módulos ---------- */
   let xmlIndo = false;
-  function seguirParaRubricas(){
+  async function seguirParaRubricas(){
     const ds = xmlRes.conjuntos.find(c => c.id === "cruzamento"); if (!ds || xmlIndo || xmlLendo) return;
     if (rub.lendo){ toast("As Rubricas ainda estão lendo um arquivo. Aguarde um instante."); return; }
     xmlIndo = true; const btn = $("xmlParaRubricas"); btn.disabled = true;
-    const emp = xmlNomeEmpresa(), arq = { name: `${emp ? emp + " - " : ""}Cruzamento de eventos (XML).xlsx`, size: ds.rows.length, __ds: ds };
-    xmlEstado.emps.forEach((nome, raiz) => { if (nome && !rub.empresas.has(raiz)) rub.empresas.set(raiz, nome); });   // o nome da empresa (S-1000) segue junto
+    const emp = xmlNomeEmpresa(), arq = { name: `${emp ? emp + " - " : ""}Cruzamento de eventos (XML).xlsx`, size: ds.n, __ds: ds };
     try {
+      for (const [raiz, nome] of await dkLinhas("SELECT raiz, razao FROM m_emp")) if (nome && !rub.empresas.has(raiz)) rub.empresas.set(raiz, nome);   // o nome da empresa (S-1000) segue junto
       carregarEventos(arq, [arq], false);   // já vai lendo enquanto a tela troca
       irPara("rubricas", true);
     } finally { xmlIndo = false; btn.disabled = false; }
@@ -6002,12 +6352,11 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:none}
   function seguirParaBases(){
     const ds = xmlRes.conjuntos.find(c => c.id === "s5001"); if (!ds || xmlLendo) return;
     const emp = xmlNomeEmpresa();
-    enviarParaBase({ name: `${emp ? emp + " - " : ""}S-5001 (XML).xlsx`, size: ds.rows.length, __ds: ds });
+    enviarParaBase({ name: `${emp ? emp + " - " : ""}S-5001 (XML).xlsx`, size: ds.n, __ds: ds });
     irPara("base", true);
   }
   $("xmlParaBases").addEventListener("click", seguirParaBases);
   $("xmlCorpo").addEventListener("click", e => { const b = e.target.closest("button[data-i]"); if (b && xmlRes.conjuntos[+b.dataset.i]) exportarXml(xmlRes.conjuntos[+b.dataset.i], b); });
-  renderXml();
 
   /* ---------- Diagnóstico PRO ---------- */
   const CAMINHO_PADRAO_EMPRESAS = "C:\\Users\\luiz.neto\\Desktop\\Projeto PRO\\1. EMPRESAS";
