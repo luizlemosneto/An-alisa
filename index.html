@@ -1464,6 +1464,19 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
 /* explosãozinha quando o ponto cai no ı do Analisa */
 .lg .bm{position:absolute;z-index:-1;pointer-events:none;border-radius:50%;background:var(--verde);box-sizing:border-box}
 
+/* Rubricas sem molduras: só o texto; borda apenas na barra de filtros. Pingo dos títulos sempre verde. Barra "Gerar" sem borda grande. */
+#viewRub :is(.guia li,.mt span,.chip-arq,.steps li,.ghost-btn,details.how > summary,.tbtn,.seg,.search,.rtbox,.acao,.mini,.btn){border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+#viewRub :is(.guia li,.mt span:not(:first-child),.chip-arq,.ghost-btn,details.how > summary,.rtbox,.acao){background:transparent}
+#viewRub :is(.tbtn,.mini,.btn,.search,.seg):not(.primary){background:transparent}
+#viewRub .tbtn[aria-expanded="true"],#viewRub #rubSec.foco #rubFoco{background:var(--solid-bg)}
+#viewRub .mt span:first-child,#viewRub .seg button[aria-pressed="true"]{box-shadow:var(--solid-shadow)}
+#viewRub #rubSec .rbar{border:1px solid var(--glass-line);background:transparent}
+#viewRub #rubAcao.acao{background:var(--glass-strong);-webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4)}
+#viewRub .search{background:var(--field)}
+#viewRub .chip-arq.falta{border:0;text-decoration:underline dashed;text-underline-offset:4px}
+.lg.tit .pt,#viewRub .lg.tit .pt{background:var(--verde)}
+.rodar{border:0;box-shadow:none}
+
 /* ---------- Movimento só em resposta a ações (hover, aviso). Sem animação de entrada ---------- */
 .page-in,.entra-dir,.entra-esq,.sai-esq,.sai-dir,
 #viewMod.page-in > *,#viewRub.page-in > *,#viewEso.page-in > *,#viewDctf.page-in > *,#viewDiag.page-in > *,#viewXml.page-in > *,#viewHome.page-in > *,
