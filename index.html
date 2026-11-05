@@ -1523,6 +1523,7 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:block}
         <div class="prog-top"><span class="prog-pct" id="rprogPct">0%</span><span class="prog-txt" id="rprogTxt">Preparando…</span></div>
         <div class="prog-track"><div class="prog-fill" id="rprogFill"></div><div class="prog-shine" id="rprogShine"></div></div>
       </div>
+      <p class="note err" id="rubErro" role="alert" hidden></p>
       <input type="file" id="rubEvt" accept=".parquet,.xlsx,.xls" multiple>
       <input type="file" id="rubEvtMais" accept=".parquet,.xlsx,.xls" multiple>
       <input type="file" id="rubEmp" accept=".xlsx,.xls,.csv">
@@ -1898,7 +1899,7 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:block}
           <button type="submit" value="xlsx" class="fmt-opt"><b>Planilha</b><span>.xlsx · abre no Excel</span></button>
           <button type="submit" value="parquet" class="fmt-opt"><b>Parquet</b><span>.parquet · leve e rápido, lido pelo módulo Rubricas</span></button>
         </div>
-        <p class="fmt-aviso" id="xmlFmtAviso" hidden>Mais de 1 milhão de linhas: a planilha será dividida em várias abas.</p>
+        <p class="fmt-aviso" id="xmlFmtAviso" hidden>Muitas linhas: sai em vários arquivos (planilha: até 1 milhão de linhas cada; Parquet: até 250 mil). Escolha uma pasta para salvar tudo de uma vez.</p>
         <button type="submit" value="" class="btn ghost fmt-cancel">Cancelar</button>
       </form>
     </dialog>
@@ -3483,7 +3484,7 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:block}
       if (!novos.length) return;
       todos = [...rub.arquivos, ...novos];
     } else todos = novos.filter((f, i) => novos.findIndex(x => mesmo(x, f)) === i);
-    rub.lendo = true;
+    rub.lendo = true; $("rubErro").hidden = true;
     const anteriores = rub.arquivos;
     $("rubEvtNome").textContent = nomeArqs(todos);
     $("rubDropEvt").classList.add("feito");
@@ -3506,7 +3507,10 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:block}
       rub.arquivos = anteriores;
       if (!anteriores.length){ $("rubDropEvt").classList.remove("feito"); $("rubEvtNome").textContent = ""; }
       else $("rubEvtNome").textContent = nomeArqs(anteriores);
-      toast("Não foi possível ler os eventos. " + (e && e.message ? e.message : ""));
+      console.error(e);
+      const motivo = e && e.message ? e.message : String(e || "erro desconhecido");
+      $("rubErro").textContent = "Não foi possível ler os eventos: " + motivo; $("rubErro").hidden = false;
+      toast("Não foi possível ler os eventos. " + motivo);
     }
     rub.lendo = false;
     renderRub();
@@ -5599,6 +5603,7 @@ CREATE OR REPLACE MACRO xp_apur(i) AS CASE WHEN i = '2' THEN '13º salário' ELS
   // Monta as etapas e devolve os conjuntos (com a contagem de cada um)
   async function dkMontar(aoEtapa){
     let k = 0, nome = "";
+    await dkExec("DELETE FROM x_meta WHERE k = 'cruz'"); await dkExec("DROP TABLE IF EXISTS x_cruz");
     for (const [rot, sql] of DK_ETAPAS){
       if (rot) nome = rot;
       if (aoEtapa) aoEtapa(k, DK_ETAPAS.length, nome);
@@ -5610,6 +5615,29 @@ CREATE OR REPLACE MACRO xp_apur(i) AS CASE WHEN i = '2' THEN '13º salário' ELS
     return dkDefinir();
   }
   const dkMontado = async () => { const v = await dkLinhas("SELECT v FROM x_meta WHERE k = 'montado'"); return v.length ? Number(v[0][0]) : -1; };
+
+  /* O cruzamento de eventos (a base das Rubricas) vira uma tabela no banco: antes ele era refeito a cada leitura ou exportação,
+     juntando sete tabelas de novo para milhões de linhas. Agora é montado uma vez, competência por competência (com a
+     marca do último lote lido), e depois é só ler. Se algo falhar, os conjuntos seguem funcionando pela consulta direta. */
+  async function dkCruzPronto(){
+    const m = await dkLinhas("SELECT v FROM x_meta WHERE k = 'cruz'");
+    if (!m.length || !(await dkUm("SELECT count(*) FROM duckdb_tables() WHERE table_name = 'x_cruz'"))) return false;
+    return m[0][0] === String(await dkUm("SELECT COALESCE(max(seq), 0) FROM x_ev"));
+  }
+  async function dkMaterializarCruz(aoProgresso){
+    await dkExec("DELETE FROM x_meta WHERE k = 'cruz'"); await dkExec("DROP TABLE IF EXISTS x_cruz");
+    const sel = XD_CRUZ.map(c => `${c[1]} AS ${dkAspas(c[0])}`).join(", ");
+    const base = `SELECT ${sel}, xp_per_ord(l.perEv) AS _k0, l.seq AS _k1, l.ln AS _k2 FROM ${XD_LX} WHERE ${XD_OK}`;
+    await dkExec(`CREATE TABLE x_cruz AS ${base} AND false`);
+    const pers = (await dkLinhas("SELECT perEv FROM (SELECT DISTINCT perEv FROM m_l) ORDER BY xp_per_ord(perEv)")).map(r => r[0]);
+    for (const [i, p] of pers.entries()){
+      aoProgresso(i / Math.max(1, pers.length), p);
+      await dkExec(`INSERT INTO x_cruz ${base} AND ${p === null ? "l.perEv IS NULL" : "l.perEv = " + dkLit(p)} ORDER BY l.seq, l.ln`);
+      await xcCede();
+    }
+    try { await dkExec("CHECKPOINT"); } catch(e){}
+    await dkExec(`INSERT INTO x_meta VALUES ('cruz', ${dkLit(String(await dkUm("SELECT COALESCE(max(seq), 0) FROM x_ev")))})`);
+  }
 
   // Estatísticas do que foi lido e a lista dos conjuntos disponíveis (as tabelas m_* já precisam existir)
   async function dkDefinir(){
@@ -5629,9 +5657,11 @@ CREATE OR REPLACE MACRO xp_apur(i) AS CASE WHEN i = '2' THEN '13º salário' ELS
     R.semValidacao = await dkUm("SELECT semval FROM m_cfg");
 
     const cj = [];
-    const cruz = xdConjunto({ id: "cruzamento", titulo: "Cruzamento de eventos (para o módulo Rubricas)", arquivo: "Cruzamento de eventos", cols: XD_CRUZ, num: [...XML_NUM], from: XD_LX, where: XD_OK, particao: true,
-      sub: R.semValidacao ? "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · sem S-5011 não foi possível validar: todas as linhas seguem" : "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · só competência + estabelecimento Válido ou Válido com Ressalvas",
-      keys: ["xp_per_ord(l.perEv)", "l.seq", "l.ln"] });
+    const cruzMat = await dkCruzPronto();
+    const baseCruz = { id: "cruzamento", titulo: "Cruzamento de eventos (para o módulo Rubricas)", arquivo: "Cruzamento de eventos", num: [...XML_NUM], particao: true,
+      sub: R.semValidacao ? "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · sem S-5011 não foi possível validar: todas as linhas seguem" : "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · só competência + estabelecimento Válido ou Válido com Ressalvas" };
+    const cruz = xdConjunto(cruzMat ? { ...baseCruz, cols: XD_CRUZ.map(c => [c[0], dkAspas(c[0])]), from: "x_cruz", keys: ["_k0", "_k1", "_k2"] }
+      : { ...baseCruz, cols: XD_CRUZ, from: XD_LX, where: XD_OK, keys: ["xp_per_ord(l.perEv)", "l.seq", "l.ln"] });
     const fora = xdConjunto({ id: "cruzamentoFora", titulo: "Cruzamento de eventos · Excluídas (inválidas)", arquivo: "Cruzamento de eventos excluidas", particao: true,
       sub: "Linhas que ficaram de fora da análise: a competência + estabelecimento não está Válido nem Válido com Ressalvas",
       cols: [...XD_CRUZ, ["Situação (competência + estabelecimento)", "COALESCE(s.sit, 'Sem S-5011')"], ["Divergência (%)", "s.pct"]], num: [...XML_NUM, "Divergência (%)"], pct: "Divergência (%)", nulo: { "Divergência (%)": "-" },
@@ -5821,15 +5851,32 @@ CREATE OR REPLACE MACRO xp_apur(i) AS CASE WHEN i = '2' THEN '13º salário' ELS
     xmlStats = { arquivos: stat[0], invalidos: stat[1] };
     const maxSeq = await dkUm("SELECT COALESCE(max(seq), 0) FROM x_ev");
     if (!maxSeq){ xmlRes = xmlVazio(); xmlNomeEmp = ""; return; }
-    const p = progXml; let aberto = false;
-    const R = (forcar || (await dkMontado()) !== maxSeq) ? await (async () => {
-      aberto = true; p.iniciar(1);
+    const p = progXml;
+    // O cruzamento vira tabela no banco (uma vez só): as Rubricas e a exportação passam a ler dela
+    const prepararCruz = async () => {
+      p.iniciar(1);
+      try {
+        xmlStatus("Preparando", "run");
+        await dkMaterializarCruz((f, per) => p.livre(f, `Preparando o cruzamento de eventos (só desta vez) · competência ${esc(per == null ? "" : xmlPer(per))}`));
+        return true;
+      } catch(e){
+        console.error(e); logXml("Não foi possível guardar o cruzamento no banco: " + (e && e.message || e) + ". Os conjuntos seguem pela leitura direta, mais lenta.", "log-erro");
+        try { await dkExec("DELETE FROM x_meta WHERE k = 'cruz'"); await dkExec("DROP TABLE IF EXISTS x_cruz"); } catch(_){}
+        return false;
+      } finally { p.fim(1); }
+    };
+    const montar = forcar || (await dkMontado()) !== maxSeq;
+    if (!montar && (await dkUm("SELECT count(*) FROM m_l")) && !(await dkCruzPronto())) await prepararCruz();
+    let R = montar ? await (async () => {
+      p.iniciar(1);
       try { return await dkMontar((k, n, nome) => { xmlStatus("Montando", "run"); p.livre(k / n, `Montando os conjuntos · etapa ${k + 1} de ${n}${nome ? ": " + esc(nome) : ""}`); }); }
       finally { p.fim(1); }
     })() : await dkDefinir();
+    if (montar && R.conjuntos.some(c => c.id === "cruzamento") && await prepararCruz()) R = await dkDefinir();
     R.conjuntos.forEach(xmlLigarFluxo);
     xmlRes = R; xmlNomeEmp = await xmlNomeDaEmpresa();
   }
+  const xmlPer = v => /^\d{4}-\d{2}/.test(String(v)) ? String(v).slice(5, 7) + "/" + String(v).slice(0, 4) : String(v);
 
   async function carregarFflate(){
     for (const u of FFLATE_URLS){ if (window.fflate) break; try { await carregarScript(u); } catch(e){} }
@@ -6080,123 +6127,178 @@ CREATE OR REPLACE MACRO xp_apur(i) AS CASE WHEN i = '2' THEN '13º salário' ELS
       } catch(err){ self.postMessage({ tipo: "erro", erro: String(err && err.message || err) }); }
     };
   }
-  // Fala com o worker um lote por vez (espera a resposta antes de mandar o próximo): as linhas vêm do banco aos poucos e a página nunca guarda tudo
-  async function planilhaNoWorker(ds, lote, prog){
-    let w; w = new Worker(URL.createObjectURL(new Blob([`const FFLATE_URLS = ${JSON.stringify(FFLATE_URLS)};\n${escritorXlsx.toString()}\n(${corpoWorkerPlanilha.toString()})()`], { type: "text/javascript" })));
-    let rejeitar = null;
-    w.onerror = e => { e.preventDefault(); if (rejeitar) rejeitar(new Error(e.message || "worker indisponível")); };
-    const falar = msg => new Promise((ok, falha) => { rejeitar = falha; w.onmessage = m => { if (m.data.tipo === "erro") falha(new Error(m.data.erro)); else ok(m.data); }; w.postMessage(msg); });
-    try {
-      await falar({ tipo: "ini", cols: ds.cols, sit: ds.sit || "", pct: ds.pct || "" });
-      let feitos = 0;
-      for await (const rows of dsLotes(ds, { tamanho: lote })){ await falar({ tipo: "lote", rows }); feitos += rows.length; prog(feitos / Math.max(1, ds.n)); }
-      return (await falar({ tipo: "fim" })).blob;
-    } finally { try { w.terminate(); } catch(e){} }
-  }
-  // Sem worker: o mesmo escritor na página, um lote por vez e devolvendo a vez à tela entre eles
   function carregarScript(u){ return new Promise((ok, falha) => { const s = document.createElement("script"); s.src = u; s.onload = ok; s.onerror = () => falha(new Error("não carregou " + u)); document.head.appendChild(s); }); }
-  async function planilhaNaPagina(ds, lote, prog){
+  const XML_LIM_ARQ = 1000000;        // linhas por arquivo (o Excel aceita 1.048.576 com o cabeçalho)
+  const XML_PARTE_PARQUET = 250000;   // linhas por arquivo Parquet (o gravador guarda uma parte inteira na memória)
+  const MIME_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  const nomeParteXml = (base, k, total, ext) => total <= 1 ? `${base}.${ext}` : `${base} (parte ${k} de ${total}).${ext}`;
+
+  /* Escritor de UMA planilha: as linhas chegam em lotes (no Web Worker; sem ele, na própria página) e o .xlsx sai compactado no fim */
+  async function escritorPlanilha(ds){
+    if (window.Worker){
+      let w = null;
+      try {
+        w = new Worker(URL.createObjectURL(new Blob([`const FFLATE_URLS = ${JSON.stringify(FFLATE_URLS)};\n${escritorXlsx.toString()}\n(${corpoWorkerPlanilha.toString()})()`], { type: "text/javascript" })));
+        let rejeitar = null;
+        w.onerror = e => { e.preventDefault(); if (rejeitar) rejeitar(new Error(e.message || "worker indisponível")); };
+        const falar = msg => new Promise((ok, falha) => { rejeitar = falha; w.onmessage = m => { if (m.data.tipo === "erro") falha(new Error(m.data.erro)); else ok(m.data); }; w.postMessage(msg); });
+        await falar({ tipo: "ini", cols: ds.cols, sit: ds.sit || "", pct: ds.pct || "" });
+        const ww = w;
+        return { lote: rows => falar({ tipo: "lote", rows }), fim: async () => { try { return (await falar({ tipo: "fim" })).blob; } finally { try { ww.terminate(); } catch(e){} } }, abortar: () => { try { ww.terminate(); } catch(e){} } };
+      } catch(e){ try { w && w.terminate(); } catch(_){} console.warn("planilha em segundo plano indisponível, gerando na página:", e); }
+    }
     for (const u of FFLATE_URLS){ if (window.fflate) break; try { await carregarScript(u); } catch(e){} }
     if (!window.fflate) throw new Error("biblioteca de compactação indisponível");
     const escr = escritorXlsx(window.fflate, ds.cols, ds.sit || "", ds.pct || "");
-    let feitos = 0;
-    for await (const rows of dsLotes(ds, { tamanho: Math.max(200, Math.floor(lote / 6)) })){ escr.lote(rows); feitos += rows.length; prog(feitos / Math.max(1, ds.n)); await pausa(); }
-    return escr.fim();
+    return { lote: async rows => { escr.lote(rows); await pausa(); }, fim: async () => escr.fim(), abortar(){} };
   }
-  async function gerarPlanilhaXml(ds, prog){
+  // Reserva para conjuntos pequenos, se a compactação em fluxo não estiver disponível
+  async function planilhaPelaBiblioteca(ds){
+    const rows = await dsTodas(ds);
+    const wb = XLSX.utils.book_new(), ws = XLSX.utils.aoa_to_sheet([ds.cols, ...rows]);
+    ws["!cols"] = ds.cols.map(c => ({ wch: Math.min(Math.max(c.length + 2, 12), 40) }));
+    if (ds.sit){ // Situação: verde (Válido), âmbar (com Ressalvas) e vermelho (Inválido)
+      const si = ds.cols.indexOf(ds.sit), cor = { "Válido": "1E8E3E", "Válido com Ressalvas": "B26A00", "Inválido": "C00000" };
+      rows.forEach((r, i) => { const c = ws[XLSX.utils.encode_cell({ r: i + 1, c: si })]; if (c && cor[r[si]]) c.s = { font: { bold: true, color: { rgb: cor[r[si]] } } }; });
+    }
+    if (ds.pct){ // % de divergência: vermelho acima de 5%, âmbar de 1% a 5%, verde abaixo de 1%
+      const ci = ds.cols.indexOf(ds.pct);
+      rows.forEach((r, i) => { const v = r[ci]; if (typeof v !== "number") return; const c = ws[XLSX.utils.encode_cell({ r: i + 1, c: ci })]; if (!c) return;
+        c.z = "0.00%"; c.s = { font: { bold: true, color: { rgb: Math.abs(v) > 0.05 ? "C00000" : Math.abs(v) >= 0.01 ? "B26A00" : "1E8E3E" } } }; });
+    }
+    XLSX.utils.book_append_sheet(wb, ws, "Dados");
+    return XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  }
+
+  /* Um arquivo por vez (cada um com até 1 milhão de linhas): quem chama grava ou baixa e solta o arquivo antes do próximo,
+     então a memória nunca guarda o conjunto inteiro. */
+  async function* arquivosPlanilhaXml(ds, base, prog){
+    const total = Math.max(1, Math.ceil(ds.n / XML_LIM_ARQ));
     const lote = Math.max(1000, Math.floor(300000 / Math.max(1, ds.cols.length)));
-    if (window.Worker){
-      try { return await planilhaNoWorker(ds, lote, prog); }
-      catch(e){ console.warn("planilha em segundo plano indisponível, gerando na página:", e); }
-    }
-    return planilhaNaPagina(ds, lote, prog);
+    let k = 1, naParte = 0, feitos = 0, esc = null;
+    try {
+      try { esc = await escritorPlanilha(ds); }
+      catch(e){
+        if (ds.n > 300000) throw e;
+        console.warn("gravação em fluxo indisponível, usando a biblioteca de planilhas:", e);
+        yield { nome: base + ".xlsx", dados: await planilhaPelaBiblioteca(ds), mime: MIME_XLSX }; return;
+      }
+      for await (const rows of dsLotes(ds, { tamanho: lote })){
+        let i = 0;
+        while (i < rows.length){
+          if (!esc) esc = await escritorPlanilha(ds);
+          const n = Math.min(rows.length - i, XML_LIM_ARQ - naParte);
+          await esc.lote(i === 0 && n === rows.length ? rows : rows.slice(i, i + n));
+          i += n; naParte += n; feitos += n; prog(feitos / Math.max(1, ds.n));
+          if (naParte >= XML_LIM_ARQ){
+            const dados = await esc.fim(); esc = null; naParte = 0;
+            yield { nome: nomeParteXml(base, k, total, "xlsx"), dados, mime: MIME_XLSX }; k++;
+          }
+        }
+      }
+      if (esc){ const dados = await esc.fim(); esc = null; yield { nome: nomeParteXml(base, k, Math.max(total, k), "xlsx"), dados, mime: MIME_XLSX }; }
+    } finally { if (esc) esc.abortar(); }
   }
-  const XML_PARTE_PARQUET = 250000;
-  // Monta o(s) arquivo(s) de um conjunto (planilha ou Parquet) e devolve uma lista de { nome, dados, mime }
-  async function gerarArquivoXml(ds, fmt, base, prog = () => {}){
-    if (fmt === "parquet"){
-      const { parquetWriteBuffer } = await importarModuloComFallback(["https://esm.sh/hyparquet-writer@0", "https://cdn.jsdelivr.net/npm/hyparquet-writer@0/+esm"]);
-      const gravar = rows => parquetWriteBuffer({ columnData: ds.cols.map((n, i) => {
-        const nm = ds.num.has(n);
-        return { name: n, type: nm ? "DOUBLE" : "STRING", data: rows.map(r => nm ? (r[i] === "" || r[i] == null || !Number.isFinite(Number(r[i])) ? null : Number(r[i])) : String(r[i] ?? "")) };
-      }) });
-      const partes = []; let acc = [], feitos = 0;
-      for await (const rows of dsLotes(ds, { tamanho: 50000 })){
-        for (const r of rows) acc.push(r);
-        feitos += rows.length; prog(feitos / Math.max(1, ds.n));
-        if (acc.length >= XML_PARTE_PARQUET){ partes.push(gravar(acc)); acc = []; await pausa(); }
+
+  /* Parquet: gravado em partes, uma por vez; cada parte é entregue (salva ou baixada) e solta antes da próxima. */
+  async function* arquivosParquetJs(ds, base, prog){
+    const { parquetWriteBuffer } = await importarModuloComFallback(["https://esm.sh/hyparquet-writer@0", "https://cdn.jsdelivr.net/npm/hyparquet-writer@0/+esm"]);
+    const gravar = rows => parquetWriteBuffer({ columnData: ds.cols.map((n, i) => {
+      const nm = ds.num.has(n);
+      return { name: n, type: nm ? "DOUBLE" : "STRING", data: rows.map(r => nm ? (r[i] === "" || r[i] == null || !Number.isFinite(Number(r[i])) ? null : Number(r[i])) : String(r[i] ?? "")) };
+    }) });
+    const total = Math.max(1, Math.ceil(ds.n / XML_PARTE_PARQUET));
+    let acc = [], feitos = 0, k = 1;
+    for await (const rows of dsLotes(ds, { tamanho: 50000 })){
+      for (const r of rows){
+        acc.push(r);
+        if (acc.length >= XML_PARTE_PARQUET){ const dados = gravar(acc); acc = []; await pausa(); yield { nome: nomeParteXml(base, k, Math.max(total, k), "parquet"), dados, mime: "application/octet-stream" }; k++; }
       }
-      if (acc.length || !partes.length) partes.push(gravar(acc));
-      return partes.map((dados, k) => ({ nome: partes.length === 1 ? base + ".parquet" : `${base} (parte ${k + 1}).parquet`, dados, mime: "application/octet-stream" }));
+      feitos += rows.length; prog(feitos / Math.max(1, ds.n));
     }
-    try { return [{ nome: base + ".xlsx", dados: await gerarPlanilhaXml(ds, prog), mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }]; }
-    catch(e){ console.warn("gravação em fluxo indisponível, usando a biblioteca de planilhas:", e); }
-    const rows = await dsTodas(ds);   // só para conjuntos pequenos
-    const wb = XLSX.utils.book_new(), LIM = 1000000;
-    for (let p = 0, n = 1; p < Math.max(rows.length, 1); p += LIM, n++){
-      const ws = XLSX.utils.aoa_to_sheet([ds.cols, ...rows.slice(p, p + LIM)]);
-      ws["!cols"] = ds.cols.map(c => ({ wch: Math.min(Math.max(c.length + 2, 12), 40) }));
-      if (ds.sit){ // Situação: verde (Válido), âmbar (com Ressalvas) e vermelho (Inválido)
-        const si = ds.cols.indexOf(ds.sit), cor = { "Válido": "1E8E3E", "Válido com Ressalvas": "B26A00", "Inválido": "C00000" };
-        rows.slice(p, p + LIM).forEach((r, i) => { const c = ws[XLSX.utils.encode_cell({ r: i + 1, c: si })]; if (c && cor[r[si]]) c.s = { font: { bold: true, color: { rgb: cor[r[si]] } } }; });
-      }
-      if (ds.pct){ // % de divergência: vermelho acima de 5%, âmbar de 1% a 5%, verde abaixo de 1%
-        const ci = ds.cols.indexOf(ds.pct);
-        rows.slice(p, p + LIM).forEach((r, i) => { const v = r[ci]; if (typeof v !== "number") return; const c = ws[XLSX.utils.encode_cell({ r: i + 1, c: ci })]; if (!c) return;
-          c.z = "0.00%"; c.s = { font: { bold: true, color: { rgb: Math.abs(v) > 0.05 ? "C00000" : Math.abs(v) >= 0.01 ? "B26A00" : "1E8E3E" } } }; });
-      }
-      XLSX.utils.book_append_sheet(wb, ws, (n === 1 ? "Dados" : "Dados " + n));
-    }
-    return [{ nome: base + ".xlsx", dados: XLSX.write(wb, { bookType: "xlsx", type: "array" }), mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }];
+    if (acc.length || k === 1) yield { nome: nomeParteXml(base, k, Math.max(total, k), "parquet"), dados: gravar(acc), mime: "application/octet-stream" };
   }
+  async function* arquivosXml(ds, fmt, base, prog = () => {}){
+    if (fmt === "parquet") yield* arquivosParquetJs(ds, base, prog); else yield* arquivosPlanilhaXml(ds, base, prog);
+  }
+
   const nomeBaseXml = ds => `${xmlNomeEmpresa() ? xmlNomeEmpresa() + " - " : ""}${ds.arquivo}`;
   const xmlGerando = new Set();
+
+  /* Destino: uma pasta escolhida (cada arquivo é gravado direto no disco) ou, sem isso, um download por arquivo, em sequência.
+     O seletor de pasta só abre logo depois de um clique, por isso é chamado antes de qualquer trabalho demorado. */
+  async function escolherPastaXml(){
+    if (!window.showDirectoryPicker) return null;
+    try { return await window.showDirectoryPicker({ id: "hub-fiscal-xml", mode: "readwrite", startIn: "downloads" }); }
+    catch(e){ return null; }
+  }
+  async function entregarArquivoXml(pasta, arq, ordem){
+    if (pasta){
+      const w = await (await pasta.getFileHandle(arq.nome, { create: true })).createWritable();
+      try { await w.write(arq.dados); await w.close(); } catch(e){ try { await w.abort(); } catch(_){} throw e; }
+      return;
+    }
+    if (ordem > 0) await new Promise(r => setTimeout(r, 1000));   // dá tempo ao navegador de começar o download anterior
+    baixarArquivoXml(arq.nome, arq.dados, arq.mime);
+  }
   async function exportarXml(ds, btn){
     if (xmlGerando.has(ds)) return;
     if (xmlLendo){ toast("Aguarde a leitura terminar para exportar."); return; }
     const fmt = await perguntarFormatoXml(ds); if (!fmt) return;
+    const varios = ds.n > (fmt === "parquet" ? XML_PARTE_PARQUET : XML_LIM_ARQ);
+    const pasta = varios ? await escolherPastaXml() : null;
+    if (varios && !pasta) toast("Sem pasta escolhida: os arquivos serão baixados um a um. Se o navegador perguntar, permita vários downloads.");
     const txt0 = btn ? btn.textContent : ""; xmlGerando.add(ds); if (btn) btn.disabled = true;
     const prog = f => { if (btn) btn.textContent = `Gerando ${Math.round(f * 100)}%`; };
     try {
       prog(0);
-      const arqs = await gerarArquivoXml(ds, fmt, nomeBaseXml(ds), prog);
-      if (arqs.length === 1) baixarArquivoXml(arqs[0].nome, arqs[0].dados, arqs[0].mime);
-      else {
-        if (!window.JSZip) throw new Error("a biblioteca de ZIP não carregou");
-        const zip = new JSZip(); arqs.forEach(a => zip.file(a.nome, a.dados));
-        baixarArquivoXml(nomeBaseXml(ds) + ".zip", await zip.generateAsync({ type: "blob", compression: "STORE" }), "application/zip");
+      const nomes = []; let k = 0;
+      for await (const arq of arquivosXml(ds, fmt, nomeBaseXml(ds), prog)){
+        await entregarArquivoXml(pasta, arq, k++); nomes.push(arq.nome);
+        logXml(`Arquivo ${nomes.length}${varios ? " de " + Math.ceil(ds.n / (fmt === "parquet" ? XML_PARTE_PARQUET : XML_LIM_ARQ)) : ""} salvo: ${arq.nome}`);
       }
-      const nome = arqs.length === 1 ? arqs[0].nome : `${nomeBaseXml(ds)}.zip (${arqs.length} arquivos)`;
+      const nome = nomes.length === 1 ? nomes[0] : `${nomes.length} arquivos${pasta ? ` na pasta “${pasta.name}”` : ""}`;
       logXml(`Exportado: ${nome} (${xmlN(ds.n)} linhas).`, "log-sucesso");
       toast(`Arquivo gerado: ${nome}`);
-    } catch(e){ logXml("Falha ao exportar: " + e.message, "log-erro"); toast("Não foi possível exportar. " + e.message); }
+    } catch(e){ console.error(e); logXml("Falha ao exportar: " + e.message, "log-erro"); toast("Não foi possível exportar. " + e.message); }
     finally { xmlGerando.delete(ds); if (btn){ btn.disabled = false; btn.textContent = txt0; } }
   }
-  // Em lote: todos os conjuntos de uma vez, num único .zip (o navegador costuma barrar vários downloads seguidos)
+  // Em lote: todos os conjuntos de uma vez. Pequenos vão num único .zip; havendo conjunto de mais de 1 milhão de linhas,
+  // cada arquivo é gravado numa pasta (ou baixado em sequência), porque um .zip desse tamanho não cabe na memória.
   let xmlExportandoTudo = false;
   async function exportarTodosXml(){
     const lista = xmlRes.conjuntos; if (!lista.length || xmlExportandoTudo) return;
     if (xmlLendo){ toast("Aguarde a leitura terminar para exportar."); return; }
-    if (!window.JSZip){ toast("A biblioteca de ZIP não carregou. Confira a internet e recarregue a página."); return; }
+    const grande = lista.some(c => c.n > XML_LIM_ARQ);
+    if (!grande && !window.JSZip){ toast("A biblioteca de ZIP não carregou. Confira a internet e recarregue a página."); return; }
     const total = lista.reduce((t, c) => t + c.n, 0);
-    const fmt = await perguntarFormatoXml({ titulo: "Exportar todos os conjuntos", info: `${xmlN(lista.length)} arquivos num único .zip · ${xmlN(total)} linhas no total`, maxLinhas: Math.max(...lista.map(c => c.n)) });
+    const fmt = await perguntarFormatoXml({ titulo: "Exportar todos os conjuntos", info: grande ? `${xmlN(lista.length)} conjuntos · ${xmlN(total)} linhas no total · os grandes saem em arquivos de até 1 milhão de linhas` : `${xmlN(lista.length)} arquivos num único .zip · ${xmlN(total)} linhas no total`, maxLinhas: Math.max(...lista.map(c => c.n)) });
     if (!fmt) return;
+    const pasta = grande ? await escolherPastaXml() : null;
+    if (grande && !pasta) toast("Sem pasta escolhida: os arquivos serão baixados um a um. Se o navegador perguntar, permita vários downloads.");
     const btn = $("xmlExportarTudo"), txt0 = btn.textContent; xmlExportandoTudo = true; btn.disabled = true;
     try {
-      const zip = new JSZip(), usados = new Set();
+      const zip = grande ? null : new JSZip(), usados = new Set(); let salvos = 0;
       for (const [k, ds] of lista.entries()){
         btn.textContent = `Gerando ${k + 1} de ${lista.length}…`; await pausa();
-        for (const f of await gerarArquivoXml(ds, fmt, nomeBaseXml(ds), p => { btn.textContent = `Gerando ${k + 1} de ${lista.length} · ${Math.round(p * 100)}%`; })){
+        for await (const f of arquivosXml(ds, fmt, nomeBaseXml(ds), p => { btn.textContent = `Gerando ${k + 1} de ${lista.length} · ${Math.round(p * 100)}%`; })){
           let nome = f.nome, n = 2; while (usados.has(nome)) nome = f.nome.replace(/(\.\w+)$/, ` (${n++})$1`);
-          usados.add(nome); zip.file(nome, f.dados, /\.xlsx$/.test(nome) ? { compression: "STORE" } : {});   // o .xlsx já vem compactado
+          usados.add(nome);
+          if (zip) zip.file(nome, f.dados, /\.xlsx$/.test(nome) ? { compression: "STORE" } : {});   // o .xlsx já vem compactado
+          else await entregarArquivoXml(pasta, { ...f, nome }, salvos);
+          salvos++;
         }
       }
-      btn.textContent = "Compactando…"; await pausa();
-      const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 3 } });
-      const emp = xmlNomeEmpresa(), nomeZip = `${emp ? emp + " - " : ""}Todos os arquivos.zip`;
-      baixarArquivoXml(nomeZip, blob, "application/zip");
-      logXml(`Exportados ${xmlN(lista.length)} arquivos em ${nomeZip}.`, "log-sucesso"); toast(`${xmlN(lista.length)} arquivos salvos em ${nomeZip}`);
-    } catch(e){ logXml("Falha ao exportar em lote: " + e.message, "log-erro"); toast("Não foi possível exportar tudo. " + e.message); }
+      if (zip){
+        btn.textContent = "Compactando…"; await pausa();
+        const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 3 } });
+        const emp = xmlNomeEmpresa(), nomeZip = `${emp ? emp + " - " : ""}Todos os arquivos.zip`;
+        baixarArquivoXml(nomeZip, blob, "application/zip");
+        logXml(`Exportados ${xmlN(salvos)} arquivos em ${nomeZip}.`, "log-sucesso"); toast(`${xmlN(salvos)} arquivos salvos em ${nomeZip}`);
+      } else {
+        logXml(`Exportados ${xmlN(salvos)} arquivos${pasta ? ` na pasta “${pasta.name}”` : ""}.`, "log-sucesso"); toast(`${xmlN(salvos)} arquivos salvos${pasta ? ` na pasta “${pasta.name}”` : ""}`);
+      }
+    } catch(e){ console.error(e); logXml("Falha ao exportar em lote: " + e.message, "log-erro"); toast("Não foi possível exportar tudo. " + e.message); }
     finally { xmlExportandoTudo = false; btn.disabled = false; btn.textContent = txt0; }
   }
   $("xmlExportarTudo").addEventListener("click", exportarTodosXml);
