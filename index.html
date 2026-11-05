@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Analisa</title>
+<title>Analia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -860,7 +860,7 @@ details.how[open] > ol > li:nth-child(n+6){animation-delay:.25s}
 </style>
 <style id="swiss">
 /* ===================================================================
-   Analisa — estilo suíço (tipografia internacional)
+   Analia — estilo suíço (tipografia internacional)
    com vidro arredondado estilo iOS e efeito bolha. Só tons de cinza.
    Fica por último para valer sobre todo o CSS anterior.
    =================================================================== */
@@ -1365,7 +1365,7 @@ body:has(#viewRub.carregado:not([hidden])) .rodape{padding-top:32px}
 #viewRub.carregado > .mod-head{margin-top:0}
 
 
-/* ---------- Marca Analisa (ı sem pingo + ponto verde, como no RetLia) ---------- */
+/* ---------- Marca Analia (ı sem pingo + ponto verde, como no RetLia) ---------- */
 :root{--display:"Inter Tight","Inter","Helvetica Neue",Arial,sans-serif;--verde:#1F9D63;--verde-card:#1C6B4A}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--verde:#4FD18B;--verde-card:#237753}}
 :root[data-theme="dark"]{--verde:#4FD18B;--verde-card:#237753}
@@ -1461,7 +1461,7 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
 #viewRub .rbar .tbtn.compacto{padding:7px 13px}
 .stub::after,.mod::after,.kpi::after,.count::after,.painel::after{top:4px}
 
-/* explosãozinha quando o ponto cai no ı do Analisa */
+/* explosãozinha quando o ponto cai no ı do Analia */
 .lg .bm{position:absolute;z-index:-1;pointer-events:none;border-radius:50%;background:var(--verde);box-sizing:border-box}
 
 /* Rubricas sem molduras: só o texto; borda apenas na barra de filtros. Pingo dos títulos sempre verde. Barra "Gerar" sem borda grande. */
@@ -1476,6 +1476,8 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
 #viewRub .chip-arq.falta{border:0;text-decoration:underline dashed;text-underline-offset:4px}
 .lg.tit .pt,#viewRub .lg.tit .pt{background:var(--verde)}
 .rodar{border:0;box-shadow:none}
+
+.rodar{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none}
 
 /* ---------- Movimento só em resposta a ações (hover, aviso). Sem animação de entrada ---------- */
 .page-in,.entra-dir,.entra-esq,.sai-esq,.sai-dir,
@@ -1494,7 +1496,7 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
 <div class="wrap">
   <nav class="topnav" aria-label="Principal">
     <div class="brandwrap" id="brandwrap">
-      <a class="brand" href="#" id="brand" aria-label="Analisa"><span class="lg" aria-hidden="true">Anal<span class="i">ı<i class="bl"></i><i class="pt"></i></span>sa</span></a>
+      <a class="brand" href="#" id="brand" aria-label="Analia"><span class="lg" aria-hidden="true">Anal<span class="i">ı<i class="bl"></i><i class="pt"></i></span>a</span></a>
     </div>
     <div class="tabs" role="tablist" aria-label="Módulos" id="navTabs">
       <a role="tab" href="#" data-go="home" aria-selected="true">Início</a>
@@ -1515,7 +1517,7 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
   <!-- Página inicial -->
   <main id="viewHome">
     <section class="hero" id="hero">
-      <h1 class="hero-h1" id="heroLogo" aria-label="Analisa"><span class="lg" aria-hidden="true">Anal<span class="i">ı<i class="bl"></i><i class="pt"></i></span>sa</span></h1>
+      <h1 class="hero-h1" id="heroLogo" aria-label="Analia"><span class="lg" aria-hidden="true">Anal<span class="i">ı<i class="bl"></i><i class="pt"></i></span>a</span></h1>
       <div class="hero-txt">
         <p class="hero-kicker">Tributação · Previdência · eSocial</p>
         <p class="lede">Escolha o módulo. Cada um lê seus arquivos e devolve a planilha pronta para o seu controle de recuperação de crédito.</p>
@@ -2983,9 +2985,9 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
         $("dropPick").textContent = m.pick;
         input.setAttribute("accept", m.aceita);
         $("howList").innerHTML = m.como.map(t => `<li>${esc(t)}</li>`).join("");
-        document.title = `${m.titulo} · Analisa`;
+        document.title = `${m.titulo} · Analia`;
       } else {
-        document.title = v === "rubricas" ? "Rubricas · Analisa" : VISTAS_HUB[v] ? `${VISTAS_HUB[v].titulo} · Analisa` : "Analisa";
+        document.title = v === "rubricas" ? "Rubricas · Analia" : VISTAS_HUB[v] ? `${VISTAS_HUB[v].titulo} · Analia` : "Analia";
       }
       if (typeof sairFoco === "function") sairFoco();
       document.querySelector(".wrap").classList.toggle("wide", v === "rubricas");
