@@ -5268,7 +5268,8 @@ CREATE OR REPLACE MACRO xp_r2(x) AS floor(x * 100 + 0.5) / 100;
 CREATE OR REPLACE MACRO xp_p(dif, base) AS CASE WHEN base <> 0 THEN abs(dif / base) WHEN dif = 0 THEN 0 ELSE 1e300 END;
 CREATE OR REPLACE MACRO xp_sit(dif, base) AS CASE WHEN xp_p(dif, base) < 0.01 THEN 'Válido' WHEN xp_p(dif, base) <= 0.05 THEN 'Válido com Ressalvas' ELSE 'Inválido' END;
 CREATE OR REPLACE MACRO xp_num(v) AS CASE WHEN v IS NULL OR v = '' THEN NULL ELSE COALESCE(TRY_CAST(replace(v, ',', '.') AS DOUBLE), 0.0) END;
-CREATE OR REPLACE MACRO xp_apur(i) AS CASE WHEN i = '2' THEN '13º salário' ELSE 'Mensal' END;`;
+CREATE OR REPLACE MACRO xp_apur(i) AS CASE WHEN i = '2' THEN '13º salário' ELSE 'Mensal' END;
+CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE(p,'')),'\d{4}') THEN CAST(trim(p) AS INTEGER) * 100 + 11 WHEN regexp_full_match(trim(COALESCE(p,'')),'\d{4}-\d{2}(-\d{2})?') THEN CAST(substr(trim(p),1,4) AS INTEGER) * 100 + CAST(substr(trim(p),6,2) AS INTEGER) ELSE NULL END;`;
 
   async function dkEsquema(){
     await dkExec("CREATE TABLE IF NOT EXISTS x_meta(k VARCHAR, v VARCHAR)");
@@ -5719,24 +5720,33 @@ CREATE OR REPLACE MACRO xp_apur(i) AS CASE WHEN i = '2' THEN '13º salário' ELS
   /* O cruzamento de eventos (a base das Rubricas) vira uma tabela no banco: antes ele era refeito a cada leitura ou exportação,
      juntando sete tabelas de novo para milhões de linhas. Agora é montado uma vez, competência por competência (com a
      marca do último lote lido), e depois é só ler. Se algo falhar, os conjuntos seguem funcionando pela consulta direta. */
+  /* Data de corte do cruzamento: 5 anos para trás, a contar da última competência fechada (o mês anterior ao de hoje).
+     O 13º (competência só com o ano) vale como novembro. Hoje, em novembro de 2026, o corte é 10/2021. */
+  function xcCorte(){
+    const h = new Date(); let ano = h.getFullYear(), mes = h.getMonth();   // getMonth() é o mês anterior, de 1 a 12 (0 = dezembro do ano passado)
+    if (mes === 0){ ano--; mes = 12; }
+    ano -= 5; return { chave: ano * 100 + mes, label: `${String(mes).padStart(2, "0")}/${ano}` };
+  }
+  const xcFiltroCorte = () => `COALESCE(xp_chave(l.per), 999999) >= ${xcCorte().chave}`;   // competência que não dá para ler fica (não dá para saber se é antiga)
+  const xcMarcaCruz = async () => `${await dkUm("SELECT COALESCE(max(seq), 0) FROM x_ev")}|${xcCorte().chave}`;
   async function dkCruzPronto(){
     const m = await dkLinhas("SELECT v FROM x_meta WHERE k = 'cruz'");
     if (!m.length || !(await dkUm("SELECT count(*) FROM duckdb_tables() WHERE table_name = 'x_cruz'"))) return false;
-    return m[0][0] === String(await dkUm("SELECT COALESCE(max(seq), 0) FROM x_ev"));
+    return m[0][0] === await xcMarcaCruz();   // muda quando chegam eventos novos ou quando vira o mês (o corte anda)
   }
   async function dkMaterializarCruz(aoProgresso){
     await dkExec("DELETE FROM x_meta WHERE k = 'cruz'"); await dkExec("DROP TABLE IF EXISTS x_cruz");
     const sel = XD_CRUZ.map(c => `${c[1]} AS ${dkAspas(c[0])}`).join(", ");
-    const base = `SELECT ${sel}, xp_per_ord(l.perEv) AS _k0, l.seq AS _k1, l.ln AS _k2 FROM ${XD_LX} WHERE ${XD_OK}`;
+    const base = `SELECT ${sel}, xp_per_ord(l.perEv) AS _k0, l.seq AS _k1, l.ln AS _k2 FROM ${XD_LX} WHERE ${XD_OK} AND ${xcFiltroCorte()}`;
     await dkExec(`CREATE TABLE x_cruz AS ${base} AND false`);
-    const pers = (await dkLinhas("SELECT perEv FROM (SELECT DISTINCT perEv FROM m_l) ORDER BY xp_per_ord(perEv)")).map(r => r[0]);
+    const pers = (await dkLinhas(`SELECT perEv FROM (SELECT DISTINCT perEv FROM m_l l WHERE ${xcFiltroCorte()}) ORDER BY xp_per_ord(perEv)`)).map(r => r[0]);
     for (const [i, p] of pers.entries()){
       aoProgresso(i / Math.max(1, pers.length), p);
       await dkExec(`INSERT INTO x_cruz ${base} AND ${p === null ? "l.perEv IS NULL" : "l.perEv = " + dkLit(p)} ORDER BY l.seq, l.ln`);
       await xcCede();
     }
     try { await dkExec("CHECKPOINT"); } catch(e){}
-    await dkExec(`INSERT INTO x_meta VALUES ('cruz', ${dkLit(String(await dkUm("SELECT COALESCE(max(seq), 0) FROM x_ev")))})`);
+    await dkExec(`INSERT INTO x_meta VALUES ('cruz', ${dkLit(await xcMarcaCruz())})`);
   }
 
   // Estatísticas do que foi lido e a lista dos conjuntos disponíveis (as tabelas m_* já precisam existir)
@@ -5759,13 +5769,13 @@ CREATE OR REPLACE MACRO xp_apur(i) AS CASE WHEN i = '2' THEN '13º salário' ELS
     const cj = [];
     const cruzMat = await dkCruzPronto();
     const baseCruz = { id: "cruzamento", titulo: "Cruzamento de eventos (para o módulo Rubricas)", arquivo: "Cruzamento de eventos", num: [...XML_NUM], particao: true,
-      sub: R.semValidacao ? "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · sem S-5011 não foi possível validar: todas as linhas seguem" : "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · só competência + estabelecimento Válido ou Válido com Ressalvas" };
+      sub: (R.semValidacao ? "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · sem S-5011 não foi possível validar: todas as linhas seguem" : "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · só competência + estabelecimento Válido ou Válido com Ressalvas") + ` · só de ${xcCorte().label} em diante (5 anos)` };
     const cruz = xdConjunto(cruzMat ? { ...baseCruz, cols: XD_CRUZ.map(c => [c[0], dkAspas(c[0])]), from: "x_cruz", keys: ["_k0", "_k1", "_k2"] }
-      : { ...baseCruz, cols: XD_CRUZ, from: XD_LX, where: XD_OK, keys: ["xp_per_ord(l.perEv)", "l.seq", "l.ln"] });
+      : { ...baseCruz, cols: XD_CRUZ, from: XD_LX, where: `${XD_OK} AND ${xcFiltroCorte()}`, keys: ["xp_per_ord(l.perEv)", "l.seq", "l.ln"] });
     const fora = xdConjunto({ id: "cruzamentoFora", titulo: "Cruzamento de eventos · Excluídas (inválidas)", arquivo: "Cruzamento de eventos excluidas", particao: true,
-      sub: "Linhas que ficaram de fora da análise: a competência + estabelecimento não está Válido nem Válido com Ressalvas",
+      sub: `Linhas que ficaram de fora da análise: a competência + estabelecimento não está Válido nem Válido com Ressalvas · só de ${xcCorte().label} em diante`,
       cols: [...XD_CRUZ, ["Situação (competência + estabelecimento)", "COALESCE(s.sit, 'Sem S-5011')"], ["Divergência (%)", "s.pct"]], num: [...XML_NUM, "Divergência (%)"], pct: "Divergência (%)", nulo: { "Divergência (%)": "-" },
-      from: XD_LX, where: `NOT ${XD_OK}`, keys: ["xp_per_ord(l.perEv)", "l.seq", "l.ln"] });
+      from: XD_LX, where: `NOT ${XD_OK} AND ${xcFiltroCorte()}`, keys: ["xp_per_ord(l.perEv)", "l.seq", "l.ln"] });
     const s1200 = xdConjunto({ id: "s1200", titulo: "S-1200 · Remuneração do trabalhador", arquivo: "S-1200 Remuneracao", particao: true,
       sub: "Uma linha por rubrica, só o mais recente de cada trabalhador e competência (categorias 1xx). A Conferência soma daqui: linhas com “Entra na base” = Sim",
       cols: [["Período", "xp_comp(l.per)"], ["Período Apuração", "xp_comp(l.perEv)"], ["Número Inscrição", "xp_cnpj(l.nrEmp)"], ["Empresa", XD_EMP], ["Número Inscrição Estabelecimento", "xp_cnpj(l.estNr)"], ["Código Lotação", "l.lot"], ["Código Categoria", "l.cat"],
