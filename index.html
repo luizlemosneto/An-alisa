@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hub Fiscal & Previdenciário</title>
+<title>Analisa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
@@ -860,7 +860,7 @@ details.how[open] > ol > li:nth-child(n+6){animation-delay:.25s}
 </style>
 <style id="swiss">
 /* ===================================================================
-   Hub Fiscal & Previdenciário — estilo suíço (tipografia internacional)
+   Analisa — estilo suíço (tipografia internacional)
    com vidro arredondado estilo iOS e efeito bolha. Só tons de cinza.
    Fica por último para valer sobre todo o CSS anterior.
    =================================================================== */
@@ -1347,10 +1347,46 @@ details.how[open] > ol > li{animation:none}
 .rodape b{color:var(--ink);font-weight:700}
 body[data-mod]:not([data-mod="home"]) .rodape{display:block}
 
+/* Rubricas com dados carregados: menos empilhamento, a tabela ganha a altura da tela */
+body:has(#viewRub.carregado:not([hidden])) .topnav{margin-bottom:20px}
+#viewRub.carregado .mod-head{margin:0 0 4px;align-items:center}
+#viewRub.carregado .mod-head h1{font-size:clamp(34px,3.6vw,52px);line-height:.9}
+#viewRub.carregado > *{margin-top:12px}
+#viewRub.carregado > .mod-head{margin-top:0}
+#viewRub.carregado details.how{margin:4px 0 0}
+#viewRub.carregado .rsec-head{margin:8px 0 6px}
+#viewRub.carregado .rtbox{max-height:calc(100vh - 150px);min-height:300px}
+#viewRub.carregado .acao{margin-top:12px}
+body:has(#viewRub.carregado:not([hidden])) .rodape{padding-top:32px}
+
 /* tela cheia da revisão */
 #rubSec.foco{background:var(--bg)}
 #viewRub.carregado > *{margin-top:20px}
 #viewRub.carregado > .mod-head{margin-top:0}
+
+
+/* ---------- Marca Analisa: mesma vibe do RetLia (ı sem pingo + ponto verde, cinza-quente e verde-menta) ---------- */
+:root{--display:"Inter Tight","Inter","Helvetica Neue",Arial,sans-serif;--verde:#1F9D63;--verde-escuro:#17724A;--verde-fundo:#D5EFDF;--verde-on:#ffffff;--blob2:#cfe3d7}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--verde:#4FD18B;--verde-escuro:#4FD18B;--verde-fundo:rgba(79,209,139,.16);--verde-on:#0e0e0e;--blob2:#1f2c25}}
+:root[data-theme="dark"]{--verde:#4FD18B;--verde-escuro:#4FD18B;--verde-fundo:rgba(79,209,139,.16);--verde-on:#0e0e0e;--blob2:#1f2c25}
+body :is(h1,.hero-h1,.brand,h2.sec,.mod h2,#viewHome .mod h2,.mod .sigla,#viewHome .mod .sigla,.count b,.kpi b,.drop .big,.prog-pct,.painel h3,.fmt-in h3,.acao .tot b,.stat b){font-family:var(--display)}
+.lg{position:relative;display:inline-block;isolation:isolate;white-space:nowrap}
+.lg .i{position:relative;display:inline-block}
+.lg .pt{position:absolute;left:var(--ix,50%);top:.04em;width:.21em;height:.21em;margin-left:-.105em;border-radius:50%;background:var(--verde);z-index:-1;will-change:transform}
+.brand{font-size:19px;font-weight:800;letter-spacing:-.045em}
+.brand:hover{text-decoration:none}
+.hero-h1 .lg{font-weight:800}
+.hero-kicker{display:inline-flex;align-items:center;gap:8px}
+.hero-kicker::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--verde)}
+.mod .grupo::before{background:var(--verde);opacity:1}
+.mod[data-grupo="analise"] .grupo::before{opacity:.45}
+.mod[data-grupo="suporte"] .grupo::before{opacity:.75}
+.badge.ok{background:var(--verde-escuro);color:var(--verde-on)}
+.prog-fill{background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0) 62%),var(--verde-escuro)}
+.steps li.ok::before,.drop.feito .slot-tag{background:var(--verde-escuro);color:var(--verde-on)}
+.r-Pacificado{background:var(--verde-fundo);box-shadow:inset 0 0 0 1px var(--verde)}.r-Baixo{background:var(--verde)}
+.topbar i{background:var(--verde-escuro)}
+.hub-log .log-sucesso{color:var(--verde-escuro)}
 
 /* ---------- Movimento só em resposta a ações (hover, aviso). Sem animação de entrada ---------- */
 .page-in,.entra-dir,.entra-esq,.sai-esq,.sai-dir,
@@ -1369,7 +1405,7 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:block}
 <div class="wrap">
   <nav class="topnav" aria-label="Principal">
     <div class="brandwrap" id="brandwrap">
-      <a class="brand" href="#" id="brand">Hub Fiscal &amp; Previdenciário</a>
+      <a class="brand" href="#" id="brand" aria-label="Analisa"><span class="lg" aria-hidden="true">An<span class="la">a</span>l<span class="i">ı<i class="pt"></i></span>sa</span></a>
     </div>
     <div class="tabs" role="tablist" aria-label="Módulos" id="navTabs">
       <a role="tab" href="#" data-go="home" aria-selected="true">Início</a>
@@ -1390,7 +1426,7 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:block}
   <!-- Página inicial -->
   <main id="viewHome">
     <section class="hero" id="hero">
-      <h1 class="hero-h1">Hub Fiscal<br>&amp; Previdenciário</h1>
+      <h1 class="hero-h1" id="heroLogo" aria-label="Analisa"><span class="lg" aria-hidden="true">An<span class="la">a</span>l<span class="i">ı<i class="pt"></i></span>sa</span></h1>
       <div class="hero-txt">
         <p class="hero-kicker">Tributação · Previdência · eSocial</p>
         <p class="lede">Escolha o módulo. Cada um lê seus arquivos e devolve a planilha pronta para o seu controle de recuperação de crédito.</p>
@@ -2734,6 +2770,39 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:block}
   const drop = $("drop"), input = $("fileInput"), lista = $("fileList"), thead = $("thead"), tbody = $("tbody"), busca = $("search"), stub = $("stub");
 
   const reduzMov = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ================= Marca: o ponto cresce no "a" e pula para o "ı" ================= */
+  const logoRodando = new WeakSet();
+  function animarLogo(lg){
+    if (!lg || logoRodando.has(lg) || reduzMov) return;
+    const pt = lg.querySelector(".pt"), a = lg.querySelector(".la");
+    if (!pt || !a || !pt.animate) return;
+    const rp = pt.getBoundingClientRect(), ra = a.getBoundingClientRect();
+    if (!rp.width || !ra.width) return;   // logo escondido (outra tela)
+    const dx = (ra.left + ra.width / 2) - (rp.left + rp.width / 2), dy = (ra.top + ra.height * .64) - (rp.top + rp.height / 2);
+    const S = Math.max(2.2, ra.width * .9 / rp.width), salto = Math.max(ra.height * .5, 14), T = (x, y, sx, sy) => `translate(${x}px,${y}px) scale(${sx},${sy ?? sx})`;
+    logoRodando.add(lg);
+    pt.animate([
+      { transform: T(dx, dy, 0), offset: 0, easing: "cubic-bezier(.2,.9,.3,1.25)" },
+      { transform: T(dx, dy, S), offset: .36 },
+      { transform: T(dx, dy, S * 1.04, S * .9), offset: .52, easing: "cubic-bezier(.25,.1,.4,1)" },
+      { transform: T(dx * .5, -salto, .8, 1.1), offset: .74, easing: "cubic-bezier(.55,0,.9,.55)" },
+      { transform: T(0, 0, 1.45, .62), offset: .88, easing: "cubic-bezier(.2,.8,.3,1.4)" },
+      { transform: T(0, 0, 1), offset: 1 }
+    ], { duration: 1750, fill: "backwards" }).onfinish = () => logoRodando.delete(lg);
+  }
+  const logosAnalisa = () => document.querySelectorAll(".lg");
+  // O ponto fica centrado no traço do "ı" de verdade (mede o desenho da letra, seja qual for a fonte que carregou)
+  function centrarPingo(lg){
+    try {
+      const i = lg.querySelector(".i"), cs = getComputedStyle(i), c = document.createElement("canvas").getContext("2d");
+      c.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      const m = c.measureText("ı"), px = parseFloat(cs.fontSize);
+      if (px && m.width) lg.style.setProperty("--ix", ((m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2 / px) + "em");
+    } catch(e){}
+  }
+  (async () => { try { await document.fonts.ready; } catch(e){} logosAnalisa().forEach(centrarPingo); setTimeout(() => logosAnalisa().forEach(animarLogo), 250); })();
+  logosAnalisa().forEach(lg => { const alvo = lg.closest("a, h1") || lg; alvo.addEventListener("pointerenter", () => animarLogo(lg)); alvo.addEventListener("focus", () => animarLogo(lg)); });
   let destino = "home", navToken = 0;
   const elDaVista = v => v === "home" ? viewHome : v === "rubricas" ? viewRub : VISTAS_HUB[v] ? VISTAS_HUB[v].el : viewMod;
 
@@ -2756,6 +2825,7 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:block}
       $("viewDiag").hidden = true;
       if (v === "dctfweb" || v === "saldo") ajustarModoDctf(v === "saldo");
       document.querySelectorAll("#navTabs [role=tab]").forEach(t => t.setAttribute("aria-selected", String(t.dataset.go === v)));
+      if (v === "home") requestAnimationFrame(() => animarLogo($("heroLogo").querySelector(".lg")));
       if (MODULOS[v]){
         const m = MODULOS[v];
         $("modTitle").textContent = m.titulo;
@@ -2765,9 +2835,9 @@ body[data-mod]:not([data-mod="home"]) .rodape{display:block}
         $("dropPick").textContent = m.pick;
         input.setAttribute("accept", m.aceita);
         $("howList").innerHTML = m.como.map(t => `<li>${esc(t)}</li>`).join("");
-        document.title = `${m.titulo} · Hub Fiscal & Previdenciário`;
+        document.title = `${m.titulo} · Analisa`;
       } else {
-        document.title = v === "rubricas" ? "Rubricas · Hub Fiscal & Previdenciário" : VISTAS_HUB[v] ? `${VISTAS_HUB[v].titulo} · Hub Fiscal & Previdenciário` : "Hub Fiscal & Previdenciário";
+        document.title = v === "rubricas" ? "Rubricas · Analisa" : VISTAS_HUB[v] ? `${VISTAS_HUB[v].titulo} · Analisa` : "Analisa";
       }
       if (typeof sairFoco === "function") sairFoco();
       document.querySelector(".wrap").classList.toggle("wide", v === "rubricas");
@@ -5158,7 +5228,7 @@ CREATE OR REPLACE MACRO xp_comp(v) AS CASE WHEN regexp_full_match(trim(COALESCE(
 CREATE OR REPLACE MACRO xp_per_ord(p) AS CASE WHEN length(p)=4 THEN p || '-13' ELSE p END;
 CREATE OR REPLACE MACRO xp_dig(v) AS regexp_replace(COALESCE(v,''),'\D','','g');
 CREATE OR REPLACE MACRO xp_fmt(d) AS regexp_replace(d,'^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$','\1.\2.\3/\4-\5');
-CREATE OR REPLACE MACRO xp_resto(s, pesos) AS list_sum(list_transform(range(len(pesos)), i -> pesos[i+1] * CAST(s[i+1] AS INTEGER))) % 11;
+CREATE OR REPLACE MACRO xp_resto(s, pesos) AS list_sum(list_transform(range(len(pesos)), i -> pesos[i+1] * COALESCE(TRY_CAST(s[i+1] AS INTEGER), 0))) % 11;
 CREATE OR REPLACE MACRO xp_dv(s, pesos) AS CASE WHEN xp_resto(s, pesos) < 2 THEN 0 ELSE 11 - xp_resto(s, pesos) END;
 CREATE OR REPLACE MACRO xp_matriz(raiz) AS (raiz || '0001' || CAST(xp_dv(raiz || '0001', [5,4,3,2,9,8,7,6,5,4,3,2]) AS VARCHAR) || CAST(xp_dv(raiz || '0001' || CAST(xp_dv(raiz || '0001', [5,4,3,2,9,8,7,6,5,4,3,2]) AS VARCHAR), [6,5,4,3,2,9,8,7,6,5,4,3,2]) AS VARCHAR));
 CREATE OR REPLACE MACRO xp_cnpj(v) AS CASE WHEN length(xp_dig(v))=8 THEN xp_fmt(xp_matriz(xp_dig(v))) WHEN length(xp_dig(v))=14 THEN xp_fmt(xp_dig(v)) ELSE COALESCE(v,'') END;
