@@ -1387,6 +1387,14 @@ body :is(h1,.hero-h1,.brand,h2.sec,.mod h2,#viewHome .mod h2,.mod .sigla,#viewHo
 #viewRub .prog-fill{background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0) 62%),var(--verde-card)}
 #viewRub .r-Pacificado{background:#D5EFDF;box-shadow:inset 0 0 0 1px var(--verde)}#viewRub .r-Baixo{background:var(--verde)}
 
+/* Avisos sempre por cima de qualquer fundo (cartões, barra de ação, tela cheia); sobem quando a barra de ação está na tela */
+.toast{z-index:1000;max-width:min(560px,calc(100vw - 32px))}
+body:has(.acao:not([hidden])) .toast,body:has(.rodar:not([hidden])) .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.tip{z-index:1100}
+/* Valores nunca passam do quadrado: o tamanho é ajustado por script e, em último caso, o texto fica dentro dele */
+.kpi,.count{min-width:0}
+.kpi b,.count b{display:block;max-width:100%;white-space:nowrap;overflow:hidden}
+
 /* ---------- Movimento só em resposta a ações (hover, aviso). Sem animação de entrada ---------- */
 .page-in,.entra-dir,.entra-esq,.sai-esq,.sai-dir,
 #viewMod.page-in > *,#viewRub.page-in > *,#viewEso.page-in > *,#viewDctf.page-in > *,#viewDiag.page-in > *,#viewXml.page-in > *,#viewHome.page-in > *,
@@ -2805,6 +2813,23 @@ body :is(h1,.hero-h1,.brand,h2.sec,.mod h2,#viewHome .mod h2,.mod .sigla,#viewHo
   }
   (async () => { try { await document.fonts.ready; } catch(e){} logosAnalisa().forEach(posicionarPingo); setTimeout(() => logosAnalisa().forEach(animarLogo), 250); })();
   logosAnalisa().forEach(lg => { const alvo = lg.closest("a, h1") || lg; alvo.addEventListener("pointerenter", () => animarLogo(lg)); alvo.addEventListener("focus", () => animarLogo(lg)); });
+  /* ================= Valores dentro do quadrado: encolhe o número até caber (e acompanha mudanças de texto e de largura) ================= */
+  function caberNoQuadrado(el){
+    const box = el.parentElement; if (!box || !box.clientWidth) return;
+    el.style.fontSize = "";                                   // volta ao tamanho do estilo e mede de novo
+    const lim = box.clientWidth - parseFloat(getComputedStyle(box).paddingLeft) - parseFloat(getComputedStyle(box).paddingRight);
+    let px = parseFloat(getComputedStyle(el).fontSize);
+    if (el.scrollWidth <= lim + .5) return;
+    px = Math.max(12, Math.floor(px * lim / el.scrollWidth * 100) / 100);
+    el.style.fontSize = px + "px";
+    for (let k = 0; k < 4 && el.scrollWidth > lim + .5 && px > 12; k++){ px = Math.max(12, px - 1); el.style.fontSize = px + "px"; }
+  }
+  const ajustarValores = () => document.querySelectorAll(".kpi b, .count b").forEach(caberNoQuadrado);
+  new MutationObserver(ms => { for (const m of ms){ const b = (m.target.nodeType === 3 ? m.target.parentElement : m.target).closest && (m.target.nodeType === 3 ? m.target.parentElement : m.target).closest(".kpi b, .count b"); if (b) caberNoQuadrado(b); } })
+    .observe(document.body, { subtree: true, childList: true, characterData: true });
+  window.addEventListener("resize", ajustarValores);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajustarValores);
+  setTimeout(ajustarValores, 300);
   let destino = "home", navToken = 0;
   const elDaVista = v => v === "home" ? viewHome : v === "rubricas" ? viewRub : VISTAS_HUB[v] ? VISTAS_HUB[v].el : viewMod;
 
@@ -2828,6 +2853,7 @@ body :is(h1,.hero-h1,.brand,h2.sec,.mod h2,#viewHome .mod h2,.mod .sigla,#viewHo
       if (v === "dctfweb" || v === "saldo") ajustarModoDctf(v === "saldo");
       document.querySelectorAll("#navTabs [role=tab]").forEach(t => t.setAttribute("aria-selected", String(t.dataset.go === v)));
       if (v === "home") requestAnimationFrame(() => animarLogo($("heroLogo").querySelector(".lg")));
+      requestAnimationFrame(ajustarValores);
       if (MODULOS[v]){
         const m = MODULOS[v];
         $("modTitle").textContent = m.titulo;
