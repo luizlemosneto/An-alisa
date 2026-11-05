@@ -1347,6 +1347,18 @@ details.how[open] > ol > li{animation:none}
 .rodape b{color:var(--ink);font-weight:700}
 body[data-mod]:not([data-mod="home"]) .rodape{display:block}
 
+/* Rubricas com dados carregados: menos empilhamento, a tabela ganha a altura da tela */
+body:has(#viewRub.carregado:not([hidden])) .topnav{margin-bottom:20px}
+#viewRub.carregado .mod-head{margin:0 0 4px;align-items:center}
+#viewRub.carregado .mod-head h1{font-size:clamp(34px,3.6vw,52px);line-height:.9}
+#viewRub.carregado > *{margin-top:12px}
+#viewRub.carregado > .mod-head{margin-top:0}
+#viewRub.carregado details.how{margin:4px 0 0}
+#viewRub.carregado .rsec-head{margin:8px 0 6px}
+#viewRub.carregado .rtbox{max-height:calc(100vh - 150px);min-height:300px}
+#viewRub.carregado .acao{margin-top:12px}
+body:has(#viewRub.carregado:not([hidden])) .rodape{padding-top:32px}
+
 /* tela cheia da revisão */
 #rubSec.foco{background:var(--bg)}
 #viewRub.carregado > *{margin-top:20px}
@@ -5158,7 +5170,7 @@ CREATE OR REPLACE MACRO xp_comp(v) AS CASE WHEN regexp_full_match(trim(COALESCE(
 CREATE OR REPLACE MACRO xp_per_ord(p) AS CASE WHEN length(p)=4 THEN p || '-13' ELSE p END;
 CREATE OR REPLACE MACRO xp_dig(v) AS regexp_replace(COALESCE(v,''),'\D','','g');
 CREATE OR REPLACE MACRO xp_fmt(d) AS regexp_replace(d,'^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$','\1.\2.\3/\4-\5');
-CREATE OR REPLACE MACRO xp_resto(s, pesos) AS list_sum(list_transform(range(len(pesos)), i -> pesos[i+1] * CAST(s[i+1] AS INTEGER))) % 11;
+CREATE OR REPLACE MACRO xp_resto(s, pesos) AS list_sum(list_transform(range(len(pesos)), i -> pesos[i+1] * COALESCE(TRY_CAST(s[i+1] AS INTEGER), 0))) % 11;
 CREATE OR REPLACE MACRO xp_dv(s, pesos) AS CASE WHEN xp_resto(s, pesos) < 2 THEN 0 ELSE 11 - xp_resto(s, pesos) END;
 CREATE OR REPLACE MACRO xp_matriz(raiz) AS (raiz || '0001' || CAST(xp_dv(raiz || '0001', [5,4,3,2,9,8,7,6,5,4,3,2]) AS VARCHAR) || CAST(xp_dv(raiz || '0001' || CAST(xp_dv(raiz || '0001', [5,4,3,2,9,8,7,6,5,4,3,2]) AS VARCHAR), [6,5,4,3,2,9,8,7,6,5,4,3,2]) AS VARCHAR));
 CREATE OR REPLACE MACRO xp_cnpj(v) AS CASE WHEN length(xp_dig(v))=8 THEN xp_fmt(xp_matriz(xp_dig(v))) WHEN length(xp_dig(v))=14 THEN xp_fmt(xp_dig(v)) ELSE COALESCE(v,'') END;
