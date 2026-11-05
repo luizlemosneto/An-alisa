@@ -986,8 +986,8 @@ small{font-size:13px}
   background:radial-gradient(120% 85% at 14% -12%, var(--bubble), transparent 55%);
   -webkit-mask:none;mask:none;transition:none;animation:none}
 .stub::after,.mod::after,.kpi::after,.count::after,.painel::after{
-  content:"";position:absolute;inset:auto;left:8%;top:8px;width:28%;height:8px;padding:0;border-radius:999px;pointer-events:none;display:block;
-  background:linear-gradient(90deg,#fff,transparent);opacity:.55;z-index:0;
+  content:"";position:absolute;inset:auto;left:10%;top:5px;width:24%;height:2px;padding:0;border-radius:999px;pointer-events:none;display:block;
+  background:linear-gradient(90deg,#fff,transparent);opacity:.5;z-index:0;
   -webkit-mask:none;mask:none;animation:none;transform:none}
 .stub.busy::after,.stub.over::after{animation:none;opacity:.55}
 
@@ -1395,6 +1395,75 @@ body:has(.acao:not([hidden])) .toast,body:has(.rodar:not([hidden])) .toast{botto
 .kpi,.count{min-width:0}
 .kpi b,.count b{display:block;max-width:100%;white-space:nowrap;overflow:hidden}
 
+/* Rubricas com dados: desenho de produto (guia, números em destaque, ferramentas organizadas) e mais largura */
+.wrap.wide{max-width:min(1760px,100%)}
+#viewRub .guia{list-style:none;margin:0 0 22px;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;counter-reset:g}
+#viewRub .guia li{counter-increment:g;display:flex;gap:14px;align-items:center;padding:16px 22px;border-radius:26px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);font-size:13px;line-height:1.4;color:var(--muted)}
+#viewRub .guia li::before{content:counter(g);flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:800 15px var(--display);background:var(--solid-bg);color:var(--solid-ink);box-shadow:var(--solid-shadow)}
+#viewRub .guia b{display:block;color:var(--ink);font-size:15px;margin-bottom:2px}
+#rubSec.foco .guia{display:none}
+#viewRub .rsec-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:16px 32px;margin:0 0 16px}
+#viewRub .rt-l{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+#viewRub .rt-l h2.sec{font-size:28px}
+#viewRub .rt-l .resumo{font-size:13px;color:var(--muted)}
+#viewRub .mt{display:flex;flex-wrap:wrap;gap:12px}
+#viewRub .mt span{display:flex;flex-direction:column;gap:2px;min-width:150px;padding:12px 20px;border-radius:22px;background:var(--glass);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);font-size:12px;font-weight:600;color:var(--muted)}
+#viewRub .mt b{order:-1;font:800 24px/1.1 var(--display);letter-spacing:-.03em;color:var(--ink)}
+#viewRub .mt span:first-child{background:var(--solid);color:var(--solid-ink);border-color:transparent}
+#viewRub .mt span:first-child b{color:var(--solid-ink)}
+#viewRub .rbar{gap:10px 12px;margin:0 0 12px;padding:10px;border-radius:30px;background:var(--glass-gray)}
+#viewRub .rbar .search{flex:1 1 280px;max-width:420px}
+#viewRub .rbar .tbtn.compacto .tx{display:inline}
+#viewRub .rbar .tbtn.compacto{padding:9px 16px}
+@media (max-width:860px){#viewRub .guia{grid-template-columns:1fr}#viewRub .rsec-head{grid-template-columns:1fr}}
+
+/* Títulos com "i": o pingo cai (no logo e nos títulos das páginas) */
+.lg.tit{display:inline;white-space:normal;letter-spacing:inherit}
+.lg.tit .pt{background:var(--ink)}
+#viewRub .lg.tit .pt{background:var(--verde)}
+
+/* ===== Escala compacta das telas internas (o início fica como está) e cantos proporcionais ao tamanho ===== */
+body[data-mod]:not([data-mod="home"]){font-size:14px}
+main:not(#viewHome) .mod-head h1{font-size:clamp(36px,4.6vw,68px);margin-bottom:clamp(8px,1.6vw,20px)}
+#viewRub.carregado .mod-head h1{font-size:clamp(28px,2.6vw,38px)}
+main:not(#viewHome) .lede{font-size:14px}
+main:not(#viewHome) h2.sec{font-size:20px}
+main:not(#viewHome) .drop{padding:22px clamp(16px,2.4vw,28px) 20px}
+main:not(#viewHome) .drop .big{font-size:clamp(17px,1.6vw,21px)}
+main:not(#viewHome) .drop p{font-size:13px}
+main:not(#viewHome) .drop .pick{padding:9px 18px;font-size:13px;margin-top:14px}
+main:not(#viewHome) .btn{font-size:13px;padding:9px 16px}
+main:not(#viewHome) .tbtn{font-size:12.5px;padding:7px 13px}
+main:not(#viewHome) .seg button{font-size:12.5px;padding:6px 13px}
+main:not(#viewHome) .kpi{min-height:112px;padding:16px 20px;gap:12px}
+main:not(#viewHome) .kpi b{font-size:clamp(26px,3vw,40px)}
+main:not(#viewHome) .kpis.dois .kpi b{font-size:clamp(24px,2.6vw,34px)}
+main:not(#viewHome) .kpi small{font-size:12px}
+main:not(#viewHome) table{font-size:13px}
+main:not(#viewHome) th{font-size:12px;padding:11px 16px}
+main:not(#viewHome) td{padding:10px 16px}
+main:not(#viewHome) .painel h3{font-size:15px}
+main:not(#viewHome) .steps li{font-size:12px}
+main:not(#viewHome) .field input{height:40px;font-size:13px}
+/* cantos: cartões 26, tabelas e painéis 22, blocos médios 18, campos 14; botões e abas seguem em pílula */
+main:not(#viewHome) .stub,main:not(#viewHome) .kpi,#xmlFmt{border-radius:26px}
+main:not(#viewHome) .tablebox,main:not(#viewHome) .rtbox,main:not(#viewHome) .painel,main:not(#viewHome) .files,main:not(#viewHome) .panel-empty{border-radius:22px}
+main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .rt .ponto{border-radius:14px}
+.pop,.fpop,.fmt-opt,.oealerta,.bulk{border-radius:18px}
+#viewRub .guia{gap:12px;margin:0 0 16px}
+#viewRub .guia li{padding:10px 16px;border-radius:18px;gap:12px;font-size:12px}
+#viewRub .guia li::before{width:26px;height:26px;font-size:13px}
+#viewRub .guia b{font-size:13px;margin:0}
+#viewRub .rt-l h2.sec{font-size:22px}
+#viewRub .mt span{min-width:120px;padding:9px 16px;border-radius:16px}
+#viewRub .mt b{font-size:19px}
+#viewRub .rbar{border-radius:22px;padding:8px}
+#viewRub .rbar .tbtn.compacto{padding:7px 13px}
+.stub::after,.mod::after,.kpi::after,.count::after,.painel::after{top:4px}
+
+/* explosãozinha quando o ponto cai no ı do Analisa */
+.lg .bm{position:absolute;z-index:-1;pointer-events:none;border-radius:50%;background:var(--verde);box-sizing:border-box}
+
 /* ---------- Movimento só em resposta a ações (hover, aviso). Sem animação de entrada ---------- */
 .page-in,.entra-dir,.entra-esq,.sai-esq,.sai-dir,
 #viewMod.page-in > *,#viewRub.page-in > *,#viewEso.page-in > *,#viewDctf.page-in > *,#viewDiag.page-in > *,#viewXml.page-in > *,#viewHome.page-in > *,
@@ -1589,6 +1658,11 @@ body:has(.acao:not([hidden])) .toast,body:has(.rodar:not([hidden])) .toast{botto
 
     <div id="rubRev" hidden>
       <section id="rubSec">
+        <ol class="guia" aria-label="Como revisar">
+          <li><span><b>Confira</b>Rubricas em “Revisão” ainda não têm ponto: escolha um na coluna Ponto.</span></li>
+          <li><span><b>Ajuste</b>Troque o ponto sugerido quando precisar e use a lixeira para descartar.</span></li>
+          <li><span><b>Baixe</b>A planilha de oportunidades leva só as rubricas que têm ponto.</span></li>
+        </ol>
         <div class="rsec-head">
           <div class="rt-l">
             <h2 class="sec">Revisão das rubricas</h2>
@@ -2796,6 +2870,20 @@ body:has(.acao:not([hidden])) .toast,body:has(.rodar:not([hidden])) .toast{botto
       return true;
     } catch(e){ return false; }
   }
+  function explodir(lg){
+    const i = lg.querySelector(".i"); if (!i || !i.animate) return;
+    const px = parseFloat(getComputedStyle(lg).fontSize), g = n => parseFloat(lg.style.getPropertyValue(n));
+    const d = g("--pd") || px * .21, cx = g("--ix"), cy = g("--iy") + d / 2; if (!isFinite(cx) || !isFinite(cy)) return;
+    const ponto = (tam, borda) => { const e = document.createElement("i"); e.className = "bm"; Object.assign(e.style, { left: cx + "px", top: cy + "px", width: tam + "px", height: tam + "px", marginLeft: -tam / 2 + "px", marginTop: -tam / 2 + "px" });
+      if (borda){ e.style.background = "transparent"; e.style.border = Math.max(2, px * .03) + "px solid var(--verde)"; } i.append(e); return e; };
+    ponto(d, true).animate([{ transform: "scale(.8)", opacity: 1 }, { transform: "scale(5)", opacity: 0 }], { duration: 650, easing: "cubic-bezier(.1,.7,.3,1)" }).onfinish = function(){ this.effect.target.remove(); };
+    const N = 14;
+    for (let k = 0; k < N; k++){
+      const a = k / N * Math.PI * 2 + (Math.random() - .5) * .35, r = d * (2 + Math.random() * 1.8), e = ponto(Math.max(d * (.22 + Math.random() * .2), 2.4));
+      e.animate([{ transform: "translate(0,0) scale(1)", opacity: 1 }, { transform: `translate(${Math.cos(a) * r}px,${Math.sin(a) * r * .9}px) scale(.2)`, opacity: 0 }],
+        { duration: 600 + Math.random() * 300, easing: "cubic-bezier(.15,.7,.3,1)" }).onfinish = function(){ this.effect.target.remove(); };
+    }
+  }
   function animarLogo(lg){
     if (!lg || logoRodando.has(lg) || reduzMov) return;
     const pt = lg.querySelector(".pt"); if (!pt || !pt.animate || !posicionarPingo(lg)) return;   // logo escondido (outra tela): não anima
@@ -2810,8 +2898,27 @@ body:has(.acao:not([hidden])) .toast,body:has(.rodar:not([hidden])) .toast{botto
       { transform: "translateY(0) scale(1.14,.86)", offset: .85, easing: "cubic-bezier(.2,.8,.3,1.3)" },
       { transform: "translateY(0) scale(1,1)", offset: 1 }
     ], { duration: 1400, fill: "backwards" }).onfinish = () => logoRodando.delete(lg);
+    if (!lg.classList.contains("tit")) setTimeout(() => explodir(lg), 1400 * .52);   // no momento em que o ponto bate no ı
   }
-  (async () => { try { await document.fonts.ready; } catch(e){} logosAnalisa().forEach(posicionarPingo); setTimeout(() => logosAnalisa().forEach(animarLogo), 250); })();
+  // Títulos das páginas: o primeiro "i" minúsculo vira "ı" com um ponto que cai
+  const titulosPagina = () => document.querySelectorAll(".mod-head h1, #modTitle");
+  function fazerTitulo(h1){
+    const tem = h1.querySelector(".lg.tit"), atual = tem ? h1.dataset.txt : h1.textContent.trim();
+    const k = atual.indexOf("i"); if (k < 0 || (tem && h1.dataset.txt === atual)) return;
+    h1.dataset.txt = atual; h1.setAttribute("aria-label", atual); h1.textContent = "";
+    const lg = document.createElement("span"); lg.className = "lg tit"; lg.setAttribute("aria-hidden", "true");
+    const i = document.createElement("span"); i.className = "i"; i.innerHTML = 'ı<i class="bl"></i><i class="pt"></i>';
+    lg.append(document.createTextNode(atual.slice(0, k)), i, document.createTextNode(atual.slice(k + 1))); h1.append(lg);
+    lg.addEventListener("pointerenter", () => animarLogo(lg));
+  }
+  const reposicionar = () => logosAnalisa().forEach(posicionarPingo);
+  const animarTitulos = () => { titulosPagina().forEach(fazerTitulo); document.querySelectorAll(".lg.tit").forEach(animarLogo); };
+  (async () => {
+    try { await Promise.all([document.fonts.load('800 100px "Inter Tight"', "ı"), document.fonts.load('800 100px "Inter"', "ı")]); await document.fonts.ready; } catch(e){}
+    titulosPagina().forEach(fazerTitulo); reposicionar(); setTimeout(() => { logosAnalisa().forEach(animarLogo); }, 250);
+  })();
+  if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", reposicionar);
+  window.addEventListener("resize", reposicionar);   // o tamanho da letra muda com a janela: o ponto acompanha
   logosAnalisa().forEach(lg => { const alvo = lg.closest("a, h1") || lg; alvo.addEventListener("pointerenter", () => animarLogo(lg)); alvo.addEventListener("focus", () => animarLogo(lg)); });
   /* ================= Valores dentro do quadrado: encolhe o número até caber (e acompanha mudanças de texto e de largura) ================= */
   function caberNoQuadrado(el){
@@ -2853,7 +2960,7 @@ body:has(.acao:not([hidden])) .toast,body:has(.rodar:not([hidden])) .toast{botto
       if (v === "dctfweb" || v === "saldo") ajustarModoDctf(v === "saldo");
       document.querySelectorAll("#navTabs [role=tab]").forEach(t => t.setAttribute("aria-selected", String(t.dataset.go === v)));
       if (v === "home") requestAnimationFrame(() => animarLogo($("heroLogo").querySelector(".lg")));
-      requestAnimationFrame(ajustarValores);
+      requestAnimationFrame(() => { ajustarValores(); animarTitulos(); });
       if (MODULOS[v]){
         const m = MODULOS[v];
         $("modTitle").textContent = m.titulo;
@@ -5725,8 +5832,10 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
     if (mes === 0){ ano--; mes = 12; }
     ano -= 5; return { chave: ano * 100 + mes, label: `${String(mes).padStart(2, "0")}/${ano}` };
   }
-  const xcFiltroCorte = () => `COALESCE(xp_chave(l.per), 999999) >= ${xcCorte().chave}`;   // competência que não dá para ler fica (não dá para saber se é antiga)
-  const xcMarcaCruz = async () => `${await dkUm("SELECT COALESCE(max(seq), 0) FROM x_ev")}|${xcCorte().chave}`;
+  // Só entram rubricas de tipo 1 ou 2; as de tipo 1 com incidência 00 nem vêm
+  const xcFiltroTipo = () => `(l.achou AND l.tp IN ('1', '2') AND NOT (l.tp = '1' AND l.incCP IN ('00', '0')))`;
+  const xcFiltroCorte = () => `COALESCE(xp_chave(l.per), 999999) >= ${xcCorte().chave} AND ${xcFiltroTipo()}`;   // competência que não dá para ler fica (não dá para saber se é antiga)
+  const xcMarcaCruz = async () => `${await dkUm("SELECT COALESCE(max(seq), 0) FROM x_ev")}|${xcCorte().chave}|t2`;
   async function dkCruzPronto(){
     const m = await dkLinhas("SELECT v FROM x_meta WHERE k = 'cruz'");
     if (!m.length || !(await dkUm("SELECT count(*) FROM duckdb_tables() WHERE table_name = 'x_cruz'"))) return false;
@@ -5767,7 +5876,7 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
     const cj = [];
     const cruzMat = await dkCruzPronto();
     const baseCruz = { id: "cruzamento", titulo: "Cruzamento de eventos (para o módulo Rubricas)", arquivo: "Cruzamento de eventos", num: [...XML_NUM], particao: true,
-      sub: (R.semValidacao ? "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · sem S-5011 não foi possível validar: todas as linhas seguem" : "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · só competência + estabelecimento Válido ou Válido com Ressalvas") + ` · só de ${xcCorte().label} em diante (5 anos)` };
+      sub: (R.semValidacao ? "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · sem S-5011 não foi possível validar: todas as linhas seguem" : "S-1200 com S-1010, S-5011, S-1299 e S-2200/S-2299 · só competência + estabelecimento Válido ou Válido com Ressalvas") + ` · só de ${xcCorte().label} em diante (5 anos) · tipo 1 ou 2, sem tipo 1 com incidência 00` };
     const cruz = xdConjunto(cruzMat ? { ...baseCruz, cols: XD_CRUZ.map(c => [c[0], dkAspas(c[0])]), from: "x_cruz", keys: ["_k0", "_k1", "_k2"] }
       : { ...baseCruz, cols: XD_CRUZ, from: XD_LX, where: `${XD_OK} AND ${xcFiltroCorte()}`, keys: ["xp_per_ord(l.perEv)", "l.seq", "l.ln"] });
     const fora = xdConjunto({ id: "cruzamentoFora", titulo: "Cruzamento de eventos · Excluídas (inválidas)", arquivo: "Cruzamento de eventos excluidas", particao: true,
