@@ -1365,52 +1365,35 @@ body:has(#viewRub.carregado:not([hidden])) .rodape{padding-top:32px}
 #viewRub.carregado > .mod-head{margin-top:0}
 
 
-/* ---------- Marca Analisa: mesma vibe do RetLia (ı sem pingo + ponto verde, cinza-quente e verde-menta) ---------- */
-:root{--display:"Inter Tight","Inter","Helvetica Neue",Arial,sans-serif;--verde:#1F9D63;--verde-escuro:#17724A;--verde-fundo:#D5EFDF;--verde-on:#ffffff;--blob2:#cfe3d7}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--verde:#4FD18B;--verde-escuro:#4FD18B;--verde-fundo:rgba(79,209,139,.16);--verde-on:#0e0e0e;--blob2:#1f2c25}}
-:root[data-theme="dark"]{--verde:#4FD18B;--verde-escuro:#4FD18B;--verde-fundo:rgba(79,209,139,.16);--verde-on:#0e0e0e;--blob2:#1f2c25}
+/* ---------- Marca Analisa (ı sem pingo + ponto verde, como no RetLia) ---------- */
+:root{--display:"Inter Tight","Inter","Helvetica Neue",Arial,sans-serif;--verde:#1F9D63;--verde-card:#1C6B4A}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--verde:#4FD18B;--verde-card:#237753}}
+:root[data-theme="dark"]{--verde:#4FD18B;--verde-card:#237753}
 body :is(h1,.hero-h1,.brand,h2.sec,.mod h2,#viewHome .mod h2,.mod .sigla,#viewHome .mod .sigla,.count b,.kpi b,.drop .big,.prog-pct,.painel h3,.fmt-in h3,.acao .tot b,.stat b){font-family:var(--display)}
-.lg{position:relative;display:inline-block;isolation:isolate;white-space:nowrap}
+.lg{position:relative;display:inline-block;isolation:isolate;white-space:nowrap;letter-spacing:-.04em}
 .lg .i{position:relative;display:inline-block}
-.lg .rg,.lg .pt{position:absolute;left:var(--ix,50%);top:.04em;width:.21em;height:.21em;margin-left:-.105em;border-radius:50%;z-index:-1;will-change:transform}
-.lg .pt{background:var(--verde)}
-.lg .rg{border:2px solid var(--verde);opacity:0;box-sizing:border-box}
-.lg{letter-spacing:-.04em}
+.lg .bl{display:inline-block;width:0;height:0;vertical-align:baseline}
+.lg .pt{position:absolute;left:var(--ix,50%);top:var(--iy,.04em);width:var(--pd,.21em);height:var(--pd,.21em);margin-left:calc(var(--pd,.21em) / -2);border-radius:50%;background:var(--verde);z-index:-1;will-change:transform;transform-origin:50% 100%}
 .brand{font-size:19px;font-weight:800;letter-spacing:-.03em}
-.brand .lg{letter-spacing:-.03em}
 .brand:hover{text-decoration:none}
+.brand .lg{letter-spacing:-.03em}
 .hero-h1 .lg{font-weight:800}
-.hero-kicker{display:inline-flex;align-items:center;gap:8px}
-.hero-kicker::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--verde)}
-.mod .grupo::before{background:var(--verde);opacity:1}
-.mod[data-grupo="analise"] .grupo::before{opacity:.45}
-.mod[data-grupo="suporte"] .grupo::before{opacity:.75}
-.badge.ok{background:var(--verde-escuro);color:var(--verde-on)}
-.prog-fill{background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0) 62%),var(--verde-escuro)}
-.steps li.ok::before,.drop.feito .slot-tag{background:var(--verde-escuro);color:var(--verde-on)}
-.r-Pacificado{background:var(--verde-fundo);box-shadow:inset 0 0 0 1px var(--verde)}.r-Baixo{background:var(--verde)}
-.topbar i{background:var(--verde-escuro)}
-.hub-log .log-sucesso{color:var(--verde-escuro)}
+@media (min-width:1101px){.home-side{grid-column:1/6}}   /* XML um pouco mais à direita, encostado nos outros módulos */
 
+/* O verde fica só no Rubricas: o cartão do início e a própria tela */
+.mod.hero-card,#viewHome .mod.hero-card{--solid-ink:#ffffff;background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0) 60%),var(--verde-card);box-shadow:0 14px 34px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.35)}
+.mod.hero-card:hover,#viewHome .mod.hero-card:hover{background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0) 60%),var(--verde-card)}
+#viewRub .badge.ok,#viewRub .steps li.ok::before,#viewRub .drop.feito .slot-tag{background:var(--verde-card);color:#fff}
+#viewRub .prog-fill{background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0) 62%),var(--verde-card)}
+#viewRub .r-Pacificado{background:#D5EFDF;box-shadow:inset 0 0 0 1px var(--verde)}#viewRub .r-Baixo{background:var(--verde)}
 
-/* Início: XML igual aos outros módulos (só mais verdinho); Rubricas em destaque ao lado */
-.home-cols{align-items:stretch}
-.home-side,.mods{display:contents}
-.mod,#viewHome .mod{grid-column:span 4;order:2}
-.mod.hero-card,#viewHome .mod.hero-card{grid-column:span 8;order:0}
-.mod.hero-xml,#viewHome .mod.hero-xml{grid-column:span 4;order:1;height:auto;min-height:240px;justify-content:flex-start;padding:28px;
-  background:linear-gradient(160deg,var(--verde-fundo),rgba(255,255,255,0) 75%),var(--glass);border-color:color-mix(in srgb,var(--verde) 38%,var(--glass-line))}
-.mod.hero-xml .sigla,#viewHome .mod.hero-xml .sigla{font-size:clamp(34px,3.6vw,52px);padding:0;margin:0 0 auto;color:var(--verde-escuro)}
-.mod.hero-xml .abrir,#viewHome .mod.hero-xml .abrir{color:var(--verde-escuro)}
-.mod .novo,.mod.hero-xml .novo{background:var(--verde-escuro);color:var(--verde-on);box-shadow:none}
-.mod.hero-xml .passos span{border-color:color-mix(in srgb,var(--verde) 35%,var(--rule))}
-@media (max-width:1100px){
-  .mod,#viewHome .mod{grid-column:span 6}
-  .mod.hero-card,#viewHome .mod.hero-card,.mod.hero-xml,#viewHome .mod.hero-xml{grid-column:1/-1}
-}
-@media (max-width:860px){
-  .mod,#viewHome .mod,.mod.hero-card,#viewHome .mod.hero-card,.mod.hero-xml,#viewHome .mod.hero-xml{grid-column:1/-1}
-}
+/* Avisos sempre por cima de qualquer fundo (cartões, barra de ação, tela cheia); sobem quando a barra de ação está na tela */
+.toast{z-index:1000;max-width:min(560px,calc(100vw - 32px))}
+body:has(.acao:not([hidden])) .toast,body:has(.rodar:not([hidden])) .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.tip{z-index:1100}
+/* Valores nunca passam do quadrado: o tamanho é ajustado por script e, em último caso, o texto fica dentro dele */
+.kpi,.count{min-width:0}
+.kpi b,.count b{display:block;max-width:100%;white-space:nowrap;overflow:hidden}
 
 /* ---------- Movimento só em resposta a ações (hover, aviso). Sem animação de entrada ---------- */
 .page-in,.entra-dir,.entra-esq,.sai-esq,.sai-dir,
@@ -1429,7 +1412,7 @@ body :is(h1,.hero-h1,.brand,h2.sec,.mod h2,#viewHome .mod h2,.mod .sigla,#viewHo
 <div class="wrap">
   <nav class="topnav" aria-label="Principal">
     <div class="brandwrap" id="brandwrap">
-      <a class="brand" href="#" id="brand" aria-label="Analisa"><span class="lg" aria-hidden="true"><span class="la0">A</span>na<span class="la">l</span><span class="i">ı<i class="rg"></i><i class="pt"></i></span>sa</span></a>
+      <a class="brand" href="#" id="brand" aria-label="Analisa"><span class="lg" aria-hidden="true">Anal<span class="i">ı<i class="bl"></i><i class="pt"></i></span>sa</span></a>
     </div>
     <div class="tabs" role="tablist" aria-label="Módulos" id="navTabs">
       <a role="tab" href="#" data-go="home" aria-selected="true">Início</a>
@@ -1450,7 +1433,7 @@ body :is(h1,.hero-h1,.brand,h2.sec,.mod h2,#viewHome .mod h2,.mod .sigla,#viewHo
   <!-- Página inicial -->
   <main id="viewHome">
     <section class="hero" id="hero">
-      <h1 class="hero-h1" id="heroLogo" aria-label="Analisa"><span class="lg" aria-hidden="true"><span class="la0">A</span>na<span class="la">l</span><span class="i">ı<i class="rg"></i><i class="pt"></i></span>sa</span></h1>
+      <h1 class="hero-h1" id="heroLogo" aria-label="Analisa"><span class="lg" aria-hidden="true">Anal<span class="i">ı<i class="bl"></i><i class="pt"></i></span>sa</span></h1>
       <div class="hero-txt">
         <p class="hero-kicker">Tributação · Previdência · eSocial</p>
         <p class="lede">Escolha o módulo. Cada um lê seus arquivos e devolve a planilha pronta para o seu controle de recuperação de crédito.</p>
@@ -2795,44 +2778,58 @@ body :is(h1,.hero-h1,.brand,h2.sec,.mod h2,#viewHome .mod h2,.mod .sigla,#viewHo
 
   const reduzMov = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ================= Marca: o ponto cresce no "a" e pula para o "ı" ================= */
+  /* ================= Marca: o ponto cai do alto da tela e pousa centrado sobre o "ı" ================= */
   const logoRodando = new WeakSet();
+  const logosAnalisa = () => document.querySelectorAll(".lg");
+  // Mede o desenho do "ı" de verdade (qualquer fonte que tenha carregado): centro do traço e altura do traço sobre a linha de base,
+  // e põe o ponto centrado, com uma folga acima do traço (como o pingo de um "i" comum)
+  function posicionarPingo(lg){
+    try {
+      const i = lg.querySelector(".i"), bl = lg.querySelector(".bl"), cs = getComputedStyle(i), px = parseFloat(cs.fontSize);
+      const c = document.createElement("canvas").getContext("2d"); c.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      const m = c.measureText("ı"), ri = i.getBoundingClientRect(), rb = bl.getBoundingClientRect();
+      if (!px || !m.width || !ri.width) return false;
+      const d = Math.max(.21 * px, 4), folga = Math.max(.075 * px, 2);
+      lg.style.setProperty("--ix", ((m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2) + "px");
+      lg.style.setProperty("--pd", d + "px");
+      lg.style.setProperty("--iy", (rb.top - m.actualBoundingBoxAscent - folga - d - ri.top) + "px");
+      return true;
+    } catch(e){ return false; }
+  }
   function animarLogo(lg){
     if (!lg || logoRodando.has(lg) || reduzMov) return;
-    const pt = lg.querySelector(".pt"), rg = lg.querySelector(".rg"), a = lg.querySelector(".la0");
-    if (!pt || !a || !pt.animate) return;
-    const rp = pt.getBoundingClientRect(), ra = a.getBoundingClientRect();
-    if (!rp.width || !ra.width) return;   // logo escondido (outra tela)
-    // o ponto nasce do nada, no meio do primeiro "A", cresce com um anel de pulso e pula para o "ı"
-    const dx = (ra.left + ra.width / 2) - (rp.left + rp.width / 2), dy = (ra.top + ra.height * .52) - (rp.top + rp.height / 2);
-    const S = Math.max(2.4, ra.width * .8 / rp.width), salto = Math.max(ra.height * .7, 18), T = (x, y, sx, sy) => `translate(${x}px,${y}px) scale(${sx},${sy ?? sx})`;
+    const pt = lg.querySelector(".pt"); if (!pt || !pt.animate || !posicionarPingo(lg)) return;   // logo escondido (outra tela): não anima
+    const rp = pt.getBoundingClientRect(); if (!rp.width) return;
+    const subir = rp.top + rp.height + 30, px = parseFloat(getComputedStyle(lg).fontSize), quica = Math.max(px * .32, 10);   // começa acima da borda de cima da tela
     logoRodando.add(lg);
-    if (rg) rg.animate([
-      { transform: T(dx, dy, .3), opacity: .75, offset: 0 },
-      { transform: T(dx, dy, S * 2.1), opacity: 0, offset: 1 }
-    ], { duration: 900, delay: 60, easing: "cubic-bezier(.15,.7,.3,1)", fill: "backwards" });
     pt.animate([
-      { transform: T(dx, dy, 0), offset: 0, easing: "cubic-bezier(.2,.9,.3,1.3)" },
-      { transform: T(dx, dy, S * .55), offset: .2, easing: "cubic-bezier(.3,.9,.4,1.15)" },
-      { transform: T(dx, dy, S), offset: .38 },
-      { transform: T(dx, dy, S * 1.04, S * .9), offset: .52, easing: "cubic-bezier(.25,.1,.4,1)" },
-      { transform: T(dx * .5, -salto, .8, 1.1), offset: .76, easing: "cubic-bezier(.55,0,.9,.55)" },
-      { transform: T(0, 0, 1.45, .62), offset: .89, easing: "cubic-bezier(.2,.8,.3,1.4)" },
-      { transform: T(0, 0, 1), offset: 1 }
-    ], { duration: 1900, fill: "backwards" }).onfinish = () => logoRodando.delete(lg);
+      { transform: `translateY(${-subir}px)`, offset: 0, easing: "cubic-bezier(.5,0,.95,.55)" },                // cai acelerando
+      { transform: "translateY(0) scale(1,1)", offset: .52, easing: "cubic-bezier(.2,.8,.3,1)" },              // bate no traço do ı
+      { transform: "translateY(0) scale(1.35,.65)", offset: .58, easing: "cubic-bezier(.2,.8,.3,1)" },         // amassa
+      { transform: `translateY(${-quica}px) scale(.93,1.08)`, offset: .73, easing: "cubic-bezier(.5,0,.9,.5)" }, // quica
+      { transform: "translateY(0) scale(1.14,.86)", offset: .85, easing: "cubic-bezier(.2,.8,.3,1.3)" },
+      { transform: "translateY(0) scale(1,1)", offset: 1 }
+    ], { duration: 1400, fill: "backwards" }).onfinish = () => logoRodando.delete(lg);
   }
-  const logosAnalisa = () => document.querySelectorAll(".lg");
-  // O ponto fica centrado no traço do "ı" de verdade (mede o desenho da letra, seja qual for a fonte que carregou)
-  function centrarPingo(lg){
-    try {
-      const i = lg.querySelector(".i"), cs = getComputedStyle(i), c = document.createElement("canvas").getContext("2d");
-      c.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-      const m = c.measureText("ı"), px = parseFloat(cs.fontSize);
-      if (px && m.width) lg.style.setProperty("--ix", ((m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2 / px) + "em");
-    } catch(e){}
-  }
-  (async () => { try { await document.fonts.ready; } catch(e){} logosAnalisa().forEach(centrarPingo); setTimeout(() => logosAnalisa().forEach(animarLogo), 250); })();
+  (async () => { try { await document.fonts.ready; } catch(e){} logosAnalisa().forEach(posicionarPingo); setTimeout(() => logosAnalisa().forEach(animarLogo), 250); })();
   logosAnalisa().forEach(lg => { const alvo = lg.closest("a, h1") || lg; alvo.addEventListener("pointerenter", () => animarLogo(lg)); alvo.addEventListener("focus", () => animarLogo(lg)); });
+  /* ================= Valores dentro do quadrado: encolhe o número até caber (e acompanha mudanças de texto e de largura) ================= */
+  function caberNoQuadrado(el){
+    const box = el.parentElement; if (!box || !box.clientWidth) return;
+    el.style.fontSize = "";                                   // volta ao tamanho do estilo e mede de novo
+    const lim = box.clientWidth - parseFloat(getComputedStyle(box).paddingLeft) - parseFloat(getComputedStyle(box).paddingRight);
+    let px = parseFloat(getComputedStyle(el).fontSize);
+    if (el.scrollWidth <= lim + .5) return;
+    px = Math.max(12, Math.floor(px * lim / el.scrollWidth * 100) / 100);
+    el.style.fontSize = px + "px";
+    for (let k = 0; k < 4 && el.scrollWidth > lim + .5 && px > 12; k++){ px = Math.max(12, px - 1); el.style.fontSize = px + "px"; }
+  }
+  const ajustarValores = () => document.querySelectorAll(".kpi b, .count b").forEach(caberNoQuadrado);
+  new MutationObserver(ms => { for (const m of ms){ const b = (m.target.nodeType === 3 ? m.target.parentElement : m.target).closest && (m.target.nodeType === 3 ? m.target.parentElement : m.target).closest(".kpi b, .count b"); if (b) caberNoQuadrado(b); } })
+    .observe(document.body, { subtree: true, childList: true, characterData: true });
+  window.addEventListener("resize", ajustarValores);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajustarValores);
+  setTimeout(ajustarValores, 300);
   let destino = "home", navToken = 0;
   const elDaVista = v => v === "home" ? viewHome : v === "rubricas" ? viewRub : VISTAS_HUB[v] ? VISTAS_HUB[v].el : viewMod;
 
@@ -2856,6 +2853,7 @@ body :is(h1,.hero-h1,.brand,h2.sec,.mod h2,#viewHome .mod h2,.mod .sigla,#viewHo
       if (v === "dctfweb" || v === "saldo") ajustarModoDctf(v === "saldo");
       document.querySelectorAll("#navTabs [role=tab]").forEach(t => t.setAttribute("aria-selected", String(t.dataset.go === v)));
       if (v === "home") requestAnimationFrame(() => animarLogo($("heroLogo").querySelector(".lg")));
+      requestAnimationFrame(ajustarValores);
       if (MODULOS[v]){
         const m = MODULOS[v];
         $("modTitle").textContent = m.titulo;
