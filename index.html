@@ -5073,11 +5073,24 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
     return { ents, extrair, total };
   }
   // Entrega os XMLs dos arquivos enviados (soltos, em .zip ou em zip dentro de zip), um de cada vez
+  // Conta os XMLs de um .zip, inclusive os que estão em zips dentro dele, sem ler o conteúdo dos XMLs
+  async function xcContarZip(z, aoContar){
+    let n = 0;
+    for (const e of z.ents){
+      if (/\/$/.test(e.nome) || /(^|\/)(__MACOSX\/|\._)/.test(e.nome)) continue;
+      if (/\.xml$/i.test(e.nome)){ n++; if (n % 2000 === 0) aoContar(2000); }
+      else if (/\.zip$/i.test(e.nome)){
+        try { const zi = await xcAbrirZip(new Blob([await z.extrair(e)])); const m = await xcContarZip(zi, aoContar); n += m; }
+        catch(_){}
+      }
+    }
+    return n;
+  }
   async function* xcItens(lista, log, contar, abertos){
     for (const f of lista){
       const nome = f.webkitRelativePath || f.name;
       if (/\.xml$/i.test(f.name)) yield { chave: `${nome}|${f.size}|${f.lastModified}`, nome, ler: () => f.text() };
-      else if (/\.zip$/i.test(f.name)) yield* xcItensZip(f, nome, log, contar, abertos && abertos.get(f));
+      else if (/\.zip$/i.test(f.name)) yield* xcItensZip(f, nome, log, abertos && abertos.has(f) ? () => {} : contar, abertos && abertos.get(f));
     }
   }
   async function* xcItensZip(blob, rotulo, log, contar, pre){
@@ -5735,16 +5748,26 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
         await pend;
         pend = dkGravarColetor(pronto).then(() => { gravados += pronto.arqs; });
       };
-      // Conta tudo antes de começar: a barra mostra a porcentagem da extração inteira, sem voltar a cada .zip
+      // Conta tudo antes de começar (inclusive zip dentro de zip): o total aparece primeiro e a barra mostra a porcentagem da extração inteira
+      xmlStatus("Contando", "run");
+      logXml("Contando os XMLs antes de começar…");
       const zipsAbertos = new Map();
+      let contados = 0;
+      const mostraContagem = () => progXml.livre(0, `Contando os arquivos… <b>${xmlN(contados)}</b> XMLs encontrados até agora`);
       for (const f of lista){
-        if (/\.xml$/i.test(f.name)){ total++; continue; }
+        if (/\.xml$/i.test(f.name)){ total++; contados++; if (contados % 500 === 0){ mostraContagem(); await xcCede(); } continue; }
         try {
-          const z = await xcAbrirZip(f); zipsAbertos.set(f, z);
-          total += z.ents.filter(e => !/\/$/.test(e.nome) && !/(^|\/)(__MACOSX\/|\._)/.test(e.nome) && /\.xml$/i.test(e.nome)).length;
+          const z = await xcAbrirZip(f);
+          const n = await xcContarZip(z, k => { contados += k; mostraContagem(); });
+          total += n; zipsAbertos.set(f, z);
+          contados = total; mostraContagem(); await xcCede();
         } catch(_){}
-        progXml.livre(0, `Contando os arquivos… <b>${xmlN(total)}</b> XMLs até agora`);
       }
+      logXml(`Total a ler: ${xmlN(total)} XML(s).`, "log-sucesso");
+      progXml.livre(0, `Total: <b>${xmlN(total)}</b> XMLs para ler · 0%`);
+      $("xmlStatus").textContent = `${xmlN(total)} XMLs para ler`;
+      await new Promise(r => setTimeout(r, 900));   // dá tempo de ver o total antes de a leitura andar
+      xmlStatus("Lendo", "run");
       logXml("Lendo os arquivos. O que for lido vai sendo gravado no banco: se algo travar, é só enviar os mesmos arquivos de novo que a leitura continua de onde parou.");
       $("xmlParar").hidden = false;
       for await (const it of xcItens(lista, logXml, n => { total += n; }, zipsAbertos)){
