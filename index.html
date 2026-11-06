@@ -5682,7 +5682,7 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
       p.iniciar(1);
       try {
         xmlStatus("Preparando", "run");
-        await dkMaterializarCruz((f, per) => p.livre(f, `Preparando o cruzamento de eventos (só desta vez) · competência ${esc(per == null ? "" : xmlPer(per))}`));
+        await dkMaterializarCruz((f, per) => p.livre(f, `Preparando o cruzamento de eventos · competência ${esc(per == null ? "" : xmlPer(per))}`));
         return true;
       } catch(e){
         console.error(e); logXml("Não foi possível guardar o cruzamento no banco: " + (e && e.message || e) + ". Os conjuntos seguem pela leitura direta, mais lenta.", "log-erro");
