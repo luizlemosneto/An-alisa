@@ -1665,7 +1665,7 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
     <details class="how">
       <summary>Como o mapeamento funciona</summary>
       <ol>
-        <li>Entram só proventos (tipo 1) com incidência 11, 12, 13 ou 14 e descontos (tipo 2) com incidência 00, 31 ou 32, dos últimos 5 anos. Só entram as linhas com “Validade do evento” igual a “Válido”; as “Corrompido” são desconsideradas.</li>
+        <li>Entram só proventos (tipo 1) com incidência 11 ou 12 e descontos (tipo 2) com incidência 00, 31 ou 32, dos últimos 5 anos. Só entram as linhas com “Validade do evento” igual a “Válido”; as “Corrompido” são desconsideradas.</li>
         <li>As rubricas repetidas são juntadas por descrição, tipo, código e natureza: com código diferente, nunca soma. O ponto sugerido vem da natureza da rubrica na tabela de temas (coluna de provento ou de desconto). Proventos com incidência 12 vão para “RAT Sem Exposição ao Risco Laboral”.</li>
         <li>Desconto só aceita tema com “Desconto” no nome: DSR em desconto não vai para RAT e multa de trânsito não é vale transporte. Regras pelo nome da rubrica valem sobre a natureza. Provisão nunca entra: é retirada na leitura. Nos descontos: INSS, IRRF/IR, vale transporte (VT, transporte), vale alimentação/refeição (VR, VA, cesta básica) e plano médico/odonto/coparticipação/saúde vão para o ponto de cada um. DSR (em qualquer parte do nome), descanso, repouso e ausência (ou ausência justificada) vão para RAT Sem Exposição ao Risco Laboral, em proventos e em descontos. Nos proventos, licença e 13º também vão para o RAT; transporte e alimentação vão para Auxílio Vale Transporte e Auxílio Alimentação; bônus, prêmio e gratificação vão para Prêmios e Bonificações. Provento com “férias” e tudo que for incidência 12 vão direto para RAT Sem Exposição ao Risco Laboral, na frente das demais regras. Hora extra noturna e prêmio/gratificação de função nunca entram nas outras incidências.</li>
         <li>A aba Revisão reúne tudo que está como Não oportunidade. Para aproveitar uma rubrica, escolha um ponto e ela vai para Com ponto. Para descartar, use o lixinho: ela vai para as abas Não oportunidade e Lixeira (onde dá para Retomar). A aba Não oportunidade começa zerada e só recebe o que você joga fora.</li>
@@ -1915,7 +1915,7 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
         <li>Cada XML pode ter um ou vários eventos (como no lote do portal). O tipo é reconhecido pela tag do evento: evtRemun (S-1200), evtTabRubrica (S-1010), evtCS (S-5011), evtBasesTrab (S-5001) e qualquer outro evento do eSocial.</li>
         <li>Duplicados saem pelo Id do evento. Vale sempre o recibo mais recente: nos S-1200, o de cada empregador, CPF, tipo de apuração e competência; nos S-5011, o de cada competência; nos S-5001, o de cada CPF e competência. A data de recepção do retorno do portal (quando o XML a traz) ou, sem ela, a data de geração do Id decide qual é o mais novo, e quem foi substituído por retificação (número do recibo retificado) não entra.</li>
         <li>Cruzamento de eventos: cada rubrica do S-1200 recebe tipo, natureza, descrição e incidência do S-1010 (vale a versão da tabela na competência) e as alíquotas de RAT, FAP, FPAS e terceiros do S-5011. Rubrica sem S-1010 não pode ser classificada e fica como “Corrompido” em Validade do evento (desconsiderada pelo módulo Rubricas); as demais ficam “Válido”. O arquivo tem as colunas que o módulo Rubricas já lê. Também entram nome, data de admissão e de desligamento do trabalhador (S-2200 e S-2299) e se a competência foi fechada (S-1299, ou reaberta pelo S-1298).</li>
-        <li>Conferência: para cada empregador e competência, a remuneração do cruzamento (proventos do S-1200 e das verbas rescisórias do S-2299 com incidência 11, 12, 13 ou 14 na tabela S-1010, categorias que não começam com 1 são ignoradas por completo, no S-1200 e no S-5011) é comparada com a base de cálculo do S-5011 mais recente (soma dos campos vrBcCp). Diferença acima de R$ 1,00 é Divergência; também aparecem competências só de um lado.</li>
+        <li>Conferência: para cada empregador e competência, a remuneração do cruzamento (proventos do S-1200 e das verbas rescisórias do S-2299 com incidência 11 ou 12 na tabela S-1010, categorias que não começam com 1 são ignoradas por completo, no S-1200 e no S-5011) é comparada com a base de cálculo do S-5011 mais recente (soma dos campos vrBcCp). Diferença acima de R$ 1,00 é Divergência; também aparecem competências só de um lado.</li>
         <li>Os demais eventos viram uma tabela achatada: cada ramo repetido do XML vira uma linha, com os campos dos níveis acima repetidos.</li>
         <li>Ao exportar, o módulo sempre pergunta se você quer planilha (.xlsx) ou Parquet. Acima de 1 milhão de linhas, a planilha divide em abas; para volumes grandes, prefira o Parquet.</li>
       </ol>
@@ -3485,7 +3485,7 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
         const tp = tipoTxt.startsWith("1") ? "P" : tipoTxt.startsWith("2") ? "D" : "";
         if (!tp){ info.foraTipo++; continue; }
         const inc = digitos2(r[C.inc]);
-        if (tp === "P" ? !(inc === "11" || inc === "12" || inc === "13" || inc === "14") : !(inc === "00" || inc === "31" || inc === "32")){ info.foraInc++; continue; }
+        if (tp === "P" ? !(inc === "11" || inc === "12") : !(inc === "00" || inc === "31" || inc === "32")){ info.foraInc++; continue; }
         const { mes, ano } = mesAnoRub(r[C.per]);
         if (!dentroRub(ano, mes, corte)){ info.foraJanela++; continue; }
         const valor = convRub(r[C.val]);
@@ -3513,9 +3513,10 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
         sp.n++;
         const per = mes === 13 ? `13/${ano}` : `${String(mes).padStart(2, "0")}/${ano}`;
 
-        const gkey = normTxt(desc) + "|" + tp + "|" + (inc12 ? "12" : "") + "|" + cod + "|" + nat;
+        const inss = tp === "D" && (inc === "31" || inc === "32");   // desconto com incidência 31 ou 32: vai direto para Desconto INSS
+        const gkey = normTxt(desc) + "|" + tp + "|" + (inc12 ? "12" : "") + "|" + cod + "|" + nat + (inss ? "|inss" : "");
         let g = grupos.get(gkey);
-        if (!g){ g = { key: gkey, tp, desc, inc12, codigos: new Set(), nats: new Map(), incs: new Set(), valor: 0, n: 0, rPatr: 0, rGil: 0, rOE: 0, rAN: 0 }; grupos.set(gkey, g); }
+        if (!g){ g = { key: gkey, tp, desc, inc12, inss, codigos: new Set(), nats: new Map(), incs: new Set(), valor: 0, n: 0, rPatr: 0, rGil: 0, rOE: 0, rAN: 0 }; grupos.set(gkey, g); }
         if (cod) g.codigos.add(cod);
         if (nat) g.nats.set(nat, (g.nats.get(nat) || 0) + 1);
         g.incs.add(inc); g.valor += valor; g.n++;
@@ -3541,6 +3542,7 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
       const rg = regraNome(g, g.sug);
       if (rg){ g.sug = rg.ponto; g.origem = rg.motivo; g.regra = true; }
       if (!(rg && rg.exclui) && feriasSemPonto(g, g.sug)){ g.sug = RAT_PNT; g.origem = "regra do nome: férias sem ponto vai para RAT"; g.regra = true; }
+      if (g.inss){ g.sug = PT_INSS; g.origem = "desconto com incidência 31/32: direto para Desconto INSS"; g.regra = true; }
       const ms = rub.sessao[g.key], mm = lay.lembrar ? memPontos[g.key] : null;
       if (ms && ms.p && pontoValido(g.tp, ms.p)){ g.ponto = canonPonto(ms.p); g.origemAtual = "você"; }
       else if (mm && mm.p && pontoValido(g.tp, mm.p)){ g.ponto = canonPonto(mm.p); g.origemAtual = "sua revisão anterior"; }
@@ -4827,7 +4829,7 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
   };
   const XML_TP_RUBR = { "1": "Vencimento", "2": "Desconto", "3": "Informativa", "4": "Informativa dedutora" };
   // Incidência da rubrica (CP) que entra na remuneração do cruzamento: a mesma regra dos proventos do módulo Rubricas
-  const XML_INC_BASE = new Set(["11", "12", "13", "14"]);
+  const XML_INC_BASE = new Set(["11", "12"]);
   // Agente nocivo (grau de exposição do funcionário): 1 = 0%, 2 = 12%, 3 = 9%, 4 = 6%
   const XML_AN = { "1": 0, "2": 12, "3": 9, "4": 6 };
   const xAn = g => g === "" || g === undefined ? "" : (XML_AN[String(g)] ?? 0);
@@ -5282,7 +5284,7 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
 
   /* ---------- Montagem dos conjuntos: as mesmas regras de antes, agora em SQL sobre o banco.
      Cada etapa guarda seu resultado numa tabela m_*; os conjuntos que o usuário baixa são consultas sobre elas. ---------- */
-  const XC_BASE = "('11','12','13','14')";
+  const XC_BASE = "('11','12')";
   const DK_ETAPAS = [
     ["Eventos únicos", `CREATE OR REPLACE TABLE m_ev AS SELECT * FROM x_ev QUALIFY id = '' OR row_number() OVER (PARTITION BY id ORDER BY seq) = 1`],
     ["Retificações", `CREATE OR REPLACE TABLE m_ret AS SELECT DISTINCT nrRetif AS rec FROM m_ev WHERE indRetif = '2' AND nrRetif <> ''`],
@@ -5453,10 +5455,12 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
     if (mes === 0){ ano--; mes = 12; }
     ano -= 5; return { chave: ano * 100 + mes, label: `${String(mes).padStart(2, "0")}/${ano}` };
   }
-  // Só entram rubricas de tipo 1 ou 2; as de tipo 1 com incidência 00 nem vêm
-  const xcFiltroTipo = () => `(l.achou AND l.tp IN ('1', '2') AND NOT (l.tp = '1' AND l.incCP IN ('00', '0')))`;
+  // Só entram rubricas de tipo 1 (proventos) e 2 (descontos). Já saem daqui, antes da planilha de cruzamento:
+  //   tipo 1 com incidência 00, 21, 22 ou 51; tipo 2 com incidência 34 ou 35
+  const XC_FORA_T1 = "('00', '0', '21', '22', '51')", XC_FORA_T2 = "('34', '35')";
+  const xcFiltroTipo = () => `(l.achou AND ((l.tp = '1' AND COALESCE(l.incCP, '') NOT IN ${XC_FORA_T1}) OR (l.tp = '2' AND COALESCE(l.incCP, '') NOT IN ${XC_FORA_T2})))`;
   const xcFiltroCorte = () => `COALESCE(xp_chave(l.per), 999999) >= ${xcCorte().chave} AND ${xcFiltroTipo()}`;   // competência que não dá para ler fica (não dá para saber se é antiga)
-  const xcMarcaCruz = async () => `${await dkUm("SELECT COALESCE(max(seq), 0) FROM x_ev")}|${xcCorte().chave}|t2`;
+  const xcMarcaCruz = async () => `${await dkUm("SELECT COALESCE(max(seq), 0) FROM x_ev")}|${xcCorte().chave}|t4`;
   async function dkCruzPronto(){
     const m = await dkLinhas("SELECT v FROM x_meta WHERE k = 'cruz'");
     if (!m.length || !(await dkUm("SELECT count(*) FROM duckdb_tables() WHERE table_name = 'x_cruz'"))) return false;
