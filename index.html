@@ -222,6 +222,9 @@ tfoot td{position:sticky;bottom:0;background:var(--surface-2);font-weight:600;bo
 .mais{padding:12px 16px;text-align:center;color:var(--muted);font-size:.88rem}
 .seg{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:26px;padding:4px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
 .seg-lbl{font-size:.85rem;color:var(--muted);padding:0 10px 0 12px}
+.xml-porte-bloco{padding:0 clamp(20px,2.4vw,32px) 8px}
+.xml-porte-bloco .seg{margin-top:20px}
+.xml-porte-dica{margin:10px 0 0;font-size:.85rem;color:var(--muted);max-width:70ch}
 .seg button{font:600 .88rem var(--body);border:0;border-radius:999px;padding:8px 15px;background:transparent;color:var(--muted);cursor:pointer;transition:background .25s,color .25s}
 .seg button:hover{color:var(--ink)}
 .seg button[aria-checked="true"]{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--accent-ink);box-shadow:0 8px 18px -10px var(--glow)}
@@ -1871,6 +1874,14 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
     </div>
 
     <div class="stub compacto" id="xmlStub">
+      <div class="xml-porte-bloco">
+        <div class="seg" id="xmlPorte" role="group" aria-label="Porte da empresa">
+          <span class="seg-lbl">Porte da empresa</span>
+          <button type="button" data-p="p" aria-pressed="false">Pequena</button>
+          <button type="button" data-p="g" aria-pressed="true">Grande</button>
+        </div>
+        <p class="xml-porte-dica" id="xmlPorteDica"></p>
+      </div>
       <div class="slots um">
         <div class="drop" id="dropXml" tabindex="0" role="group" aria-label="Enviar XMLs do eSocial">
           <span class="slot-tag">XML</span>
@@ -4878,6 +4889,8 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
     arq:  ["x_arq",  "h DOUBLE, nome VARCHAR, tam DOUBLE, inv INTEGER, nev INTEGER"]
   };
   const dk = { db: null, c: null, pronto: null, persistente: false, aviso: "", duck: null };
+  // Porte da empresa: "p" lê tudo na memória (mais rápido, não guarda no disco); "g" grava em lotes no disco do navegador
+  let xmlPorte = (() => { try { return localStorage.getItem("xml-porte") === "p" ? "p" : "g"; } catch(e){ return "g"; } })();
   const dkAspas = s => '"' + String(s).replace(/"/g, '""') + '"';
   const dkLit = s => "'" + String(s).replace(/'/g, "''") + "'";
 
@@ -4908,7 +4921,8 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
   async function dkAbrir(){
     dk.duck = await importarModuloComFallback([`https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@${DK_VER}/+esm`, `https://esm.sh/@duckdb/duckdb-wasm@${DK_VER}`]);
     let db = null;
-    if (navigator.storage && navigator.storage.getDirectory){
+    if (xmlPorte !== "g"){ /* porte pequeno: banco só na memória, de propósito */ }
+    else if (navigator.storage && navigator.storage.getDirectory){
       let ultimo = null;
       for (const espera of [0, 600, 1800, 4000]){   // a aba anterior (ou outra aba) pode demorar um instante para soltar o arquivo
         if (espera) await new Promise(r => setTimeout(r, espera));
@@ -5054,19 +5068,19 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
     return { ents, extrair, total };
   }
   // Entrega os XMLs dos arquivos enviados (soltos, em .zip ou em zip dentro de zip), um de cada vez
-  async function* xcItens(lista, log, contar){
+  async function* xcItens(lista, log, contar, abertos){
     for (const f of lista){
       const nome = f.webkitRelativePath || f.name;
       if (/\.xml$/i.test(f.name)) yield { chave: `${nome}|${f.size}|${f.lastModified}`, nome, ler: () => f.text() };
-      else if (/\.zip$/i.test(f.name)) yield* xcItensZip(f, nome, log, contar);
+      else if (/\.zip$/i.test(f.name)) yield* xcItensZip(f, nome, log, contar, abertos && abertos.get(f));
     }
   }
-  async function* xcItensZip(blob, rotulo, log, contar){
-    let z;
-    try { log(`Abrindo o índice de ${rotulo}…`); z = await xcAbrirZip(blob); }
+  async function* xcItensZip(blob, rotulo, log, contar, pre){
+    let z = pre || null;
+    try { if (!z){ log(`Abrindo o índice de ${rotulo}…`); z = await xcAbrirZip(blob); } }
     catch(e){ log(`Não consegui abrir ${rotulo}: ${e.message}`, "log-erro"); return; }
     const uteis = z.ents.filter(e => !/\/$/.test(e.nome) && !/(^|\/)(__MACOSX\/|\._)/.test(e.nome));
-    contar(uteis.filter(e => /\.xml$/i.test(e.nome)).length);
+    if (!pre) contar(uteis.filter(e => /\.xml$/i.test(e.nome)).length);
     for (const e of uteis){
       const nome = `${rotulo} › ${e.nome}`;
       if (/\.xml$/i.test(e.nome)) yield { chave: `${nome}|${e.us}|${e.crc}`, nome, ler: async () => xcDec.decode(await z.extrair(e)) };
@@ -5697,7 +5711,7 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
     window.addEventListener("beforeunload", xmlAvisoSaida);
     try {
       logXml("Preparando o banco de dados do navegador…");
-      await dkIniciar(); xmlFlag("1");
+      await dkIniciar(); if (dk.persistente) xmlFlag("1");
       if (dk.aviso) logXml(dk.aviso, "log-erro");
       if (lista.some(f => /\.zip$/i.test(f.name)) && !(await carregarFflate())){ logXml("A biblioteca de descompactação não carregou. Confira a internet e recarregue a página.", "log-erro"); toast("Não consegui abrir os .zip. Confira a internet."); return; }
       const feitos = new Set((await dkLinhas("SELECT h FROM x_arq")).map(r => r[0]));
@@ -5716,9 +5730,19 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
         await pend;
         pend = dkGravarColetor(pronto).then(() => { gravados += pronto.arqs; });
       };
+      // Conta tudo antes de começar: a barra mostra a porcentagem da extração inteira, sem voltar a cada .zip
+      const zipsAbertos = new Map();
+      for (const f of lista){
+        if (/\.xml$/i.test(f.name)){ total++; continue; }
+        try {
+          const z = await xcAbrirZip(f); zipsAbertos.set(f, z);
+          total += z.ents.filter(e => !/\/$/.test(e.nome) && !/(^|\/)(__MACOSX\/|\._)/.test(e.nome) && /\.xml$/i.test(e.nome)).length;
+        } catch(_){}
+        progXml.livre(0, `Contando os arquivos… <b>${xmlN(total)}</b> XMLs até agora`);
+      }
       logXml("Lendo os arquivos. O que for lido vai sendo gravado no banco: se algo travar, é só enviar os mesmos arquivos de novo que a leitura continua de onde parou.");
       $("xmlParar").hidden = false;
-      for await (const it of xcItens(lista, logXml, n => { total += n; })){
+      for await (const it of xcItens(lista, logXml, n => { total += n; }, zipsAbertos)){
         if (xmlPararFlag){ logXml("Leitura parada a seu pedido. O que já foi lido está guardado; envie os mesmos arquivos de novo para continuar de onde parou.", "log-erro"); break; }
         vistos++;
         const h = xcHash(it.chave);
@@ -5729,7 +5753,7 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
         if (!nev) erros++;
         xcPush(col, "arq", h, it.nome.slice(-300), tam, nev ? 0 : 1, nev);
         feitos.add(h); novos++; col.arqs++;
-        if (col.arqs >= 2500 || col.peso > 10e6) await gravar();
+        if (col.arqs >= (xmlPorte === "p" ? 20000 : 2500) || col.peso > (xmlPorte === "p" ? 80e6 : 10e6)) await gravar();
         tela(); await xcCede();
       }
       $("xmlParar").hidden = true;
@@ -5788,7 +5812,8 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
   renderXml();
 
   /* ---------- Ao abrir a página: se há leitura guardada no navegador, ela volta sozinha ---------- */
-  xmlRestauracao = (async () => {
+  const xmlRestaurar = async () => {
+    if (xmlPorte !== "g") return;   // porte pequeno não guarda nada no disco
     if (xmlFlag() === "0") return;   // já se sabe que não há nada guardado: não vale baixar o motor à toa
     try { const raiz = await navigator.storage.getDirectory(); await raiz.getFileHandle(DK_ARQ); } catch(e){ return; }   // nada guardado
     await new Promise(r => setTimeout(r, 600));
@@ -5803,7 +5828,34 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
       xmlStatus("Pronto", "ok");
     } catch(e){ console.warn("restauração do módulo XML:", e); xmlStatus("Aguardando"); logXml("Não consegui restaurar a leitura anterior: " + (e && e.message || e), "log-erro"); }
     finally { xmlLendo = false; renderXml(); xmlAtualizarGuardados(); }
-  })();
+  };
+  xmlRestauracao = xmlRestaurar();
+
+  /* ---------- Botão de porte da empresa ---------- */
+  const XML_PORTE_DICA = {
+    p: "Pequena: leitura mais rápida, tudo na memória. Não guarda no disco: se a página for recarregada, envie os arquivos de novo.",
+    g: "Grande: grava em lotes no disco do navegador, aguenta centenas de milhares de arquivos e continua de onde parou se travar."
+  };
+  function xmlPorteTela(){
+    document.querySelectorAll("#xmlPorte button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.p === xmlPorte)));
+    $("xmlPorteDica").textContent = XML_PORTE_DICA[xmlPorte];
+  }
+  $("xmlPorte").addEventListener("click", async e => {
+    const b = e.target.closest("button[data-p]"); if (!b || b.dataset.p === xmlPorte) return;
+    if (xmlLendo){ toast("Espere a leitura terminar para trocar o porte."); return; }
+    if (xmlStats.arquivos && !confirm("Trocar o porte reinicia o motor e limpa a leitura que está na tela. O que estiver guardado no disco continua lá. Trocar mesmo?")) return;
+    xmlLendo = true;
+    try {
+      if (dk.db){ try { await dk.c.close(); } catch(_){} try { await dk.db.terminate(); } catch(_){} }
+      dk.db = null; dk.c = null; dk.pronto = null; dk.persistente = false; dk.aviso = "";
+      xmlPorte = b.dataset.p; try { localStorage.setItem("xml-porte", xmlPorte); } catch(_){}
+      xmlRes = xmlVazio(); xmlStats = { arquivos: 0, invalidos: 0 }; xmlNomeEmp = "";
+      $("xmlStatus").textContent = ""; $("dropXml").classList.remove("feito"); xmlStatus("Aguardando");
+      logXml(xmlPorte === "p" ? "Porte pequeno: a leitura fica só na memória." : "Porte grande: a leitura é gravada em lotes no disco do navegador.", "log-info");
+    } finally { xmlLendo = false; xmlPorteTela(); renderXml(); xmlAtualizarGuardados(); }
+    if (xmlPorte === "g") xmlRestauracao = xmlRestaurar();
+  });
+  xmlPorteTela();
   const xmlConjuntoDisponivel = async id => { await xmlRestauracao; return xmlRes.conjuntos.find(c => c.id === id) || null; };
 
   /* ---------- Ao abrir: a sessão anterior volta (módulos genéricos e Rubricas) ---------- */
