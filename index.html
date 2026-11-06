@@ -1227,6 +1227,11 @@ input[type=checkbox],input[type=range]{accent-color:var(--ink)}
 .kpis .kpi:last-child b,.kpis .kpi:last-child small{color:var(--solid-ink)}
 .kpis .kpi:last-child small{opacity:.8}
 .kpis .kpi:last-child::before{background:radial-gradient(120% 85% at 14% -12%, rgba(255,255,255,.30), transparent 55%)}
+/* Saldo disponível: os dois totais ficam em cinza, nunca em preto */
+body[data-mod]:not([data-mod="home"]) .kpis.dois .kpi:last-child{background:var(--glass-gray);color:var(--ink);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow)}
+body[data-mod]:not([data-mod="home"]) .kpis.dois .kpi:last-child b{color:var(--ink)}
+body[data-mod]:not([data-mod="home"]) .kpis.dois .kpi:last-child small{color:var(--muted);opacity:1}
+body[data-mod]:not([data-mod="home"]) .kpis.dois .kpi:last-child::before{background:none}
 @media (max-width:860px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.kpis.dois{grid-template-columns:repeat(2,minmax(0,1fr))}
   .kpis:has(.kpi:nth-child(4)){grid-template-columns:repeat(2,minmax(0,1fr))}
   .kpi,.kpis.dois .kpi{border-radius:24px;padding:14px;min-height:110px}.kpi b{font-size:clamp(28px,9vw,44px)}.kpi small{font-size:12px}}
