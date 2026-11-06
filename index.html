@@ -773,12 +773,12 @@ details.how[open] > ol > li:nth-child(n+6){animation-delay:.25s}
 .mod.hero-card h2{font-size:1.25rem}
 .mods .mod:nth-child(6){--i:5}.mods .mod:nth-child(7){--i:6}
 
-/* ===== Módulos eSocial, DCTFWeb e Diagnóstico PRO ===== */
-#viewEso.page-in > *,#viewDctf.page-in > *,#viewDiag.page-in > *{animation:lift .6s var(--ease) backwards}
-#viewEso.page-in > :nth-child(2),#viewDctf.page-in > :nth-child(2),#viewDiag.page-in > :nth-child(2){animation-delay:.07s}
-#viewEso.page-in > :nth-child(3),#viewDctf.page-in > :nth-child(3),#viewDiag.page-in > :nth-child(3){animation-delay:.14s}
-#viewEso.page-in > :nth-child(4),#viewDctf.page-in > :nth-child(4),#viewDiag.page-in > :nth-child(4){animation-delay:.21s}
-#viewEso.page-in > :nth-child(n+5),#viewDctf.page-in > :nth-child(n+5),#viewDiag.page-in > :nth-child(n+5){animation-delay:.28s}
+/* ===== Módulos Saldo e Diagnóstico PRO ===== */
+#viewDctf.page-in > *,#viewDiag.page-in > *{animation:lift .6s var(--ease) backwards}
+#viewDctf.page-in > :nth-child(2),#viewDiag.page-in > :nth-child(2){animation-delay:.07s}
+#viewDctf.page-in > :nth-child(3),#viewDiag.page-in > :nth-child(3){animation-delay:.14s}
+#viewDctf.page-in > :nth-child(4),#viewDiag.page-in > :nth-child(4){animation-delay:.21s}
+#viewDctf.page-in > :nth-child(n+5),#viewDiag.page-in > :nth-child(n+5){animation-delay:.28s}
 
 .slots.tres{grid-template-columns:repeat(3,minmax(0,1fr))}
 .slots.um{grid-template-columns:1fr}
@@ -1065,7 +1065,9 @@ input[type=checkbox],input[type=range]{accent-color:var(--ink)}
 .counters{grid-column:6/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
 .count{border-radius:34px;padding:clamp(16px,2.2vw,28px);min-height:clamp(150px,18vw,250px);display:flex;flex-direction:column;justify-content:space-between;gap:16px;color:var(--ink)}
 .count b{font-weight:800;font-size:clamp(56px,5.4vw,112px);line-height:.85;letter-spacing:-.06em;font-variant-numeric:tabular-nums;display:block}
-.count span{font-size:13px;font-weight:600;line-height:1.3;color:var(--muted)}
+.count span{font-size:13px;font-weight:500;line-height:1.35;color:var(--muted)}
+.count span strong{display:block;font-weight:700;color:var(--ink)}
+.count.c3 span strong{color:var(--solid-ink)}
 .count.c2{background:var(--glass-gray)}
 .count.c3{background:var(--solid);color:var(--solid-ink);border-color:transparent;box-shadow:var(--solid-shadow);-webkit-backdrop-filter:none;backdrop-filter:none}
 .count.c3 span{color:var(--solid-ink);opacity:.8}
@@ -1083,7 +1085,6 @@ input[type=checkbox],input[type=range]{accent-color:var(--ink)}
 .mod .grupo{display:inline-flex;align-items:center;gap:8px;margin:0 0 6px;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:0;text-transform:none}
 .mod .grupo::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ink);box-shadow:none;opacity:.55}
 .mod[data-grupo="analise"] .grupo::before{opacity:.3}
-.mod[data-grupo="retificacao"] .grupo::before{opacity:1}
 .mod .sigla,#viewHome .mod .sigla{font-family:var(--font);font-weight:800;font-size:clamp(34px,3.6vw,52px);letter-spacing:-.055em;line-height:.95;margin:0 0 auto;color:var(--ink);background:none;-webkit-text-fill-color:currentColor;padding:0}
 .mod h2,#viewHome .mod h2{font-family:var(--font);font-weight:700;font-size:18px;letter-spacing:-.02em;margin:22px 0 0;color:var(--ink)}
 .mod p,#viewHome .mod p{font-size:14px;line-height:1.5;color:var(--muted);margin:0;max-width:46ch}
@@ -1122,16 +1123,16 @@ input[type=checkbox],input[type=range]{accent-color:var(--ink)}
 }
 
 /* ---------- Páginas dos módulos: texto de apoio nas colunas 1–4, formulário nas 6–12 ---------- */
-#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado){display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px;row-gap:24px;grid-auto-flow:row dense;align-items:start}
-#viewMod[hidden],#viewEso[hidden],#viewXml[hidden],#viewDctf[hidden],#viewDiag[hidden],#viewRub[hidden]{display:none}
-:is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > *{grid-column:1/-1;margin-top:0;margin-bottom:0;max-width:none}
-:is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > .mod-head{display:contents}
-:is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) .mod-head h1{grid-column:1/-1;margin:0 0 clamp(16px,3vw,40px)}
-:is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) .mod-head .lede{grid-column:1/5;max-width:none;max-height:none;opacity:1}
+#viewMod,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado){display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px;row-gap:24px;grid-auto-flow:row dense;align-items:start}
+#viewMod[hidden][hidden],#viewXml[hidden],#viewDctf[hidden],#viewDiag[hidden],#viewRub[hidden]{display:none}
+:is(#viewMod,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > *{grid-column:1/-1;margin-top:0;margin-bottom:0;max-width:none}
+:is(#viewMod,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > .mod-head{display:contents}
+:is(#viewMod,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) .mod-head h1{grid-column:1/-1;margin:0 0 clamp(16px,3vw,40px)}
+:is(#viewMod,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) .mod-head .lede{grid-column:1/5;max-width:none;max-height:none;opacity:1}
 #viewRub:not(.carregado) .mod-head .mh-txt{display:contents}
 #viewRub:not(.carregado) .mod-head .arq-chips{display:none}
-:is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > details.how{grid-column:1/5;margin:0}
-:is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag) > :is(.stub,.field.campo,.modo,.opcoes,.rodar),
+:is(#viewMod,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > details.how{grid-column:1/5;margin:0}
+:is(#viewMod,#viewXml,#viewDctf,#viewDiag) > :is(.stub,.field.campo,.modo,.opcoes,.rodar),
 #viewRub:not(.carregado) > .rub-arq{grid-column:6/-1}
 #viewDiag > .field.campo{max-width:none}
 #viewRub:not(.carregado) .steps{margin:0 0 16px}
@@ -1141,16 +1142,16 @@ input[type=checkbox],input[type=range]{accent-color:var(--ink)}
 #viewRub.carregado details.how{margin:16px 0 0}
 
 @media (max-width:860px){
-  #viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado){grid-template-columns:1fr}
-  :is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > *,
-  :is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) .mod-head h1,
-  :is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) .mod-head .lede,
-  :is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag) > :is(.stub,.field.campo,.modo,.opcoes,.rodar),
+  #viewMod,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado){grid-template-columns:1fr}
+  :is(#viewMod,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > *,
+  :is(#viewMod,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) .mod-head h1,
+  :is(#viewMod,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) .mod-head .lede,
+  :is(#viewMod,#viewXml,#viewDctf,#viewDiag) > :is(.stub,.field.campo,.modo,.opcoes,.rodar),
   #viewRub:not(.carregado) > .rub-arq,
-  :is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > details.how{grid-column:1/-1}
+  :is(#viewMod,#viewXml,#viewDctf,#viewDiag,#viewRub:not(.carregado)) > details.how{grid-column:1/-1}
 }
 
-:is(#viewMod,#viewEso,#viewXml,#viewDctf,#viewDiag) > section{margin-top:24px}
+:is(#viewMod,#viewXml,#viewDctf,#viewDiag) > section{margin-top:24px}
 /* envio de arquivos */
 .stub{border-radius:34px}
 .drop{cursor:pointer;padding:32px clamp(20px,3vw,36px) 28px}
@@ -1481,12 +1482,23 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
 
 /* ---------- Movimento só em resposta a ações (hover, aviso). Sem animação de entrada ---------- */
 .page-in,.entra-dir,.entra-esq,.sai-esq,.sai-dir,
-#viewMod.page-in > *,#viewRub.page-in > *,#viewEso.page-in > *,#viewDctf.page-in > *,#viewDiag.page-in > *,#viewXml.page-in > *,#viewHome.page-in > *,
+#viewMod.page-in > *,#viewRub.page-in > *.page-in > *,#viewDctf.page-in > *,#viewDiag.page-in > *,#viewXml.page-in > *,#viewHome.page-in > *,
 .nav-right .ghost-btn.back:not([hidden]),.brand i,.mod{animation:none!important}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
   .tabs a:hover,.btn:hover,.mod:hover,.seg button:hover,.theme-toggle:hover,.tbtn:hover,.pick:hover{transform:none}
 }
+/* Rubricas: "Como o mapeamento funciona" colado ao texto de cima, em cinza bem clarinho */
+#viewRub details.how{margin-top:0}
+@media (min-width:761px){
+  #viewRub:not(.carregado){grid-template-rows:auto auto auto 1fr}
+  #viewRub:not(.carregado) .mod-head .lede{grid-row:2}
+  #viewRub:not(.carregado) > details.how{grid-row:3;margin-top:-14px}
+  #viewRub:not(.carregado) > .rub-arq{grid-row:2 / span 3}
+}
+#viewRub:not(.carregado) .mod-head{margin-bottom:0}
+#viewRub details.how > summary,#viewRub details.how > summary:hover,#viewRub details.how[open] > summary{color:color-mix(in srgb,var(--muted) 55%,transparent);font-weight:500}
+#viewRub details.how > summary::before,#viewRub details.how[open] > summary::before{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--muted) 40%,transparent);color:color-mix(in srgb,var(--muted) 55%,transparent)}
 </style>
 </head>
 <body>
@@ -1506,8 +1518,6 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
       <a role="tab" href="#base" data-go="base" aria-selected="false">Base</a>
       <a role="tab" href="#darf" data-go="darf" aria-selected="false">DARF</a>
       <a role="tab" href="#perdcomp" data-go="perdcomp" aria-selected="false">PER/DCOMP</a>
-      <a role="tab" href="#esocial" data-go="esocial" aria-selected="false">eSocial</a>
-      <a role="tab" href="#dctfweb" data-go="dctfweb" aria-selected="false">DCTFWeb</a>
     </div>
     <div class="nav-right">
       <button class="theme-toggle" id="themeBtn" type="button" role="switch" aria-checked="false" aria-label="Tema escuro" title="Tema escuro" data-modo="claro"><span class="ic sol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></span><span class="ic lua"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z"/></svg></span></button>
@@ -1523,9 +1533,9 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
         <p class="lede">Escolha o módulo. Cada um lê seus arquivos e devolve a planilha pronta para o seu controle de recuperação de crédito.</p>
       </div>
       <div class="counters" role="list">
-        <div class="count c1" role="listitem"><b>8</b><span>Módulos</span></div>
-        <div class="count c2" role="listitem"><b>5</b><span>anos de rubricas na análise</span></div>
-        <div class="count c3" role="listitem"><b>100</b><span>% no seu navegador</span></div>
+        <div class="count c1" role="listitem"><b>Ler</b><span><strong>XML, DARF e PER/DCOMP</strong> abrem seus arquivos e viram planilha, sem duplicados.</span></div>
+        <div class="count c2" role="listitem"><b>Mapear</b><span><strong>Rubricas</strong> agrupa as repetidas e sugere o ponto de cada uma.</span></div>
+        <div class="count c3" role="listitem"><b>Somar</b><span><strong>Saldo e Base</strong> totalizam o saldo da DCTFWeb e a base do S-5001.</span></div>
       </div>
     </section>
     <div class="home-cols">
@@ -1559,7 +1569,7 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
         <span class="grupo">Análise adicional</span>
         <span class="sigla">Base</span>
         <h2>Base de cálculo</h2>
-        <p>Soma das remunerações do S-5001 por competência e empresa, pela regra da base redutora.</p>
+        <p>Soma das remunerações do S-5001 por competência e empresa p/ conferência e/ou cálculo de RAT/FAP e Limitação de Outras Entidades.</p>
         <span class="abrir">Abrir módulo <span aria-hidden="true">›</span></span>
       </a>
       <a class="mod" href="#darf" data-go="darf" data-grupo="suporte">
@@ -1576,20 +1586,6 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
         <span class="sigla">PER/DCOMP</span>
         <h2>Pedidos e compensações</h2>
         <p>Período, tipo de crédito, número e valor total de cada PER/DCOMP do PDF.</p>
-        <span class="abrir">Abrir módulo <span aria-hidden="true">›</span></span>
-      </a>
-      <a class="mod" href="#esocial" data-go="esocial" data-grupo="retificacao">
-        <span class="grupo">Processo de retificação</span>
-        <span class="sigla">eSocial</span>
-        <h2>Base redutora eSocial</h2>
-        <p>Cruza S-5001, S-5011 e S-1200 em Parquet e calcula a base redutora do INSS por trabalhador.</p>
-        <span class="abrir">Abrir módulo <span aria-hidden="true">›</span></span>
-      </a>
-      <a class="mod" href="#dctfweb" data-go="dctfweb" data-grupo="retificacao">
-        <span class="grupo">Processo de retificação</span>
-        <span class="sigla">DCTFWeb</span>
-        <h2>Confronto DCTFWeb</h2>
-        <p>Confronta os PDFs da DCTFWeb com a planilha base, competência por competência.</p>
         <span class="abrir">Abrir módulo <span aria-hidden="true">›</span></span>
       </a>
     </div>
@@ -1867,77 +1863,6 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
     </section>
   </main>
 
-  <!-- Página: Base redutora eSocial -->
-  <main id="viewEso" hidden>
-    <div class="mod-head">
-      <h1>eSocial</h1>
-      <p class="lede">Base redutora do INSS a partir dos arquivos Parquet: bases do S-5001, alíquotas por lotação do S-5011 e grau de exposição do S-1200.</p>
-    </div>
-
-    <div class="stub compacto" id="esoStub">
-      <div class="slots tres">
-        <label class="drop" id="card5011Eso" tabindex="0" for="file5011Eso">
-          <span class="slot-tag">S-5011</span>
-          <p class="big">Alíquotas por lotação</p>
-          <p>Arquivo .parquet (ou .xlsx) com RAT, FAP, FPAS e terceiros.</p>
-          <span class="pick">Escolher S-5011</span>
-          <div class="slot-file" id="name5011Eso"></div>
-        </label>
-        <label class="drop" id="card1200Eso" tabindex="0" for="file1200Eso">
-          <span class="slot-tag">S-1200</span>
-          <p class="big">Grau de exposição</p>
-          <p>Arquivo .parquet (ou .xlsx) com o grau de exposição de cada CPF.</p>
-          <span class="pick">Escolher S-1200</span>
-          <div class="slot-file" id="name1200Eso"></div>
-        </label>
-        <label class="drop" id="card5001Eso" tabindex="0" for="file5001Eso">
-          <span class="slot-tag">S-5001</span>
-          <p class="big">Bases e recibos</p>
-          <p>Arquivo .parquet (ou .xlsx) com bases, recibos e lotação.</p>
-          <span class="pick">Escolher S-5001</span>
-          <div class="slot-file" id="name5001Eso"></div>
-        </label>
-      </div>
-      <div class="progress" id="esoprogress" hidden role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Progresso da leitura">
-        <div class="prog-top"><span class="prog-pct" id="esoprogPct">0%</span><span class="prog-txt" id="esoprogTxt">Preparando…</span></div>
-        <div class="prog-track"><div class="prog-fill" id="esoprogFill"></div><div class="prog-shine" id="esoprogShine"></div></div>
-      </div>
-      <input type="file" id="file5011Eso" accept=".parquet,.xlsx,.xls,.xlsm">
-      <input type="file" id="file1200Eso" accept=".parquet,.xlsx,.xls,.xlsm">
-      <input type="file" id="file5001Eso" accept=".parquet,.xlsx,.xls,.xlsm">
-    </div>
-
-    <div class="opcoes">
-      <label class="tbtn" for="checkCooperativaEso"><input type="checkbox" id="checkCooperativaEso"> É cooperativa <small id="labelCoopTextoEso">Patronal: 20,0%</small></label>
-      <button type="button" class="tbtn" id="btnDiretorioEso">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-        Vincular pasta
-      </button>
-      <span class="opc-txt" id="labelDiretorioEso">Sem pasta vinculada, o Excel final vai para os downloads.</span>
-    </div>
-
-    <details class="how">
-      <summary>Como a base redutora é calculada</summary>
-      <ol>
-        <li>S-5011: alíquotas por período, estabelecimento e lotação (RAT, FAP, GILRAT) e outras entidades pela tabela FPAS + código de terceiros (menos o suspenso). Patronal 20% (22,5% para cooperativa); com substituição 1, 5% em 2025, 10% em 2026, 15% em 2027 e 0% nos demais anos; com substituição 2, a patronal (ou a de transição de 2025 a 2027) reduzida pelo percentual de redução.</li>
-        <li>S-1200: vale o maior grau de exposição do CPF na competência (ou, sem ela, o maior do CPF; padrão 1). Agentes nocivos: grau 2 ou 6 = 12%, 3 ou 7 = 9%, 4 ou 8 = 6%.</li>
-        <li>S-5001: só tipo de valor 11 e categorias iniciadas em 1 (101, 103…). Linhas repetidas pelo achatamento do Parquet são descartadas e vale o recibo mais recente de cada CPF e competência. O recibo vem da coluna nrRecArqBase (Número Recibo Arquivo Base) e vale o de maior número; no S-1200 vale o mais recente de cada competência, CPF e lotação. Usa a base de referência quando existe; senão, a base normal.</li>
-        <li>Entram as competências dos últimos 5 anos até dois meses atrás. Base redutora = (remuneração − 200) × soma das alíquotas.</li>
-        <li>A planilha sai com as abas Base Consolidada e Totalizadores, com as fórmulas de rateio do crédito por competência.</li>
-      </ol>
-    </details>
-
-    <div class="rodar">
-      <span class="rodar-txt"><span class="badge" id="statusGeralEso">Aguardando</span><span>Envie os três arquivos para liberar o processamento.</span></span>
-      <button class="btn primary" type="button" id="btnProcessarEso" disabled>Gerar cruzamento consolidado (.xlsx)</button>
-    </div>
-
-    <div class="painel hub">
-      <div class="painel-h"><h3>Registro do processamento</h3></div>
-      <div class="hub-log" id="consoleLogEso">Carregue os arquivos para habilitar o motor de processamento.</div>
-    </div>
-  </main>
-
   <!-- Página: Leitura de XML do eSocial -->
   <main id="viewXml" hidden>
     <div class="mod-head">
@@ -2037,23 +1962,15 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
     </dialog>
   </main>
 
-  <!-- Página: Confronto DCTFWeb e saldo disponível -->
+  <!-- Página: Saldo disponível -->
   <main id="viewDctf" hidden>
     <div class="mod-head">
-      <h1 id="dctfTitulo">DCTFWeb</h1>
-      <p class="lede" id="dctfLede">Confronte os PDFs da DCTFWeb com a planilha base, competência por competência.</p>
-    </div>
-
-    <div class="modo" hidden>
-      <div class="seg" id="dctfModo" role="group" aria-label="Modo">
-        <span class="seg-lbl">Modo</span>
-        <button type="button" data-m="conf" aria-pressed="true">Confronto</button>
-        <button type="button" data-m="saldo" aria-pressed="false">Saldo disponível</button>
-      </div>
+      <h1 id="dctfTitulo">Saldo disponível</h1>
+      <p class="lede" id="dctfLede">Solte os PDFs da DCTFWeb: o saldo excedente e a retenção excedente saem por empresa e competência, sem arquivos duplicados.</p>
     </div>
 
     <div class="stub compacto" id="dctfStub">
-      <div class="slots" id="dctfSlots">
+      <div class="slots um" id="dctfSlots">
         <label class="drop" id="dropPdfsDctf" tabindex="0" for="folderInputDctf">
           <span class="slot-tag">PDFs</span>
           <p class="big">Relatórios DCTFWeb</p>
@@ -2061,45 +1978,29 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
           <span class="pick">Selecionar pasta de PDFs</span>
           <div class="slot-file" id="statusPdfsDctf"></div>
         </label>
-        <label class="drop" id="containerPlanilhaDctf" tabindex="0" for="filePlanilhaDctf">
-          <span class="slot-tag">Planilha base</span>
-          <p class="big">Créditos por competência</p>
-          <p>Planilha .xlsx com as colunas “Competência” e “Crédito na competência”.</p>
-          <span class="pick">Carregar base</span>
-          <div class="slot-file" id="statusPlanilhaDctf"></div>
-        </label>
       </div>
       <div class="progress" id="dctfprogress" hidden role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Progresso da leitura">
         <div class="prog-top"><span class="prog-pct" id="dctfprogPct">0%</span><span class="prog-txt" id="dctfprogTxt">Preparando…</span></div>
         <div class="prog-track"><div class="prog-fill" id="dctfprogFill"></div><div class="prog-shine" id="dctfprogShine"></div></div>
       </div>
       <input type="file" id="folderInputDctf" webkitdirectory directory multiple accept="application/pdf">
-      <input type="file" id="filePlanilhaDctf" accept=".xlsx,.xls,.csv">
     </div>
 
     <details class="how">
-      <summary>Como o confronto funciona</summary>
+      <summary>Como o saldo é calculado</summary>
       <ol>
-        <li>De cada PDF saem o nome do contribuinte, o CNPJ e o período de apuração. O saldo do DARF é o terceiro valor depois de “Pagamento (DARF pago)” e a retenção é o terceiro valor depois de “Retenção”. PDFs da mesma competência são somados.</li>
-        <li>Da planilha base (aba “Totalizadores” ou a primeira) saem as colunas “Competência” e “Crédito na competência”, somadas por competência.</li>
-        <li>Diferença = crédito da planilha − (DARF + retenção). Acima de R$ 1,00 é Divergência; até R$ 1,00 é Retificações. Competências de um lado só aparecem como “Somente na planilha base” ou “Somente na DCTFWeb”.</li>
-        <li>No modo saldo disponível, DARF e retenção de todos os PDFs são somados e PDFs duplicados (mesmo arquivo, ou mesmo CNPJ, competência e valores) são ignorados, e a planilha sai com as colunas Empresa, CNPJ, Competência, Saldo Excedente e Retenção Excedente.</li>
+        <li>De cada PDF saem o nome do contribuinte, o CNPJ e o período de apuração. O saldo do DARF é o terceiro valor depois de “Pagamento (DARF pago)” e a retenção é o terceiro valor depois de “Retenção”.</li>
+        <li>DARF e retenção de todos os PDFs são somados por empresa e competência; PDFs duplicados (mesmo arquivo, ou mesmo CNPJ, competência e valores) são ignorados.</li>
+        <li>A planilha sai com as colunas Empresa, CNPJ, Competência, Saldo Excedente e Retenção Excedente.</li>
       </ol>
     </details>
 
-    <div class="kpis" id="telemetriaDctfGeral">
-      <div class="kpi"><small>PDFs lidos (competências)</small><b id="indicadorPDFs">0</b></div>
-      <div class="kpi"><small>Linhas da base</small><b id="indicadorBase">0</b></div>
-      <div class="kpi"><small>Divergências</small><b id="indicadorDivergencias">0</b></div>
-      <div class="kpi"><small>Retificações</small><b id="indicadorOk">0</b></div>
-    </div>
-
-    <div class="kpis dois" id="painelMagicoSaldos" hidden>
+    <div class="kpis dois" id="painelMagicoSaldos">
       <div class="kpi"><small>Total saldo disponível</small><b id="saldoMagicoDarf">R$ 0,00</b></div>
       <div class="kpi"><small>Total retenção disponível</small><b id="saldoMagicoRetencao">R$ 0,00</b></div>
     </div>
 
-    <section id="tabelaSaldoGeral" hidden>
+    <section id="tabelaSaldoGeral">
       <div class="sec-head">
         <h2 class="sec">Saldo disponível por competência</h2>
         <span class="hint" id="resumoTabelaSaldo">Aguardando processamento</span>
@@ -2112,22 +2013,9 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
       </div>
     </section>
 
-    <section id="tabelaConfrontoGeral">
-      <div class="sec-head">
-        <h2 class="sec">Resultado do confronto</h2>
-        <span class="hint" id="resumoTabelaDctf">Aguardando processamento</span>
-      </div>
-      <div class="tablebox">
-        <table id="tabelaConfrontoDctf">
-          <thead><tr><th>Competência</th><th class="num">Crédito planilha</th><th class="num">DARF DCTF</th><th class="num">Retenção DCTF</th><th class="num">Total DCTF</th><th class="num">Diferença</th><th>Diagnóstico</th></tr></thead>
-          <tbody id="tabelaCorpoDctf"><tr><td colspan="7" class="empty">Carregue os arquivos para gerar a conciliação automática.</td></tr></tbody>
-        </table>
-      </div>
-    </section>
-
     <div class="rodar">
       <span class="rodar-txt"><span class="badge" id="statusGeralDctf">Ocioso</span></span>
-      <button class="btn primary" type="button" id="btnExportarDctf" disabled>Exportar confronto DCTFWeb</button>
+      <button class="btn primary" type="button" id="btnExportarDctf" disabled>Exportar saldo disponível</button>
     </div>
 
     <div class="painel hub">
@@ -2862,7 +2750,7 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
 
   const $ = id => document.getElementById(id);
   const viewHome = $("viewHome"), viewMod = $("viewMod"), viewRub = $("viewRub");
-  const VISTAS_HUB = { esocial: { el: $("viewEso"), titulo: "eSocial" }, dctfweb: { el: $("viewDctf"), titulo: "DCTFWeb" }, saldo: { el: $("viewDctf"), titulo: "Saldo disponível" }, xml: { el: $("viewXml"), titulo: "XML eSocial" } };
+  const VISTAS_HUB = { saldo: { el: $("viewDctf"), titulo: "Saldo disponível" }, xml: { el: $("viewXml"), titulo: "XML eSocial" } };
   const drop = $("drop"), input = $("fileInput"), lista = $("fileList"), thead = $("thead"), tbody = $("tbody"), busca = $("search"), stub = $("stub");
 
   const reduzMov = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -2972,7 +2860,7 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
       viewRub.hidden = v !== "rubricas";
       new Set(Object.values(VISTAS_HUB).map(x => x.el)).forEach(el => { el.hidden = !(VISTAS_HUB[v] && VISTAS_HUB[v].el === el); });
       $("viewDiag").hidden = true;
-      if (v === "dctfweb" || v === "saldo") ajustarModoDctf(v === "saldo");
+      if (v === "saldo") ajustarModoDctf();
       document.querySelectorAll("#navTabs [role=tab]").forEach(t => t.setAttribute("aria-selected", String(t.dataset.go === v)));
       if (v === "home") requestAnimationFrame(() => animarLogo($("heroLogo").querySelector(".lg")));
       requestAnimationFrame(() => { ajustarValores(); animarTitulos(); });
@@ -4766,240 +4654,16 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
   }
   const importarModuloComFallback = async urls => { let err = null; for (const u of urls){ try { return await import(/*@vite-ignore*/ u); } catch(e){ err = e; } } throw err; };
 
-  /* ---------- eSocial: base redutora (Parquet engine) ---------- */
-  let rawFile5011Eso = null, rawFile1200Eso = null, rawFile5001Eso = null, dirHandleEso = null;
-  const esoStub = $("esoStub"), progEso = criarProgresso("eso", esoStub);
-  let progEsoK = 0;
-  const procTabEso = (file, fnSel, fnProc) => procTab(file, fnSel, fnProc,
-    (frac, feito, tt) => progEso.parte(progEsoK, frac, file.name, `${feito.toLocaleString("pt-BR")} de ${tt.toLocaleString("pt-BR")} linhas`));
-
-  const FPAS_OE_DEFAULT = { "507_0":0.0,"507_1":2.5,"507_2":0.2,"507_3":2.7,"507_4":1.0,"507_5":3.5,"507_6":1.2,"507_7":3.7,"507_8":1.5,"507_9":4.0,"507_10":1.7,"507_11":4.2,"507_12":2.5,"507_13":5.0,"507_14":2.7,"507_15":5.2,"507_64":0.6,"507_65":3.1,"507_66":0.8,"507_67":3.3,"507_68":1.6,"507_69":4.1,"507_70":1.8,"507_71":4.3,"507_72":2.1,"507_73":4.6,"507_74":2.3,"507_75":4.8,"507_76":3.1,"507_77":5.6,"507_78":3.3,"507_79":5.8,"515_0":0.0,"515_1":2.5,"515_2":0.2,"515_3":2.7,"515_16":1.0,"515_17":3.5,"515_18":1.2,"515_19":3.7,"515_32":1.5,"515_33":4.0,"515_34":1.7,"515_35":4.2,"515_48":2.5,"515_49":5.0,"515_50":2.7,"515_51":5.2,"515_64":0.6,"515_65":3.1,"515_66":0.8,"515_67":3.3,"515_80":1.6,"515_81":4.1,"515_82":1.8,"515_83":4.3,"515_96":2.1,"515_97":4.6,"515_98":2.3,"515_99":4.8,"515_112":3.1,"515_113":5.6,"515_114":3.3,"515_115":5.8,"523_0":0.0,"523_1":2.5,"523_2":0.2,"523_3":2.7,"531_0":0.0,"531_1":2.5,"531_2":2.7,"531_3":5.2,"540_0":0.0,"540_1":2.5,"540_2":0.2,"540_3":2.7,"540_128":2.5,"540_129":5.0,"540_130":2.7,"540_131":5.2,"558_0":0.0,"558_1":2.5,"558_2":0.2,"558_3":2.7,"558_256":2.5,"558_257":5.0,"558_258":2.7,"558_259":5.2,"566_0":0.0,"566_1":2.5,"566_2":0.2,"566_3":2.7,"566_32":1.5,"566_33":4.0,"566_34":1.7,"566_35":4.2,"566_64":0.3,"566_65":2.8,"566_66":0.5,"566_67":3.0,"566_96":1.8,"566_97":4.3,"566_98":2.0,"566_99":4.5,"574_0":0.0,"574_1":2.5,"574_2":0.2,"574_3":2.7,"574_32":1.5,"574_33":4.0,"574_34":1.7,"574_35":4.2,"574_64":0.3,"574_65":2.8,"574_66":0.5,"574_67":3.0,"574_96":1.8,"574_97":4.3,"574_98":2.0,"574_99":4.5,"582_0":0.0,"590_0":0.0,"590_1":2.5,"604_0":0.0,"604_1":2.5,"604_2":0.2,"604_3":2.7,"612_0":0.0,"612_1":2.5,"612_2":0.2,"612_3":2.7,"612_64":0.6,"612_65":3.1,"612_66":0.8,"612_67":3.3,"612_1024":1.5,"612_1025":4.0,"612_1026":1.7,"612_1027":4.2,"612_1088":2.1,"612_1089":4.6,"612_1090":2.3,"612_1091":4.8,"612_2048":1.0,"612_2049":3.5,"612_2050":1.2,"612_2051":3.7,"612_2112":1.6,"612_2113":4.1,"612_2114":1.8,"612_2115":4.3,"612_3072":2.5,"612_3073":5.0,"612_3074":2.7,"612_3075":5.2,"612_3136":3.1,"612_3137":5.6,"612_3138":3.3,"612_3139":5.8,"620_0":0.0,"620_1024":1.5,"620_2048":1.0,"620_3072":2.5,"639_0":0.0,"647_0":0.0,"647_1":2.5,"647_2":0.2,"647_3":2.7,"647_32":1.5,"647_33":4.0,"647_34":1.7,"647_35":4.2,"647_64":0.3,"647_65":2.8,"647_66":0.5,"647_67":3.0,"647_96":1.8,"647_97":4.3,"647_98":2.0,"647_99":4.5,"655_0":0.0,"655_1":2.5,"680_0":0.0,"680_1":2.5,"680_2":0.2,"680_3":2.7,"680_128":2.5,"680_129":5.0,"680_130":2.7,"680_131":5.2,"736_0":0.0,"736_1":2.5,"736_2":0.2,"736_3":2.7,"779_0":0.0,"787_0":0.0,"787_1":2.5,"787_2":0.2,"787_3":2.7,"787_512":2.5,"787_513":5.0,"787_514":2.7,"787_515":5.2,"825_0":0.0,"825_1":2.5,"825_2":2.7,"825_3":5.2,"833_0":0.0,"833_1":2.5,"833_2":0.2,"833_3":2.7,"833_4":1.0,"833_5":3.5,"833_6":1.2,"833_7":3.7,"833_8":1.5,"833_9":4.0,"833_10":1.7,"833_11":4.2,"833_12":2.5,"833_13":5.0,"833_14":2.7,"833_15":5.2,"833_64":0.6,"833_65":3.1,"833_66":0.8,"833_67":3.3,"833_68":1.6,"833_69":4.1,"833_70":1.8,"833_71":4.3,"833_72":2.1,"833_73":4.6,"833_74":2.3,"833_75":4.8,"833_76":3.1,"833_77":5.6,"833_78":3.3,"833_79":5.8,"876_0":0.0};
-
-  async function selecionarDiretorioRaizEso(){
-    try {
-      if (!window.showDirectoryPicker){ toast("Este navegador não permite vincular pastas."); return; }
-      dirHandleEso = await window.showDirectoryPicker({ mode: "readwrite" });
-      $("labelDiretorioEso").innerText = `Destino: ${dirHandleEso.name}`;
-      logTerminal(`Pasta vinculada: ${dirHandleEso.name}`, "log-sucesso", "consoleLogEso");
-    } catch(e){}
-  }
-
-  function atualizarStatusCooperativaEso(){
-    const isc = $("checkCooperativaEso").checked;
-    $("labelCoopTextoEso").innerText = isc ? "Patronal: 22,5%" : "Patronal: 20,0%";
-    logTerminal(isc ? "Empresa COOPERATIVA (22,5%)" : "Empresa regular (20%)", "log-info", "consoleLogEso");
-  }
-
-  function chkProntoEso(){
-    $("btnProcessarEso").disabled = !(rawFile5011Eso && rawFile1200Eso && rawFile5001Eso);
-    if (rawFile5011Eso && rawFile1200Eso && rawFile5001Eso){ $("statusGeralEso").innerText = "Pronto"; $("statusGeralEso").className = "badge ok"; }
-  }
-
-  ["5011","1200","5001"].forEach(id => {
-    ligarSlotHub($(`card${id}Eso`), $(`file${id}Eso`), esoStub, files => {
-      const f = files[0];
-      if (id === "5011") rawFile5011Eso = f;
-      if (id === "1200") rawFile1200Eso = f;
-      if (id === "5001") rawFile5001Eso = f;
-      $(`name${id}Eso`).innerText = f.name;
-      $(`card${id}Eso`).classList.add("feito");
-      logTerminal(`[S-${id}] ${f.name} carregado.`, "log-info", "consoleLogEso");
-      chkProntoEso();
-    });
-  });
-  $("btnDiretorioEso").addEventListener("click", selecionarDiretorioRaizEso);
-  $("checkCooperativaEso").addEventListener("change", atualizarStatusCooperativaEso);
-  $("btnProcessarEso").addEventListener("click", executarProcessamentoEso);
-
-  async function executarProcessamentoEso(){
-    $("btnProcessarEso").disabled = true;
-    $("statusGeralEso").innerText = "Processando"; $("statusGeralEso").className = "badge run";
-    logTerminal("Iniciando Parquet Engine...", "log-destaque", "consoleLogEso");
-    const isCoop = $("checkCooperativaEso").checked; const aliqBase = isCoop ? 22.5 : 20.0;
-    progEso.iniciar(3);
-
-    try {
-      logTerminal("Lendo S-5011...", "log-info", "consoleLogEso");
-      progEsoK = 0; progEso.arquivo(0, rawFile5011Eso.name);
-      let cP, cL, cI, cF, cT, cS, cR, cFa, cG, cSb, cRd; const map5011 = new Map();
-      await procTabEso(rawFile5011Eso, cols => {
-        cP=locColEstEso(cols,['Período Apuração','Competência'])||locColEso(cols,['PERIODO','COMPETENCIA']);
-        cL=locColEstEso(cols,['Código Lotação Tributária'])||locColEso(cols,['CODIGO LOTACAO','LOTACAO'],['INSCRICAO','TIPO']);
-        cI=locColEstEso(cols,['Número Inscrição Estabelecimento'])||locColEso(cols,['INSCRICAO ESTABELECIMENTO']);
-        cF=locColEstEso(cols,['FPAS'])||locColEso(cols,['FPAS']); cT=locColEstEso(cols,['Código Terceiro'])||locColEso(cols,['CODIGO TERCEIRO'],['SUSPENSO']);
-        cS=locColEstEso(cols,['Código Terceiros Suspenso'])||locColEso(cols,['TERCEIROS SUSPENSO']); cR=locColEstEso(cols,['Alíquota RAT Estabelecimento'])||locColEso(cols,['ALIQUOTA RAT','RAT'],['AJUSTADO']);
-        cFa=locColEstEso(cols,['FAP Estabelecimento'])||locColEso(cols,['FAP']); cG=locColEstEso(cols,['RAT Ajustado Estabelecimento'])||locColEso(cols,['RAT AJUSTADO','GILRAT']);
-        cSb=locColEso(cols,['SUBSTITUICAO CONTRIBUICAO PREVIDENCIARIA PATRONAL','IND SUBST PATRONAL']); cRd=locColEso(cols,['PERCENTUAL REDUCAO CONTRIBUICAO']);
-        return [cP,cL,cI,cF,cT,cS,cR,cFa,cG,cSb,cRd].filter(Boolean);
-      }, rws => {
-        for (let r of rws){
-          const per=formPerEso(r[cP]), lot=String(r[cL]??'').trim().replace(/\.0$/,''), ins=limpInsEso(r[cI]); if(!per||!lot||!ins) continue;
-          const k = `${per}_${ins}_${lot}`; const f=(parseInt(r[cF])||0), t=(parseInt(r[cT])||0), s=(parseInt(r[cS])||0), rt=convNumEso(r[cR]), fa=convNumEso(r[cFa]), g=convNumEso(r[cG]), sb=(parseInt(String(r[cSb]??'').replace(/\D/g,''))||0), rd=Math.max(0,Math.min(1, convNumEso(r[cRd])>1?convNumEso(r[cRd])/100:convNumEso(r[cRd])));
-          if(!map5011.has(k)) map5011.set(k,{f,t,s,rt,fa,g,sb,rd});
-          else { const i=map5011.get(k); if(f)i.f=f; if(t)i.t=Math.max(i.t,t); if(s)i.s=Math.max(i.s,s); if(rt)i.rt=rt; if(fa)i.fa=fa; if(g)i.g=g; if(sb)i.sb=sb; if(rd)i.rd=rd; }
-        }
-      });
-      const mapAl = new Map();
-      map5011.forEach((v,k)=>{
-        let bS = 0; const an = parseInt(k.split('/')[1]||'0'); if(an===2025)bS=5; else if(an===2026)bS=10; else if(an===2027)bS=15;
-        let pC = aliqBase; if(v.sb===1) pC=bS; else if(v.sb===2) pC=((an>=2025&&an<=2027)?bS:aliqBase)*Math.max(0,1-v.rd);
-        const tf = Math.max(0,v.t-v.s); mapAl.set(k,{r:v.rt, fa:v.fa, g:v.g, oe:FPAS_OE_DEFAULT[`${v.f}_${tf}`]||0, p:pC});
-      });
-
-      logTerminal("Lendo S-1200...", "log-info", "consoleLogEso");
-      progEsoK = 1; progEso.arquivo(1, rawFile1200Eso.name);
-      let cc1, cc2, cc3, cc4, cc5, cc6; const map1200C = new Map(), map1200G = new Map(), map1200R = new Map();
-      await procTabEso(rawFile1200Eso, cols => {
-        cc1=locColEso(cols,['CPF']); cc2=locColEso(cols,['COMPETENCIA','PERIODO']); cc3=locColEso(cols,['GRAU EXPOSICAO','AGENTES NOCIVOS']); cc4=locColEstEso(cols,['Código Categoria','Categoria Trabalhador','Categoria'])||locColEso(cols,['CATEGORIA']);
-        cc5=locRecEso(cols); cc6=locColEstEso(cols,['Código Lotação','Codigo Lotacao','Lotação','Lotacao'])||locColEso(cols,['CODIGO LOTACAO'],['TRIBUTARIA','TIPO','INSCRICAO']); return [cc1,cc2,cc3,cc4,cc5,cc6].filter(Boolean);
-      }, rws => {
-        for (let r of rws){
-          const c=limpCPFEso(r[cc1]); if(!c)continue; if(cc4&&!catEmpregadoEso(r[cc4]))continue; const p=formPerEso(r[cc2]); const ge=parseInt(String(r[cc3]).trim())||0;
-          // Em cada competência + CPF + lotação vale só o recibo mais recente; recibo mais antigo (retificado) é desprezado
-          const rc=cc5?String(r[cc5]??'').trim():'', lt=cc6?String(r[cc6]??'').trim().replace(/\.0$/,''):'', k=`${c}_${p||''}_${lt}`, ex=map1200R.get(k);
-          if(!ex||cmpRecEso(rc,ex.rc)>0) map1200R.set(k,{c,p,rc,ge}); else if(cmpRecEso(rc,ex.rc)===0&&ge>ex.ge) ex.ge=ge;
-        }
-      });
-      map1200R.forEach(v=>{ if(v.p){ const k=`${v.c}_${v.p}`; if(v.ge>(map1200C.get(k)||0)) map1200C.set(k,v.ge); } if(v.ge>(map1200G.get(v.c)||0)) map1200G.set(v.c,v.ge); });
-      map1200R.clear();
-
-      logTerminal("Lendo S-5001...", "log-info", "consoleLogEso");
-      progEsoK = 2; progEso.arquivo(2, rawFile5001Eso.name);
-      let cm1, cm2, cm3, cm4, cm5, cm6, cm7, cm8, cm9, cm10, cm11; const mapMat = new Map(), rcRef = new Set(), mapRc = new Map(); let fl5001 = []; let gIdx=0;
-      const vistos5001 = new Set(); let dup5001 = 0;
-      await procTabEso(rawFile5001Eso, cols => {
-        cm1=locColEso(cols,['COMPETENCIA','PERIODO']); cm2=locRecEso(cols); cm3=locColEso(cols,['CPF']); cm4=locColEstEso(cols,['Matrícula'])||locColEso(cols,['MATRICULA'],['ANTERIOR']);
-        cm5=locColEstEso(cols,['Código Lotação Tributária'])||locColEso(cols,['CODIGO LOTACAO','LOTACAO TRIBUTARIA'],['TIPO','INSCRICAO']);
-        cm6=locColEstEso(cols,['Número Inscrição Lotação'])||locColEso(cols,['NUMERO INSCRICAO LOTACAO','INSCRICAO LOTACAO']);
-        cm7=cols.find(c=>{const u=txtNormEso(c).toUpperCase(); return u.includes("VLR BASE CALCULO")&&u.includes("REFERENCIA");});
-        cm8=cols.find(c=>{const u=txtNormEso(c).toUpperCase(); return u.includes("VLR BASE CALCULO")&&!u.includes("REFERENCIA")&&!u.includes("RECIBO");});
-        cm9=locColEso(cols,['TIPO VLR APURACAO CONTRIBUICAO','TPVALOR']); cm10=locColEso(cols,['CATEGORIA']); cm11=locColEso(cols,['IND13','IND 13','DECIMO TERCEIRO']);
-        return [cm1,cm2,cm3,cm4,cm5,cm6,cm7,cm8,cm9,cm10,cm11].filter(Boolean);
-      }, rws => {
-        for (let r of rws){
-          const c=limpCPFEso(r[cm3]); if(!c) continue; if(cm4){const mt=String(r[cm4]||'').trim().replace(/\.0$/,''); if(mt&&!['nan','null'].includes(mt.toLowerCase())) mapMat.set(c,mt);}
-          if(cm9&&!String(r[cm9]??'').trim().startsWith('11')) continue; const p=formPerEso(r[cm1]); if(!p)continue;
-          const rc=cm2?String(r[cm2]??'').trim():'', kR=`${rc}_${c}_${p}`, vR=cm7?convNumEso(r[cm7]):0; if(vR>0) rcRef.add(kR);
-          if(cm10&&!catEmpregadoEso(r[cm10])) continue;
-          const lt=String(r[cm5]??'').trim().replace(/\.0$/,''), iL=limpInsEso(r[cm6]), vN=cm8?convNumEso(r[cm8]):0;
-          // Deduplicação: mesma base repetida pelo achatamento do Parquet
-          const chDup = [
-            rc, c, p, iL, lt,
-            cm4 ? String(r[cm4]??'').trim().replace(/\.0$/,'') : '',
-            cm10 ? String(r[cm10]??'').trim() : '',
-            cm11 ? String(r[cm11]??'').trim() : '',
-            cm9 ? String(r[cm9]??'').trim() : '',
-            vR.toFixed(2), vN.toFixed(2)
-          ].join('|');
-          if (vistos5001.has(chDup)) { dup5001++; continue; }
-          vistos5001.add(chDup);
-          const kT=`${c}_${p}`, rcS=mapRc.get(kT); if(!rcS||cmpRecEso(rc,rcS.r)>=0) mapRc.set(kT,{id:gIdx, r:rc});
-          fl5001.push({id:gIdx++, p, c, iL, lt, vR, vN, rc});
-        }
-      });
-
-      logTerminal(`S-5001: ${dup5001} linha(s) duplicada(s) descartada(s).`, dup5001 ? "log-destaque" : "log-info", "consoleLogEso");
-      if (!cm2) logTerminal("Atenção: coluna de Recibo não encontrada. Retificações serão SOMADAS às originais.", "log-erro", "consoleLogEso");
-      vistos5001.clear();
-
-      const mapGrp = new Map();
-      for (let r of fl5001){
-        if(cm2 && r.rc !== mapRc.get(`${r.c}_${r.p}`).r) continue;
-        const b = rcRef.has(`${r.rc}_${r.c}_${r.p}`) ? r.vR : r.vN;
-        const k = `${r.p}_${r.iL}_${r.lt}_${r.c}`;
-        if(!mapGrp.has(k)) mapGrp.set(k,{p:r.p, iL:r.iL, c:r.c, lt:r.lt, rm:0});
-        mapGrp.get(k).rm += b;
-      }
-      fl5001 = null;
-
-      const baseF = []; const hj = new Date(), dtP = new Date(hj.getFullYear()-5, hj.getMonth(), 1), dtL = new Date(hj.getFullYear(), hj.getMonth()-2, 1);
-      mapGrp.forEach(i => {
-        let inc = false; if(i.p.startsWith('13/')) { const d=new Date(parseInt(i.p.split('/')[1]),11,1); inc=(d>=dtP&&d<=dtL); }
-        else { const pt=i.p.split('/'); const d=new Date(parseInt(pt[1]), parseInt(pt[0])-1,1); inc=(d>=dtP&&d<=dtL); }
-        if(!inc) return;
-        const aI = mapAl.get(`${i.p}_${i.iL}_${i.lt}`) || {r:0, fa:0, g:0, oe:0, p:aliqBase};
-        const ge = map1200C.has(`${i.c}_${i.p}`) ? map1200C.get(`${i.c}_${i.p}`) : (map1200G.get(i.c)||1);
-        const aan = (ge===2||ge===6)?12: (ge===3||ge===7)?9: (ge===4||ge===8)?6: 0;
-        const sa = aI.p + aI.g + aI.oe + aan;
-        const rmRd = Math.max(0, i.rm-200)*(sa/100), bR = sa>0 ? (rmRd/(sa/100)) : 0;
-        baseF.push({ p:i.p, iL:i.iL, c:i.c, mt:mapMat.get(i.c)||'', lt:i.lt, rm:i.rm, pa:aI.p, r:aI.r, fa:aI.fa, g:aI.g, oe:aI.oe, ge:ge, aan:aan, sa:sa, rmd:rmRd, br:bR });
-      });
-      baseF.sort((a,b)=>{const pk=p=>p.startsWith('13/')?parseInt(p.split('/')[1])*100+13:parseInt(p.split('/')[1])*100+parseInt(p.split('/')[0]); return (pk(a.p)-pk(b.p)) || (b.rm-a.rm);});
-
-      logTerminal(`Bases consolidadas: ${baseF.length} registros. Exportando...`, "log-info", "consoleLogEso");
-
-      const wbO = XLSX.utils.book_new();
-      const wsB = [ ['Período','Número Inscrição Lotação','CPF Trabalhador','Matrícula','Lotação','Remuneração','Patronal','RAT','FAP','GILRAT','OE','Grau Exp.','Alíquota de Agentes Nocivos','Soma de alíquotas','Remuneração (-200) * Soma de %','*','Rateio Crédito Alocado','Base Redutora Final'] ];
-      baseF.forEach((r, idx) => {
-        const rn = idx+2, ra = rn-1;
-        wsB.push([ r.p, r.iL, r.c, r.mt, r.lt, r.rm, r.pa, r.r, r.fa, r.g, r.oe, r.ge, r.aan, r.sa, r.rmd, r.br, {f:`MAX(0, MIN(O${rn}, SUMIFS(Totalizadores!$C:$C, Totalizadores!$B:$B, A${rn}) - SUMIF($A$1:A${ra}, A${rn}, $O$1:O${ra})))`}, {f:`IF(Q${rn}<O${rn}, IF(N${rn}>0, Q${rn}/(N${rn}/100), 0), P${rn})`} ]);
-      });
-      const ws = XLSX.utils.aoa_to_sheet(wsB);
-      for(let i=2; i<=baseF.length+1; i++) { ws[`B${i}`]&&(ws[`B${i}`].z='@'); ws[`C${i}`]&&(ws[`C${i}`].z='@'); ws[`D${i}`]&&(ws[`D${i}`].z='@'); ws[`E${i}`]&&(ws[`E${i}`].z='@'); ws[`F${i}`]&&(ws[`F${i}`].z='"R$ "#,##0.00'); ws[`G${i}`]&&(ws[`G${i}`].z='#,##0.00'); ws[`H${i}`]&&(ws[`H${i}`].z='#,##0.00'); ws[`I${i}`]&&(ws[`I${i}`].z='#,##0.0000'); ws[`J${i}`]&&(ws[`J${i}`].z='#,##0.0000'); ws[`K${i}`]&&(ws[`K${i}`].z='#,##0.00'); ws[`L${i}`]&&(ws[`L${i}`].z='0'); ws[`M${i}`]&&(ws[`M${i}`].z='#,##0.00'); ws[`N${i}`]&&(ws[`N${i}`].z='#,##0.00'); ws[`O${i}`]&&(ws[`O${i}`].z='"R$ "#,##0.00'); ws[`P${i}`]&&(ws[`P${i}`].z='"R$ "#,##0.00'); ws[`Q${i}`]&&(ws[`Q${i}`].z='"R$ "#,##0.00'); ws[`R${i}`]&&(ws[`R${i}`].z='"R$ "#,##0.00'); }
-
-      const wsT = [['*Abrir eSocial','Competência','Crédito na Competência']];
-      const maxT = Math.max([...new Set(baseF.map(r=>r.p))].length, 60);
-      for(let i=0; i<maxT; i++) wsT.push([{f:`IF(B${i+2}="","",IF(LEFT(B${i+2},2)<>"13",TEXT(B${i+2}+31,"mm/aaaa"),"12/"&RIGHT(B${i+2},4)))`},'','']);
-      const wsTot = XLSX.utils.aoa_to_sheet(wsT);
-      for(let i=2; i<=maxT+1; i++) { wsTot[`A${i}`]&&(wsTot[`A${i}`].z='mm/aaaa'); wsTot[`B${i}`]&&(wsTot[`B${i}`].z='@'); wsTot[`C${i}`]&&(wsTot[`C${i}`].z='"R$ "#,##0.00'); }
-
-      XLSX.utils.book_append_sheet(wbO, ws, 'Base Consolidada'); XLSX.utils.book_append_sheet(wbO, wsTot, 'Totalizadores');
-      const nomeEmp = (rawFile5011Eso.name.split(" -")[0].replace(/\.parquet$/i,'').replace(/\.xlsx$/i,'').replace(/[\\/:*?"<>|]/g,'').trim()) || "Empresa_Consolidada";
-      const nmS = `${nomeEmp} - Base Consolidada.xlsx`;
-
-      if (dirHandleEso) {
-        logTerminal("Salvando na pasta vinculada...", "log-info", "consoleLogEso");
-        const wp = await (await dirHandleEso.getDirectoryHandle(nomeEmp, {create:true})).getFileHandle(nmS, {create:true}).then(f=>f.createWritable());
-        await wp.write(XLSX.write(wbO, {bookType:'xlsx', type:'array'})); await wp.close();
-        logTerminal(`Salvo: ${dirHandleEso.name}/${nomeEmp}/${nmS}`, "log-sucesso", "consoleLogEso");
-      } else { XLSX.writeFile(wbO, nmS); logTerminal(`Download: ${nmS}`, "log-sucesso", "consoleLogEso"); }
-      progEso.fim(3);
-      $("statusGeralEso").innerText = "Concluído"; $("statusGeralEso").className = "badge ok";
-      toast(`Planilha gerada: ${nmS}`);
-
-    } catch(e){
-      logTerminal(`Erro: ${e.message}`, "log-erro", "consoleLogEso");
-      pararProgresso("eso", esoStub);
-      $("statusGeralEso").innerText = "Erro"; $("statusGeralEso").className = "badge err";
-    }
-    $("btnProcessarEso").disabled = false;
-  }
-
-  /* ---------- DCTFWeb: confronto e saldo disponível ---------- */
-  let dctfMap = new Map(); let planMapDctf = new Map(); let confrontosDctf = [];
-  let modoSaldoDisponivel = false;
+  /* ---------- Saldo disponível (leitura dos PDFs da DCTFWeb) ---------- */
+  let dctfMap = new Map();
   let dctfRegs = new Map(); let dctfVistos = new Set();
   const dctfStub = $("dctfStub"), progDctf = criarProgresso("dctf", dctfStub);
   function statusDctf(txt, cls){ const el = $("statusGeralDctf"); el.innerText = txt; el.className = "badge" + (cls ? " " + cls : ""); }
 
-  // DCTFWeb e Saldo disponível são dois módulos no menu, mas usam a mesma leitura dos PDFs
-  function ajustarModoDctf(saldo){
-    $("dctfTitulo").textContent = saldo ? "Saldo disponível" : "DCTFWeb";
-    $("dctfLede").textContent = saldo ? "Solte os PDFs da DCTFWeb: o saldo excedente e a retenção excedente saem por empresa e competência, sem arquivos duplicados." : "Confronte os PDFs da DCTFWeb com a planilha base, competência por competência.";
-    if (saldo !== modoSaldoDisponivel){ modoSaldoDisponivel = saldo; toggleModoSaldos(); }
+  function ajustarModoDctf(){
+    $("btnExportarDctf").disabled = (dctfMap.size === 0);
+    atualizarSaldosMagicos(true);
   }
-  function toggleModoSaldos(){
-    document.querySelectorAll("#dctfModo button").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.m === "saldo") === modoSaldoDisponivel)));
-    $("containerPlanilhaDctf").hidden = modoSaldoDisponivel;
-    $("dctfSlots").classList.toggle("um", modoSaldoDisponivel);
-    $("telemetriaDctfGeral").hidden = modoSaldoDisponivel;
-    $("tabelaConfrontoGeral").hidden = modoSaldoDisponivel;
-    $("tabelaSaldoGeral").hidden = !modoSaldoDisponivel;
-    $("painelMagicoSaldos").hidden = !modoSaldoDisponivel;
-    if (modoSaldoDisponivel) {
-      $("btnExportarDctf").innerText = "Exportar saldo disponível";
-      $("btnExportarDctf").disabled = (dctfMap.size === 0);
-      atualizarSaldosMagicos(true);
-    } else {
-      $("btnExportarDctf").innerText = "Exportar confronto DCTFWeb";
-      executarConfrontoDctf();
-    }
-  }
-  document.querySelectorAll("#dctfModo button").forEach(b => b.addEventListener("click", () => {
-    const novo = b.dataset.m === "saldo";
-    if (novo === modoSaldoDisponivel) return;
-    modoSaldoDisponivel = novo; toggleModoSaldos();
-  }));
 
   function utilLimparNumDctf(val) {
     if (typeof val === 'number') return val; if (!val) return 0;
@@ -5021,7 +4685,7 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
     return limpo;
   }
 
-  function atualizarSaldosMagicos(triggerRain = false) {
+  function atualizarSaldosMagicos() {
     let tD = 0, tR = 0;
     dctfMap.forEach(v => { tD += v.darf; tR += v.retencao; });
     $('saldoMagicoDarf').innerText = "R$ " + utilFormataMoeda(tD);
@@ -5095,85 +4759,14 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
     }
     progDctf.fim(arquivos.length);
     $('dropPdfsDctf').classList.add('feito');
-    $('indicadorPDFs').innerText = dctfMap.size;
     if (duplicados) logTerminal(`${duplicados} PDF(s) duplicado(s) removido(s).`, 'log-sucesso', 'consoleLogDctf');
     logTerminal(`PDFs lidos. ${dctfMap.size} competências mapeadas.`, 'log-sucesso', 'consoleLogDctf');
 
-    if (modoSaldoDisponivel) {
-      atualizarSaldosMagicos(true);
-      $('btnExportarDctf').disabled = false;
-      statusDctf('Saldos prontos', 'ok');
-    } else {
-      statusDctf('PDFs lidos', 'ok');
-      executarConfrontoDctf();
-    }
+    atualizarSaldosMagicos();
+    $('btnExportarDctf').disabled = false;
+    statusDctf('Saldos prontos', 'ok');
   }
   ligarSlotHub($('dropPdfsDctf'), $('folderInputDctf'), dctfStub, lerPdfsDctf);
-
-  function lerPlanilhaDctf(file) {
-    $('statusPlanilhaDctf').innerText = `Carregando ${file.name}...`;
-    logTerminal(`Lendo planilha: ${file.name}...`, 'log-info', 'consoleLogDctf');
-
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      try {
-        const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
-        const shtName = wb.SheetNames.find(n => n.toLowerCase().includes("totalizadores")) || wb.SheetNames[0];
-        const linhas = XLSX.utils.sheet_to_json(wb.Sheets[shtName], { defval: '' });
-        planMapDctf.clear();
-
-        if (linhas.length > 0) {
-          const sample = linhas[0];
-          const cComp = Object.keys(sample).find(k => k.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "") === "competencia");
-          const cCred = Object.keys(sample).find(k => { const n = k.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); return n.includes("credito na competencia") || (n.includes("credito") && n.includes("competencia")); });
-
-          if(cComp && cCred) {
-            linhas.forEach(l => {
-              const cp = utilNormCompDctf(l[cComp]);
-              if (cp) planMapDctf.set(cp, (planMapDctf.get(cp)||0) + utilLimparNumDctf(l[cCred]));
-            });
-            $('indicadorBase').innerText = planMapDctf.size;
-            $('statusPlanilhaDctf').innerText = `${file.name} · ${planMapDctf.size} competências`;
-            $('containerPlanilhaDctf').classList.add('feito');
-            logTerminal(`${planMapDctf.size} competências carregadas da planilha.`, 'log-sucesso', 'consoleLogDctf');
-            executarConfrontoDctf();
-          } else logTerminal('Colunas obrigatórias não encontradas na planilha.', 'log-erro', 'consoleLogDctf');
-        }
-      } catch (err) { logTerminal(`Falha XLSX: ${err.message}`, 'log-erro', 'consoleLogDctf'); }
-    };
-    reader.readAsArrayBuffer(file);
-  }
-  ligarSlotHub($('containerPlanilhaDctf'), $('filePlanilhaDctf'), dctfStub, fs => lerPlanilhaDctf(fs[0]));
-
-  function executarConfrontoDctf() {
-    if (modoSaldoDisponivel) return;
-    if (dctfMap.size === 0 && planMapDctf.size === 0) return;
-    confrontosDctf = [];
-    const ord = Array.from(new Set([...planMapDctf.keys(), ...dctfMap.keys()])).sort((a,b)=>{ const[m1,y1]=a.split('/').map(Number); const[m2,y2]=b.split('/').map(Number); return (y1||0)-(y2||0) || (m1||0)-(m2||0);});
-    let cDiv=0, cOk=0;
-
-    ord.forEach(cp => {
-      const temP=planMapDctf.has(cp), temD=dctfMap.has(cp);
-      const vP = temP ? planMapDctf.get(cp) : null;
-      const dObj = temD ? dctfMap.get(cp) : {darf:0, retencao:0, cnpj:'', empresa:''};
-      const tD = temD ? (dObj.darf+dObj.retencao) : null;
-      let st='', dif=null;
-
-      if(temP && temD) { dif = vP - tD; if(Math.abs(dif)>1) { st='Divergência'; cDiv++; } else { st='Retificações'; cOk++; } }
-      else if(temP) st='Somente na planilha base'; else if(temD) st='Somente na dctfweb';
-
-      confrontosDctf.push({comp: cp, cP: vP, dD: temD?dObj.darf:null, rD: temD?dObj.retencao:null, tD, dif, st, cnpj: dObj.cnpj, emp: dObj.empresa});
-    });
-
-    $('indicadorDivergencias').innerText = cDiv; $('indicadorOk').innerText = cOk;
-
-    $('tabelaCorpoDctf').innerHTML = confrontosDctf.map(c => {
-      let tc = 'ok'; if(c.st.includes('Divergência')) tc='err'; if(c.st.includes('planilha base')) tc='warn'; if(c.st.includes('dctfweb')) tc='deep';
-      return `<tr><td>${esc(removerCaps(c.comp))}</td><td class="num">${c.cP!==null?utilFormataMoeda(c.cP):'-'}</td><td class="num">${c.dD!==null?utilFormataMoeda(c.dD):'-'}</td><td class="num">${c.rD!==null?utilFormataMoeda(c.rD):'-'}</td><td class="num">${c.tD!==null?utilFormataMoeda(c.tD):'-'}</td><td class="num"${c.dif!==null&&Math.abs(c.dif)>1?' style="color:var(--err)"':''}>${c.dif!==null?utilFormataMoeda(c.dif):'-'}</td><td><span class="badge ${tc}">${esc(removerCaps(c.st))}</span></td></tr>`;
-    }).join('');
-    $('resumoTabelaDctf').innerText = `${confrontosDctf.length} processados`;
-    $('btnExportarDctf').disabled = confrontosDctf.length === 0;
-  }
 
   function formataAbaExcelLimpissima(ws) {
     const range = XLSX.utils.decode_range(ws['!ref']);
@@ -5192,33 +4785,14 @@ main:not(#viewHome) .field input,main:not(#viewHome) .inp,main:not(#viewHome) .r
   const nomeArqDctf = (empresas, base) => { const u = new Set(empresas.map(x => String(x || "").trim()).filter(x => x && x !== "-")); return (u.size === 1 ? limpaNome([...u][0]) + " - " : "") + base + ".xlsx"; };
   function exportarRelatorioDctfFinal() {
     const wb = XLSX.utils.book_new();
-
-    if (modoSaldoDisponivel) {
-      const data = [["Empresa", "CNPJ", "Competência", "Saldo Excedente", "Retenção Excedente"].map(removerCaps)];
-      linhasSaldoDctf().forEach(l => data.push([empSaldoDctf(l.empresa), cnpjSaldoDctf(l.cnpj), removerCaps(l.comp), l.darf, l.retencao]));
-      const ws = XLSX.utils.aoa_to_sheet(data); formataAbaExcelLimpissima(ws);
-      XLSX.utils.book_append_sheet(wb, ws, removerCaps("Saldo Disponível"));
-      const nmSaldo = nomeArqDctf(linhasSaldoDctf().map(l => empSaldoDctf(l.empresa)), "Saldo Disponível");
-      XLSX.writeFile(wb, nmSaldo);
-      logTerminal("Relatório de Saldos Magnéticos exportado com sucesso.", "log-sucesso", "consoleLogDctf");
-      toast("Planilha gerada: " + nmSaldo);
-
-    } else {
-      const mapAba = (filtrados, cols, mapFn) => {
-        const data = [cols.map(removerCaps)]; filtrados.forEach(c => data.push(mapFn(c).map(removerCaps)));
-        const ws = XLSX.utils.aoa_to_sheet(data); formataAbaExcelLimpissima(ws); return ws;
-      };
-
-      XLSX.utils.book_append_sheet(wb, mapAba(confrontosDctf.filter(c=>c.st.includes('Divergência')), ["Competência", "Crédito Planilha", "DARF DCTFWeb", "Retenção DCTFWeb", "Total DCTFWeb", "Diferença", "Diagnóstico"], c=>[c.comp, c.cP, c.dD, c.rD, c.tD, c.dif, c.st]), removerCaps("Divergências"));
-      XLSX.utils.book_append_sheet(wb, mapAba(confrontosDctf.filter(c=>c.st.includes('Retificações')), ["Competência", "Crédito Planilha", "DARF DCTFWeb", "Retenção DCTFWeb", "Total DCTFWeb", "Diferença", "Diagnóstico", "Cnpj", "Empresa"], c=>[c.comp, c.cP, c.dD, c.rD, c.tD, c.dif, c.st, c.cnpj, c.emp]), removerCaps("Retificações"));
-      XLSX.utils.book_append_sheet(wb, mapAba(confrontosDctf.filter(c=>c.st.includes('Somente')), ["Competência", "Crédito Planilha", "DARF DCTFWeb", "Retenção DCTFWeb", "Total DCTFWeb", "Diagnóstico"], c=>[c.comp, c.cP, c.dD, c.rD, c.tD, c.st]), removerCaps("Inconsistências"));
-      XLSX.utils.book_append_sheet(wb, mapAba(confrontosDctf, ["Competência", "Crédito Planilha", "DARF DCTFWeb", "Retenção DCTFWeb", "Total DCTFWeb", "Diferença", "Diagnóstico", "Cnpj", "Empresa"], c=>[c.comp, c.cP, c.dD, c.rD, c.tD, c.dif, c.st, c.cnpj, c.emp]), removerCaps("Visão Geral"));
-
-      const nmConf = nomeArqDctf(confrontosDctf.map(c => c.empresa), "Confronto DCTFWeb");
-      XLSX.writeFile(wb, nmConf);
-      logTerminal("Relatório Confronto DCTFWeb exportado impecavelmente limpo.", "log-sucesso", "consoleLogDctf");
-      toast("Planilha gerada: " + nmConf);
-    }
+    const data = [["Empresa", "CNPJ", "Competência", "Saldo Excedente", "Retenção Excedente"].map(removerCaps)];
+    linhasSaldoDctf().forEach(l => data.push([empSaldoDctf(l.empresa), cnpjSaldoDctf(l.cnpj), removerCaps(l.comp), l.darf, l.retencao]));
+    const ws = XLSX.utils.aoa_to_sheet(data); formataAbaExcelLimpissima(ws);
+    XLSX.utils.book_append_sheet(wb, ws, removerCaps("Saldo Disponível"));
+    const nmSaldo = nomeArqDctf(linhasSaldoDctf().map(l => empSaldoDctf(l.empresa)), "Saldo Disponível");
+    XLSX.writeFile(wb, nmSaldo);
+    logTerminal("Relatório de saldo disponível exportado com sucesso.", "log-sucesso", "consoleLogDctf");
+    toast("Planilha gerada: " + nmSaldo);
   }
   $('btnExportarDctf').addEventListener('click', exportarRelatorioDctfFinal);
 
