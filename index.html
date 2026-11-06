@@ -5438,7 +5438,7 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
     const pers = (await dkLinhas(`SELECT perEv FROM (SELECT DISTINCT perEv FROM m_l l WHERE ${xcFiltroCorte()}) ORDER BY xp_per_ord(perEv)`)).map(r => r[0]);
     for (const [i, p] of pers.entries()){
       aoProgresso(i / Math.max(1, pers.length), p);
-      await dkExec(`INSERT INTO x_cruz ${base} AND ${p === null ? "l.perEv IS NULL" : "l.perEv = " + dkLit(p)} ORDER BY l.seq, l.ln`);
+      await dkExec(`INSERT INTO x_cruz ${base} AND ${p === null ? "l.perEv IS NULL" : "l.perEv = " + dkLit(p)}`);   // sem ORDER BY: toda leitura ordena por _k0,_k1,_k2, então a ordem física não altera o resultado
       await xcCede();
     }
     try { await dkExec("CHECKPOINT"); } catch(e){}
@@ -5663,7 +5663,7 @@ CREATE OR REPLACE MACRO xp_chave(p) AS CASE WHEN regexp_full_match(trim(COALESCE
       p.iniciar(1);
       try {
         xmlStatus("Preparando", "run");
-        await dkMaterializarCruz((f, per) => p.livre(f, `Preparando o cruzamento de eventos (só desta vez) · competência ${esc(per == null ? "" : xmlPer(per))}`));
+        await dkMaterializarCruz((f, per) => p.livre(f, ""));
         return true;
       } catch(e){
         console.error(e); logXml("Não foi possível guardar o cruzamento no banco: " + (e && e.message || e) + ". Os conjuntos seguem pela leitura direta, mais lenta.", "log-erro");
